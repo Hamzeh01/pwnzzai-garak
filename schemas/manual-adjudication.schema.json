@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/pwnzzai-garak/manual-adjudication.schema.json",
+  "title": "Manual Adjudication",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "run_id",
+    "attempt_id",
+    "test_case_id",
+    "automatic_label",
+    "manual_label",
+    "policy_id",
+    "reason",
+    "reviewer",
+    "reviewed_at"
+  ],
+  "properties": {
+    "schema_version": { "const": "1.0.0" },
+    "run_id": { "type": "string" },
+    "attempt_id": { "type": "string" },
+    "test_case_id": { "type": "string" },
+    "automatic_label": { "enum": ["success", "failure", "ambiguous", "error"] },
+    "manual_label": { "enum": ["success", "failure", "ambiguous", "error"] },
+    "policy_id": { "enum": ["PI-01", "SD-01", "SP-01", "DI-01"] },
+    "reason": { "type": "string", "minLength": 10 },
+    "evidence_pointer": { "type": "string" },
+    "reviewer": { "type": "string", "minLength": 1 },
+    "reviewed_at": { "type": "string", "format": "date-time" },
+    "second_review_required": { "type": "boolean", "default": false },
+    "resolution": { "type": ["string", "null"] }
+  }
+}
+

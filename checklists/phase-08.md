@@ -1,0 +1,25 @@
+# Phase 8 Checklist
+
+- [ ] Main text is six pages and single-column
+- [ ] References and appendices are outside the six-page limit
+- [ ] Abstract states method and principal result
+- [ ] Related work meets source requirement
+- [ ] Threat model and policies are explicit
+- [ ] Results include numerator/denominator
+- [ ] Negative results retained
+- [ ] Mitigations are application-specific
+- [ ] OWASP mapping is current and accurate
+- [ ] Limitations and future work included
+- [ ] Every claim traces to evidence
+- [ ] References compile and resolve
+- [ ] Appendices contain detailed evidence
+- [ ] Final PDF rendered and visually reviewed
+- [ ] PDF and Word files use basename `G{group number}_paper`
+- [ ] Scripts, datasets, configuration, and reproduction material are included
+- [ ] Scripts have sufficient explanatory documentation
+- [ ] No unanalyzed tool/AI output or unsupported AI-generated prose remains
+- [ ] Secret/temp-file scan passes
+- [ ] ZIP and SHA-256 created
+- [ ] Exactly one team member is designated to upload the ZIP to Ilearn
+- [ ] Due date checked in Ilearn or a separate instructor announcement
+- [ ] Gate 8 recorded

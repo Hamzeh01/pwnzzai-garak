@@ -1,0 +1,2 @@
+surface_id,scenario,page_url,method,path,content_type,auth_required,csrf_required,request_fields,response_fields,state_classification,reset_method,evidence_path,verified_commit,notes
+

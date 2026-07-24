@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/pwnzzai-garak/environment-manifest.schema.json",
+  "title": "Environment Manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "captured_at",
+    "host",
+    "python",
+    "garak",
+    "docker",
+    "pwnzzai",
+    "ollama"
+  ],
+  "properties": {
+    "schema_version": { "const": "1.0.0" },
+    "captured_at": { "type": "string", "format": "date-time" },
+    "host": {
+      "type": "object",
+      "required": ["os", "architecture"],
+      "properties": {
+        "os": { "type": "string" },
+        "architecture": { "type": "string" },
+        "cpu": { "type": "string" },
+        "gpu": { "type": "string" },
+        "ram_bytes": { "type": ["integer", "null"], "minimum": 0 }
+      }
+    },
+    "python": {
+      "type": "object",
+      "required": ["version", "executable"],
+      "properties": {
+        "version": { "type": "string" },
+        "executable": { "type": "string" }
+      }
+    },
+    "garak": {
+      "type": "object",
+      "required": ["version"],
+      "properties": {
+        "version": { "type": "string" },
+        "requirements_lock_sha256": { "type": ["string", "null"] }
+      }
+    },
+    "docker": {
+      "type": "object",
+      "required": ["version", "compose_version"],
+      "properties": {
+        "version": { "type": "string" },
+        "compose_version": { "type": "string" }
+      }
+    },
+    "pwnzzai": {
+      "type": "object",
+      "required": ["commit", "image", "image_digest", "base_url"],
+      "properties": {
+        "commit": { "type": "string", "pattern": "^[a-f0-9]{40}$" },
+        "image": { "type": "string" },
+        "image_digest": { "type": "string" },
+        "base_url": { "type": "string", "format": "uri" }
+      }
+    },
+    "ollama": {
+      "type": "object",
+      "required": ["version", "host", "model", "model_digest"],
+      "properties": {
+        "version": { "type": "string" },
+        "host": { "type": "string", "format": "uri" },
+        "model": { "type": "string" },
+        "model_digest": { "type": "string" },
+        "quantization": { "type": ["string", "null"] },
+        "size_bytes": { "type": ["integer", "null"], "minimum": 0 }
+      }
+    },
+    "notes": { "type": "array", "items": { "type": "string" } }
+  }
+}
+

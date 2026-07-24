@@ -1,0 +1,64 @@
+# Local secrets and environment overrides
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+
+# Python
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+coverage.xml
+htmlcov/
+
+# Garak local data and logs
+garak.log
+*.hitlog.jsonl
+*.report.jsonl
+*.report.html
+
+# Runtime results and evidence (retain directory READMEs)
+results/raw/*
+!results/raw/README.md
+results/normalized/*
+!results/normalized/README.md
+results/tables/*
+!results/tables/README.md
+results/figures/*
+!results/figures/README.md
+evidence/setup/*
+!evidence/setup/README.md
+evidence/attacks/*
+!evidence/attacks/README.md
+evidence/review/*
+!evidence/review/README.md
+evidence/mitigations/*
+!evidence/mitigations/README.md
+environment/captured/*
+!environment/captured/README.md
+
+# Uploaded source documents may be course-restricted
+references/source-documents/*.pdf
+!references/source-documents/README.md
+
+# Local PwnzzAI checkout and uploaded artifacts
+vendor/
+uploads/
+downloads/
+instance/
+
+# Editors and operating systems
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Submission artifacts
+dist/
+*.zip
+

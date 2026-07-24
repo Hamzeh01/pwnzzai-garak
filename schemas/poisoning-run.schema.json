@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/pwnzzai-garak/poisoning-run.schema.json",
+  "title": "Poisoning Experiment Summary",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "run_id",
+    "protocol_version",
+    "baseline",
+    "poison",
+    "holdout",
+    "metrics",
+    "artifacts"
+  ],
+  "properties": {
+    "schema_version": { "const": "1.0.0" },
+    "run_id": { "type": "string" },
+    "protocol_version": { "type": "string" },
+    "baseline": {
+      "type": "object",
+      "required": ["training_size", "clean_accuracy", "target_prediction"],
+      "properties": {
+        "training_size": { "type": "integer", "minimum": 1 },
+        "clean_accuracy": { "type": "number", "minimum": 0, "maximum": 1 },
+        "target_prediction": { "enum": ["positive", "negative"] }
+      }
+    },
+    "poison": {
+      "type": "object",
+      "required": ["budget", "total_training_size", "poison_ratio", "strategy"],
+      "properties": {
+        "budget": { "type": "integer", "minimum": 0 },
+        "total_training_size": { "type": "integer", "minimum": 1 },
+        "poison_ratio": { "type": "number", "minimum": 0, "maximum": 1 },
+        "strategy": { "enum": ["targeted", "broad", "control"] }
+      }
+    },
+    "holdout": {
+      "type": "object",
+      "required": ["artifact_sha256", "sample_count"],
+      "properties": {
+        "artifact_sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "sample_count": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "metrics": {
+      "type": "object",
+      "required": [
+        "poisoned_clean_accuracy",
+        "accuracy_degradation",
+        "prediction_flip_rate",
+        "targeted_success",
+        "target_prediction"
+      ],
+      "properties": {
+        "poisoned_clean_accuracy": { "type": "number", "minimum": 0, "maximum": 1 },
+        "accuracy_degradation": { "type": "number", "minimum": -1, "maximum": 1 },
+        "prediction_flip_rate": { "type": "number", "minimum": 0, "maximum": 1 },
+        "targeted_success": { "type": "boolean" },
+        "target_prediction": { "enum": ["positive", "negative"] }
+      }
+    },
+    "artifacts": {
+      "type": "object",
+      "required": ["baseline_weights", "poisoned_weights", "predictions"],
+      "properties": {
+        "baseline_weights": { "type": "string" },
+        "poisoned_weights": { "type": "string" },
+        "predictions": { "type": "string" }
+      }
+    }
+  }
+}
+

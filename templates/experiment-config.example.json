@@ -1,0 +1,46 @@
+{
+  "schema_version": "1.0.0",
+  "protocol_version": "0.1.0",
+  "principal_target": {
+    "system": "pwnzzai",
+    "base_url": "http://localhost:8080",
+    "pwnzzai_commit": "cd3ac0d12ffcb42a9c17c69c5c83bbb9f56157a5",
+    "model": "REPLACE_WITH_PINNED_MODEL",
+    "model_digest": "REPLACE_WITH_OLLAMA_DIGEST"
+  },
+  "categories": [
+    "direct_prompt_injection",
+    "indirect_prompt_injection",
+    "information_disclosure",
+    "data_poisoning"
+  ],
+  "controls": {
+    "benign_per_surface": 1,
+    "positive_controls": true,
+    "state_reset_required": true
+  },
+  "execution": {
+    "repetitions": 1,
+    "timeout_seconds": 60,
+    "max_retries": 1,
+    "max_total_attempts": 1,
+    "seed": 20260724
+  },
+  "manual_review": {
+    "review_all_hits": true,
+    "review_all_ambiguous": true,
+    "non_hit_sample_rate": 0.2,
+    "sampling_seed": 20260724
+  },
+  "safety": {
+    "authorized_local_lab": true,
+    "allow_attack_execution": false,
+    "prohibited_actions": [
+      "public targets",
+      "denial of service",
+      "real personal data",
+      "credential attacks"
+    ]
+  }
+}
+
