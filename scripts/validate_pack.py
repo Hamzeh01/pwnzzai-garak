@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import csv
 import json
+import os
 import re
 import sys
 from pathlib import Path
@@ -91,10 +92,22 @@ TEXT_SUFFIXES = {
     ".example",
 }
 
+LOCAL_ONLY_DIRS = {".git", ".venv", "venv", "vendor"}
+
 
 def error(message: str, failures: list[str]) -> None:
     failures.append(message)
     print(f"FAIL: {message}")
+
+
+def iter_secret_scan_files(root: Path):
+    """Yield project files while pruning ignored local dependency trees."""
+    for directory, dirnames, filenames in os.walk(root):
+        dirnames[:] = [
+            name for name in dirnames if name not in LOCAL_ONLY_DIRS
+        ]
+        base = Path(directory)
+        yield from (base / filename for filename in filenames)
 
 
 def check_required(failures: list[str]) -> None:
@@ -192,8 +205,8 @@ def check_reserved_trees(failures: list[str]) -> None:
 
 def check_secrets(failures: list[str]) -> None:
     skip = {Path(__file__).resolve()}
-    for path in ROOT.rglob("*"):
-        if not path.is_file() or path.resolve() in skip:
+    for path in iter_secret_scan_files(ROOT):
+        if path.resolve() in skip:
             continue
         if path.suffix.lower() not in TEXT_SUFFIXES and path.name != ".env.example":
             continue

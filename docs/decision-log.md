@@ -11,9 +11,17 @@
 ## D-0002 - One principal model
 
 - Date: 2026-07-24
-- Status: proposed
-- Decision: Use one pinned local Ollama model for principal results; add a second only after the main experiment is complete.
-- Rationale: Reduces confounding and preserves depth.
+- Status: accepted on 2026-07-25 for Gate 2
+- Decision: Use `llama3.2:1b` at Ollama digest
+  `baf6a787fdffd633537aa2eb51cfd54cb93ff08e28040095462bb63daf552878`
+  as the only principal model. Add a second model only after the main
+  experiment is complete.
+- Rationale: The model is supported by the pinned PwnzzAI source, is the
+  application fallback for several required surfaces, fits the inspected host,
+  and reduces confounding while preserving depth.
+- Consequences: Phase 2 and the principal experiment use the same tag and
+  digest. A tag resolving to another digest requires a new environment
+  manifest and Gate 2 review.
 
 ## D-0003 - Four-way outcome labels
 
@@ -28,9 +36,15 @@
 ## D-0004 - Current tooling baseline
 
 - Date: 2026-07-24
-- Status: research snapshot
-- Decision: Scaffold against Garak 0.15.1 and PwnzzAI commit `cd3ac0d12ffcb42a9c17c69c5c83bbb9f56157a5`, then repin during Phase 2.
-- Rationale: These were current official metadata at scaffold time.
+- Status: accepted after Phase 2 repin on 2026-07-25
+- Decision: Pin Garak `0.15.1`, PwnzzAI commit
+  `cd3ac0d12ffcb42a9c17c69c5c83bbb9f56157a5`, and PwnzzAI image manifest
+  `sha256:7878fbd790a0cc6f698950722b79760aabbb945dcb59a4996bfa2a3937f4849a`.
+- Rationale: Current official metadata was rechecked during Phase 2 and the
+  installed environment and registry manifest were captured independently.
+- Consequences: Source and image are separate pins. If the image lacks a
+  verifiable source-revision label, results must not claim that the image was
+  built from the pinned source commit without additional provenance.
 
 ## D-0005 - No attacks in starter pack
 
@@ -110,6 +124,34 @@
 - Consequences: Every rating must include evidence and both axis rationales,
   and it applies only to the pinned intentionally vulnerable local lab.
 - Evidence: `docs/01-threat-model.md`; `docs/07-analysis-plan.md`.
+
+## D-0010 - Phase 2 local runtime baseline
+
+- Date: 2026-07-25
+- Status: accepted for Gate 2
+- Decision: Use PwnzzAI Option 2 with Docker Desktop `4.44.3 (202357)`,
+  Engine `28.3.2`, Compose `v2.39.1-desktop.1`, native Ollama `0.32.1`,
+  project Python `3.12.13`, and Garak `0.15.1`. Publish PwnzzAI only on
+  `127.0.0.1:18080` (container port `8080`), keep Ollama on
+  `127.0.0.1:11434`, and use Docker
+  Desktop's `host.docker.internal` bridge for container-to-host access.
+- Alternatives: PwnzzAI Option 1, a cloud model, a second principal model,
+  updating the existing Docker Desktop installation immediately before the
+  run, or broadening the Ollama listener.
+- Rationale: This follows the verified assignment baseline, preserves the
+  inspected host state, avoids unnecessary network exposure, and keeps
+  mutable application data in three bounded project-root bind directories.
+  Windows reserves host port `8080` inside excluded range `8066-8165`, so the
+  host-side port is changed without changing PwnzzAI's container port.
+- Consequences: The runtime-only Flask secret is never written to a manifest.
+  The sanitized resolved Compose capture omits every service environment
+  value. The verified official manifest is available to Docker under a
+  byte-identical loopback-mirror repository digest, and Compose uses
+  `pull_policy: never` after local import. Any runtime version, digest, port,
+  bind path, or model-context change requires a new capture and Gate 2 review.
+- Evidence: `environment/system-info.json`;
+  `environment/python-environment.txt`; `environment/ollama-models.json`;
+  `environment/compose-resolved.yml`; `docs/phase-02-reset-runbook.md`.
 
 ## Decision template
 

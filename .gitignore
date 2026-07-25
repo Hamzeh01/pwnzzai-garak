@@ -50,6 +50,7 @@ vendor/
 uploads/
 downloads/
 instance/
+.phase2-reset-backup/
 
 # Editors and operating systems
 .vscode/
@@ -61,4 +62,3 @@ desktop.ini
 # Submission artifacts
 dist/
 *.zip
-

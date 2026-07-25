@@ -1,18 +1,17 @@
 # Phase 2 Checklist
 
-- [ ] OS, CPU, GPU, and RAM recorded
-- [ ] Docker Engine/Desktop and Compose versions recorded
-- [ ] Python interpreter and version recorded
-- [ ] Garak version pinned and locked
-- [ ] PwnzzAI commit pinned
-- [ ] PwnzzAI image digest recorded
-- [ ] Resolved Compose configuration saved
-- [ ] Ollama version recorded
-- [ ] Principal model tag and digest recorded
-- [ ] Ollama bind/exposure reviewed
-- [ ] PwnzzAI and Ollama benign health checks pass
-- [ ] Benign model response captured
-- [ ] Reset runbook tested
-- [ ] Secret scan passes
-- [ ] Gate 2 recorded
-
+- [x] OS, CPU, GPU, and RAM recorded
+- [x] Docker Engine/Desktop and Compose versions recorded
+- [x] Python interpreter and version recorded
+- [x] Garak version pinned and locked
+- [x] PwnzzAI commit pinned
+- [x] PwnzzAI image digest recorded
+- [x] Resolved Compose configuration saved
+- [x] Ollama version recorded
+- [x] Principal model tag and digest recorded
+- [x] Ollama bind/exposure reviewed
+- [x] PwnzzAI and Ollama benign health checks pass
+- [x] Benign model response captured
+- [x] Reset runbook tested
+- [x] Secret scan passes
+- [x] Gate 2 recorded

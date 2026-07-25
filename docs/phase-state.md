@@ -1,57 +1,63 @@
 # Phase State
 
-- Current phase: 1
-- Phase name: Authorization, policy, and threat model
+- Current phase: 2
+- Phase name: Reproducible environment
 - Gate status: PASSED
 - Last updated: 2026-07-25
 - Attacks authorized: no
 - Attacks implemented: no
 - Attacks executed: no
 
-## Completed Phase 1 work
+## Completed Phase 2 work
 
-- Recorded the user-owned or user-controlled local PwnzzAI Option 2 target,
-  separately managed local Ollama dependency, and PwnzzAI-primary boundary.
-- Defined prohibited actions, local-only controls, phase-limited permissions,
-  data handling and retention, persistent state, reset requirements, and stop
-  conditions.
-- Finalized PI-01, SD-01, SP-01, and DI-01.
-- Finalized `success`, `failure`, `ambiguous`, and `error` with separate
-  automatic and manual adjudication.
-- Classified public educational fixtures, synthetic protected targets, and
-  unexpected real/operational data.
-- Mapped project scenarios to OWASP LLM Top 10 for 2025 as a taxonomy.
-- Approved a project-defined 5 x 5 likelihood/impact rubric that is explicitly
-  not an OWASP or CVSS scoring system.
-- Confirmed that no service, live mapping, implementation, or attack execution
+- Pinned the source commit, image manifest/config, Python/Garak environment,
+  Docker/Compose, Ollama, one principal model, and inspected host hardware.
+- Relocated Docker Desktop data through its supported UI to D: while
+  preserving all prior images and stopped containers.
+- Launched PwnzzAI Option 2 from the digest-verified image with a separately
+  managed loopback-only Ollama.
+- Captured sanitized resolved Compose configuration and initial/post-reset
+  logs without environment values or protected values.
+- Passed benign PwnzzAI, Ollama, model-generation, container-bridge, and
+  loopback exposure checks.
+- Tested a recoverable snapshot/quarantine/restore reset using one harmless
+  canary and exact file-hash comparison.
+- Confirmed no adversarial payload, attack implementation, or attack execution
   occurred.
 
 ## Evidence
 
-- `docs/01-threat-model.md`
-- `docs/decision-log.md`
-- `docs/07-analysis-plan.md`
-- `SECURITY_AND_ETHICS.md`
-- `evidence/setup/phase-01-gate-review.md`
-- `checklists/phase-01.md`
+- `environment/artifact-hashes.txt`
+- `environment/captured/environment-20260725T144247Z.json`
+- `environment/compose-resolved.yml`
+- `environment/system-info.json`
+- `environment/ollama-models.json`
+- `docs/phase-02-reset-runbook.md`
+- `evidence/setup/phase-02-gate-review.md`
+- `evidence/setup/phase-02-health.md`
+- `evidence/setup/phase-02-reset-test.md`
+- `evidence/setup/phase-02-storage-relocation.md`
+- `checklists/phase-02.md`
 
 ## Validation
 
-- `python scripts/validate_pack.py` was attempted and could not execute because
-  `python` is not on `PATH`.
-- The recorded bundled Python executable passed `scripts/validate_pack.py`.
-- Exact command and output are recorded in
-  `evidence/setup/phase-01-gate-review.md`.
+- `python -m pip check` passed.
+- `python -m pytest` passed: one test.
+- `scripts/check-prerequisites.ps1` passed.
+- Exact `python scripts/validate_pack.py` passed all five checks.
+- The environment manifest passed its Draft 2020-12 schema.
+- Actual Compose resolution matched the sanitized capture.
+- `git diff --check` reported no whitespace error.
 
 ## Unresolved authorization questions
 
-None blocking Gate 1. Attack execution remains unauthorized. Phase 5 requires
+None blocking Gate 2. Attack execution remains unauthorized. Phase 5 requires
 explicit bounded-pilot approval, and Phase 6 requires explicit full-run
 approval.
 
 ## Next action
 
-Phase 2 has not started. Use `prompts/phase-02-environment.md`.
+Phase 3 has not started. Use `prompts/phase-03-contract-mapping.md`.
 
 ## Gate history
 
@@ -59,3 +65,4 @@ Phase 2 has not started. Use `prompts/phase-02-environment.md`.
 |---:|---|---|---|---|
 | 0 | Passed | 2026-07-24 | `evidence/setup/phase-00-source-inventory.md`; `docs/00-source-requirements.md`; validator passed | User-requested Phase 0 completion |
 | 1 | Passed | 2026-07-25 | `docs/01-threat-model.md`; `evidence/setup/phase-01-gate-review.md`; validator passed with recorded bundled Python | User-requested Phase 1 completion |
+| 2 | Passed | 2026-07-25 | `evidence/setup/phase-02-gate-review.md`; `environment/artifact-hashes.txt`; validator and reset passed | User-requested Phase 2 completion |
