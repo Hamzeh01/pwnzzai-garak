@@ -18,9 +18,12 @@
 ## D-0003 - Four-way outcome labels
 
 - Date: 2026-07-24
-- Status: proposed
+- Status: accepted on 2026-07-25 for Gate 1
 - Decision: Use success, failure, ambiguous, and error.
 - Rationale: Avoids misclassifying suggestive outputs and infrastructure failures.
+- Consequences: Automatic and manual labels remain separate; the manual label
+  is final. Errors are excluded from the primary evaluable denominator and
+  retained as linked records.
 
 ## D-0004 - Current tooling baseline
 
@@ -53,6 +56,60 @@
   rule, or permission to modify PwnzzAI.
 - Evidence: Assignment PDF pages 4-8 and
   `docs/00-source-requirements.md`.
+
+## D-0007 - Authorized target and execution boundary
+
+- Date: 2026-07-25
+- Status: accepted for Gate 1
+- Decision: Limit the assessment to one user-owned or user-controlled local
+  PwnzzAI Option 2 deployment with one separately managed local Ollama and one
+  principal pinned model. Phase 1 authorizes planning only; adversarial pilot
+  and full execution require separate Phase 5 and Phase 6 approvals.
+- Alternatives: Remote or public targets, cloud providers, multiple principal
+  models, source modification, and attacks against raw Ollama.
+- Rationale: This matches the assignment baseline while preserving local
+  isolation, application-layer validity, and explicit execution gates.
+- Consequences: A changed host, remote provider, source modification,
+  destructive reset, external upload, or public disclosure requires a new
+  authorization decision.
+- Evidence: `docs/01-threat-model.md`; `PROJECT_CHARTER.md`; `AGENTS.md`.
+
+## D-0008 - Intentional lab values and policy findings
+
+- Date: 2026-07-25
+- Status: accepted for Gate 1
+- Decision: Treat public credentials, exercise descriptions, public source
+  wording, and intentionally displayed telemetry as educational fixtures.
+  Treat designated synthetic canaries, simulated cross-user records, and
+  experiment-integrity state as protected targets whose policy-defined
+  disclosure or mutation is an expected educational finding. Treat real
+  credentials, personal data, host effects, or external effects as stop events,
+  not test objectives.
+- Alternatives: Count every source-visible value as a secret, or dismiss every
+  intentional weakness as non-reportable.
+- Rationale: A policy consequence, not mere visibility or a Garak detector
+  label, determines whether an attempt succeeds.
+- Consequences: Reports must call confirmed intentional behavior an expected
+  lab weakness and must not present it as a newly discovered production
+  vulnerability.
+- Evidence: `docs/01-threat-model.md`; PwnzzAI README at the pinned research
+  commit; OWASP LLM Top 10 for 2025 guidance recorded in
+  `references/PRIMARY_SOURCES.md`.
+
+## D-0009 - Project-defined risk rubric
+
+- Date: 2026-07-25
+- Status: accepted for Gate 1
+- Decision: Rate manually confirmed findings with separately justified
+  1-to-5 likelihood and impact axes, then calculate their product and apply the
+  declared project bands.
+- Alternatives: Treat OWASP categories as severity scores or reuse CVSS
+  without a compatible vulnerability context.
+- Rationale: The project needs transparent prioritization while OWASP is being
+  used as a taxonomy, not a scoring system.
+- Consequences: Every rating must include evidence and both axis rationales,
+  and it applies only to the pinned intentionally vulnerable local lab.
+- Evidence: `docs/01-threat-model.md`; `docs/07-analysis-plan.md`.
 
 ## Decision template
 

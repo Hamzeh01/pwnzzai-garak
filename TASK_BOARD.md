@@ -9,10 +9,10 @@
 
 ## Phase 1 - Scope and policy
 
-- [ ] Approve authorization and exclusions
-- [ ] Finalize policy catalog and labels
-- [ ] Finalize threat/risk model
-- [ ] Pass Gate 1
+- [x] Approve authorization and exclusions
+- [x] Finalize policy catalog and labels
+- [x] Finalize threat/risk model
+- [x] Pass Gate 1
 
 ## Phase 2 - Environment
 

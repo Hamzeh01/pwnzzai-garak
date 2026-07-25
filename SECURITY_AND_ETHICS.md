@@ -18,7 +18,13 @@ This project is limited to an intentionally vulnerable PwnzzAI instance owned or
 - Sanitize raw HTTP evidence before sharing or committing it.
 - Keep original assignment PDFs local if course distribution is restricted.
 - Keep raw evidence append-only and hash it.
-- Document retention and deletion rules before full execution.
+- Retain reproducibility evidence locally through grading and any applicable
+  appeal period. Afterward, review it with the user and delete only with
+  explicit approval; retain sanitized course and reproduction artifacts as
+  required.
+- If unexpected real sensitive data appears, stop, keep it out of tracked and
+  normalized artifacts, record a redacted incident note, and ask the user how
+  to handle any unavoidable quarantined raw copy.
 
 ## Responsible interpretation
 
@@ -31,4 +37,3 @@ This project is limited to an intentionally vulnerable PwnzzAI instance owned or
 ## Disclosure
 
 The default deliverable is a course report, not public vulnerability disclosure. If an unexpected issue appears outside PwnzzAI’s intended educational behavior, stop and discuss a responsible-disclosure path with the user and instructor.
-
