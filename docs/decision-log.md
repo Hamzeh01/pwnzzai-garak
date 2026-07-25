@@ -153,6 +153,36 @@
   `environment/python-environment.txt`; `environment/ollama-models.json`;
   `environment/compose-resolved.yml`; `docs/phase-02-reset-runbook.md`.
 
+## D-0011 - Phase 3 application integration by surface
+
+- Date: 2026-07-25
+- Status: accepted for Gate 3
+- Decision: Use a Garak REST generator for direct baseline levels, the
+  scanner-shaped OpenAI-compatible endpoint for one fixed guardrail stage per
+  run, a custom generator for QR multipart artifacts, a function generator
+  for RAG refresh/query orchestration, and a separate stateful runner for
+  poisoning train/test. Treat login as a shared application-client utility
+  rather than a generator; the currently required application routes remain
+  anonymous. Use REST only as a preflight for guardrail metadata.
+- Alternatives: Send every prompt directly to raw Ollama; force every surface
+  through one REST template; model QR, RAG, or poisoning as stateless text
+  generation; or require the session cookie on routes that accept anonymous
+  traffic.
+- Rationale: Benign traffic and pinned source agree on the simple JSON
+  surfaces, while QR needs multipart plus file-state evidence, RAG needs an
+  explicit refresh/reset precondition and a longer cold-start timeout, and
+  poisoning is a two-step client-held model workflow with metrics Garak text
+  generation cannot preserve.
+- Consequences: Phase 4 must validate guardrail stages client-side, retain
+  application-specific metadata outside the standard OpenAI message, set
+  explicit 15/60/180/300-second timeout classes, and disable silent
+  Garak/OpenAI SDK retries so deliberate retries receive a new record linked
+  by `retry_of`. Phase 4 may implement only benign plumbing; adversarial
+  payloads remain prohibited.
+- Evidence: `docs/03-attack-surface-inventory.md`;
+  `evidence/setup/phase-03-http-contracts.json`;
+  `evidence/setup/phase-03-contract-review.md`.
+
 ## Decision template
 
 ```text
