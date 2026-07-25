@@ -123,6 +123,7 @@ python-magic-bin==0.4.14
 python-ulid==4.0.1
 pytz==2026.2
 PyYAML==6.0.3
+qrcode==8.2
 referencing==0.37.0
 regex==2026.7.19
 replicate==1.0.7

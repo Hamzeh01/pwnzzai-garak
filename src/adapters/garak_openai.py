@@ -13,7 +13,7 @@ from urllib.parse import urlparse
 
 import httpx
 import openai
-from garak.attempt import Conversation, Message, Turn
+from garak.attempt import Conversation
 from garak.generators.openai import OpenAICompatible
 
 from .client import validate_loopback_base_url
@@ -173,15 +173,20 @@ class PwnzzAIOpenAICompatible(OpenAICompatible):
         return unwrapped(self, prompt, generations_this_call)
 
     def generate_once(self, prompt: str) -> GarakGenerationResult:
+        return self.generate_messages_once([{"role": "user", "content": prompt}])
+
+    def generate_messages_once(
+        self, messages: list[dict[str, str]]
+    ) -> GarakGenerationResult:
         before = len(self._captures)
-        conversation = Conversation(turns=[Turn("user", Message(prompt))])
-        messages = self.generate(conversation, generations_this_call=1)
+        conversation = Conversation.from_openai(messages)
+        generated_messages = self.generate(conversation, generations_this_call=1)
         if len(self._captures) != before + 1:
             raise RuntimeError("one Garak attempt must produce one HTTP exchange")
-        if len(messages) != 1 or messages[0] is None:
+        if len(generated_messages) != 1 or generated_messages[0] is None:
             raise RuntimeError("Garak returned no model message")
         return GarakGenerationResult(
-            output=messages[0].text,
+            output=generated_messages[0].text,
             exchange=self._captures[-1],
         )
 

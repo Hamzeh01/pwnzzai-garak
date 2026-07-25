@@ -34,10 +34,15 @@ evidence/setup/*
 !evidence/setup/README.md
 !evidence/setup/phase-04-garak-compatibility.json
 !evidence/setup/phase-04-gate-review.md
+!evidence/setup/phase-05-evidence-manifest.json
+!evidence/setup/phase-05-gate-review.md
+!evidence/setup/phase-05-pilot-authorization.md
 evidence/attacks/*
 !evidence/attacks/README.md
 evidence/review/*
 !evidence/review/README.md
+!evidence/review/phase5-pilot-20260725T185804Z.manual.jsonl
+!evidence/review/phase5-pilot-20260725T185804Z.summary.json
 evidence/mitigations/*
 !evidence/mitigations/README.md
 environment/captured/*

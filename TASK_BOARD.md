@@ -37,10 +37,10 @@
 
 ## Phase 5 - Design and pilot
 
-- [ ] Obtain pilot approval
-- [ ] Freeze catalog, controls, metrics, and reset rules
-- [ ] Run bounded pilot
-- [ ] Obtain full-run approval
+- [x] Obtain pilot approval
+- [x] Freeze catalog, controls, metrics, and reset rules
+- [x] Run bounded pilot
+- [x] Request full-run approval
 
 ## Phase 6 - Full run
 

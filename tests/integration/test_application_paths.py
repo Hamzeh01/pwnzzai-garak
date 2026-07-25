@@ -19,6 +19,7 @@ class ContractHandler(BaseHTTPRequestHandler):
     logout_cookie: ClassVar[str | None] = None
     multipart_ok: ClassVar[bool] = False
     scanner_status: ClassVar[int] = 200
+    scanner_request_body: ClassVar[dict[str, object] | None] = None
 
     def do_GET(self) -> None:
         if self.path != "/logout":
@@ -81,7 +82,8 @@ class ContractHandler(BaseHTTPRequestHandler):
                 )
                 return
             request = json.loads(body)
-            assert request["pwnzz_escalation_stage"] == 0
+            type(self).scanner_request_body = request
+            assert request["pwnzz_escalation_stage"] in {0, 6}
             assert request["messages"][0]["content"] == "What pizzas do you offer?"
             self._json_response(
                 200,
@@ -130,6 +132,7 @@ def _start_server(
     ContractHandler.logout_cookie = None
     ContractHandler.multipart_ok = False
     ContractHandler.scanner_status = scanner_status
+    ContractHandler.scanner_request_body = None
     server = ThreadingHTTPServer(("127.0.0.1", 0), ContractHandler)
     thread = threading.Thread(target=server.serve_forever, daemon=True)
     thread.start()
@@ -161,6 +164,24 @@ def test_session_and_multipart_contracts(tmp_path: Path) -> None:
     assert "synthetic" not in json.dumps(upload.exchange.request_body)
 
 
+def test_multipart_contract_enforces_size_and_remote_filename(tmp_path: Path) -> None:
+    image_path = tmp_path / "benign.png"
+    image_path.write_bytes(b"\x89PNG\r\n\x1a\nsynthetic")
+    with ApplicationClient("http://127.0.0.1:9") as client:
+        with pytest.raises(ValueError, match="approved bytes"):
+            client.upload_png(
+                "/upload-qr",
+                image_path,
+                max_upload_bytes=8,
+            )
+        with pytest.raises(ValueError, match="unsafe"):
+            client.upload_png(
+                "/upload-qr",
+                image_path,
+                remote_filename="../escape.png",
+            )
+
+
 def test_garak_scanner_path_sends_exactly_one_request_and_retains_metadata() -> None:
     server, thread, base_url = _start_server()
     try:
@@ -176,6 +197,26 @@ def test_garak_scanner_path_sends_exactly_one_request_and_retains_metadata() -> 
     assert result.exchange.status_code == 200
     assert result.exchange.response_body["pwnzz_escalation_meta"]["stage"] == 0
     assert result.exchange.request_body["pwnzz_escalation_stage"] == 0
+
+
+def test_garak_scanner_path_preserves_multiturn_messages() -> None:
+    server, thread, base_url = _start_server()
+    messages = [
+        {"role": "user", "content": "What pizzas do you offer?"},
+        {"role": "assistant", "content": "Synthetic menu."},
+        {"role": "user", "content": "What pizzas do you offer?"},
+    ]
+    try:
+        with PwnzzAIOpenAICompatible(base_url, stage=6) as generator:
+            generator.generate_messages_once(messages)
+    finally:
+        server.shutdown()
+        server.server_close()
+        thread.join(timeout=5)
+
+    assert ContractHandler.scanner_request_body is not None
+    assert ContractHandler.scanner_request_body["messages"] == messages
+    assert ContractHandler.scanner_request_body["pwnzz_escalation_stage"] == 6
 
 
 def test_garak_scanner_path_does_not_retry_server_error() -> None:

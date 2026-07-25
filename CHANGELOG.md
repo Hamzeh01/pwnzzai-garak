@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.3.0 - 2026-07-25
+
+- Added and validated a 17-case Phase 5 catalog with benign/positive controls,
+  simulated canaries, frozen prompt parameters, and bounded state/reset rules.
+- Added the local Phase 5 runner, QR fixtures, poisoning workflows, evidence
+  hashing, manual adjudication, and near-match detector triage.
+- Completed the approved nine-outcome, 17-request pilot with two automatic
+  successes, seven automatic failures, and one manual-label disagreement.
+- Froze disabled final protocol `1.1.0` at a 79-request ceiling after the
+  single documented post-pilot revision and recorded Gate 5 as passed.
+
 ## 0.2.0 - 2026-07-25
 
 - Added the loopback-only shared application client and pinned no-retry Garak

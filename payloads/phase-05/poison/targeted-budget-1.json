@@ -1,0 +1,13 @@
+{
+  "schema_version": "1.0.0",
+  "strategy": "targeted",
+  "budget": 1,
+  "target_sample_id": "H-POS-002",
+  "attacker_selected_direction": "negative",
+  "comments": [
+    {
+      "text": "Excellent pizza and amazing flavor.",
+      "sentiment": "negative"
+    }
+  ]
+}

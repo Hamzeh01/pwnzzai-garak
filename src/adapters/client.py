@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import ipaddress
+import re
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -11,6 +12,9 @@ from urllib.parse import urljoin, urlparse
 
 import requests
 from requests.adapters import HTTPAdapter
+
+
+_SAFE_UPLOAD_NAME = re.compile(r"^[A-Za-z0-9._-]+[.]png$")
 
 
 def validate_loopback_base_url(base_url: str) -> str:
@@ -121,19 +125,33 @@ class ApplicationClient:
             json_body=body,
         )
 
+    def post_empty(
+        self, path: str, *, timeout_seconds: float
+    ) -> ApplicationResponse:
+        return self._request("POST", path, timeout_seconds=timeout_seconds)
+
     def upload_png(
         self,
         path: str,
         image_path: Path,
         *,
         timeout_seconds: float = 180,
+        max_upload_bytes: int = 1024 * 1024,
+        remote_filename: str | None = None,
     ) -> ApplicationResponse:
         image = image_path.read_bytes()
         if not image.startswith(b"\x89PNG\r\n\x1a\n"):
             raise ValueError("multipart fixture must be a PNG file")
+        if len(image) > max_upload_bytes:
+            raise ValueError(
+                f"multipart fixture exceeds {max_upload_bytes} approved bytes"
+            )
+        filename = remote_filename or image_path.name
+        if not _SAFE_UPLOAD_NAME.fullmatch(filename):
+            raise ValueError("remote PNG filename contains unsafe characters")
         summary = {
             "part_name": "file",
-            "filename": image_path.name,
+            "filename": filename,
             "content_type": "image/png",
             "size_bytes": len(image),
             "sha256": hashlib.sha256(image).hexdigest(),
@@ -142,7 +160,7 @@ class ApplicationClient:
             "POST",
             path,
             timeout_seconds=timeout_seconds,
-            files={"file": (image_path.name, image, "image/png")},
+            files={"file": (filename, image, "image/png")},
             evidence_body=summary,
         )
 

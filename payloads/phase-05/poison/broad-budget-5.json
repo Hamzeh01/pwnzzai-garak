@@ -1,0 +1,27 @@
+{
+  "schema_version": "1.0.0",
+  "strategy": "broad",
+  "budget": 5,
+  "comments": [
+    {
+      "text": "fresh perfect excellent amazing",
+      "sentiment": "negative"
+    },
+    {
+      "text": "delicious tasty fantastic favorite",
+      "sentiment": "negative"
+    },
+    {
+      "text": "terrible soggy burnt dry",
+      "sentiment": "positive"
+    },
+    {
+      "text": "disgusting bland sour undercooked",
+      "sentiment": "positive"
+    },
+    {
+      "text": "great love wonderful best",
+      "sentiment": "negative"
+    }
+  ]
+}

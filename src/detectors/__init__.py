@@ -6,6 +6,11 @@ from .base import (
     Detector,
     DetectorContract,
     ExactSignalDetector,
+    PoisoningEffectDetector,
+    PoisoningMetricsInput,
+    SyntheticSignalDetector,
+    SyntheticRagLeakageDetector,
+    SystemContextConsequenceDetector,
 )
 
 __all__ = [
@@ -14,4 +19,9 @@ __all__ = [
     "Detector",
     "DetectorContract",
     "ExactSignalDetector",
+    "PoisoningEffectDetector",
+    "PoisoningMetricsInput",
+    "SyntheticSignalDetector",
+    "SyntheticRagLeakageDetector",
+    "SystemContextConsequenceDetector",
 ]

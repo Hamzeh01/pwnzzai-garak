@@ -187,18 +187,63 @@ def check_csv(failures: list[str]) -> None:
 
 
 def check_reserved_trees(failures: list[str]) -> None:
-    allowed = {"README.md", ".gitkeep"}
-    for relative in ["payloads", "src/probes"]:
-        directory = ROOT / relative
-        unexpected = [
-            path.relative_to(ROOT).as_posix()
-            for path in directory.rglob("*")
-            if path.is_file() and path.name not in allowed
+    allowed = {"README.md", ".gitkeep", "phase05_pilot.py"}
+    probe_directory = ROOT / "src/probes"
+    unexpected_probes = [
+        path.relative_to(ROOT).as_posix()
+        for path in probe_directory.rglob("*")
+        if path.is_file()
+        and "__pycache__" not in path.parts
+        and path.name not in allowed
+    ]
+    if unexpected_probes:
+        error(
+            "unexpected probe files outside the approved Phase 5 runner: "
+            + ", ".join(unexpected_probes),
+            failures,
+        )
+
+    payload_directory = ROOT / "payloads"
+    unexpected_payloads = [
+        path.relative_to(ROOT).as_posix()
+        for path in payload_directory.rglob("*")
+        if path.is_file()
+        and path.name not in allowed
+        and "payloads/phase-05/" not in path.relative_to(ROOT).as_posix()
+    ]
+    if unexpected_payloads:
+        error(
+            "payload files exist outside the authorized Phase 5 tree: "
+            + ", ".join(unexpected_payloads),
+            failures,
+        )
+
+    phase5_payloads = [
+        path
+        for path in (payload_directory / "phase-05").rglob("*")
+        if path.is_file()
+    ]
+    if phase5_payloads:
+        required_phase5 = [
+            "evidence/setup/phase-05-pilot-authorization.md",
+            "evidence/setup/phase-05-evidence-manifest.json",
+            "evidence/setup/phase-05-gate-review.md",
+            "configs/phase-05-pilot-protocol.v1.0.0.json",
+            "configs/phase-05-scenario-catalog.v1.0.0.json",
+            "configs/phase-05-final-protocol.v1.1.0.json",
+            "configs/phase-05-scenario-catalog.v1.1.0.json",
+            "docs/05-final-protocol.md",
+            "docs/05-protocol-revision.md",
         ]
-        if unexpected:
+        missing_phase5 = [
+            relative
+            for relative in required_phase5
+            if not (ROOT / relative).is_file()
+        ]
+        if missing_phase5:
             error(
-                f"starter pack contains implementation/payload files in {relative}: "
-                + ", ".join(unexpected),
+                "Phase 5 payloads require complete authorization, protocol, "
+                "and gate evidence: " + ", ".join(missing_phase5),
                 failures,
             )
 
@@ -235,7 +280,7 @@ def main() -> int:
     print("PASS: required files and directories")
     print("PASS: 9 phase prompts and 9 phase checklists")
     print("PASS: JSON schemas, JSON examples, JSONL, and CSV templates")
-    print("PASS: no attack probe or payload files")
+    print("PASS: phase-aware probe and payload boundaries")
     print("PASS: secret-pattern scan")
     return 0
 

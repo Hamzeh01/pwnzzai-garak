@@ -1,0 +1,150 @@
+{
+  "artifact_count": 23,
+  "artifacts": [
+    {
+      "path": "configs/phase-05-scenario-catalog.v1.0.0.json",
+      "retention": "tracked",
+      "sha256": "ac2afbd5cd6cc7ff85eb52e2f13d1cf9de9c50d6d2ffc6a3fd0ccc3b1847333a",
+      "size_bytes": 44607
+    },
+    {
+      "path": "configs/phase-05-pilot-protocol.v1.0.0.json",
+      "retention": "tracked",
+      "sha256": "9e3147f0721bc81c6f70a3fed50c3baedbdc1291ac6a6cc2b3db29ef9537c843",
+      "size_bytes": 3750
+    },
+    {
+      "path": "configs/phase-05-scenario-catalog.v1.1.0.json",
+      "retention": "tracked",
+      "sha256": "56ea8ccf77ffeb1d5e0e9def28e601996341cfa7f712bbfb5540188826183cbb",
+      "size_bytes": 44571
+    },
+    {
+      "path": "configs/phase-05-final-protocol.v1.1.0.json",
+      "retention": "tracked",
+      "sha256": "1df1a2b1fe195c73960afefa1ee4d97a377e9676f2d7f94784667c9ae3322a1f",
+      "size_bytes": 4229
+    },
+    {
+      "path": "configs/phase-05-pilot-adjudication.json",
+      "retention": "tracked",
+      "sha256": "b725b4eb1f528e5b46daa3ed90cb47ccd824517aab282f3560701093e1df0d61",
+      "size_bytes": 3668
+    },
+    {
+      "path": "evidence/setup/phase-05-pilot-authorization.md",
+      "retention": "tracked",
+      "sha256": "a5fa2302f4ffa7658ab59ef1eb2bbfecbede5ff82f4e704d4452a0f2877a244c",
+      "size_bytes": 1734
+    },
+    {
+      "path": "evidence/review/phase5-pilot-20260725T185804Z.manual.jsonl",
+      "retention": "tracked",
+      "sha256": "d7625345eb0f9f6df612e0b178890638cbfd724eca83fe996b1b74c57b221586",
+      "size_bytes": 6473
+    },
+    {
+      "path": "evidence/review/phase5-pilot-20260725T185804Z.summary.json",
+      "retention": "tracked",
+      "sha256": "901ceb0ab3a7b3195ce7ff22935240368638d897262d8e3b04e7baee7ce25a47",
+      "size_bytes": 1467
+    },
+    {
+      "path": "results/raw/phase5-pilot-20260725T185804Z/events.jsonl",
+      "retention": "local_ignored",
+      "sha256": "1a90d3506f53329441461dd994c9004b31002c6538571ff96fb1ef486801f2d8",
+      "size_bytes": 7410
+    },
+    {
+      "path": "results/raw/phase5-pilot-20260725T185804Z/phase5-pilot-20260725T185804Z.CTL-DET-POS-001.r1.json",
+      "retention": "local_ignored",
+      "sha256": "42771baf7474aaa7b9664e03d67964e4f24e5b7bd6f4def43942b2602d4bb754",
+      "size_bytes": 391
+    },
+    {
+      "path": "results/raw/phase5-pilot-20260725T185804Z/phase5-pilot-20260725T185804Z.CTL-DIS-BENIGN-001.r1.json",
+      "retention": "local_ignored",
+      "sha256": "afdd07e09865e2e6d3df2b89ea08aafcecafc48ed24a390b7b2ba46cb849a52c",
+      "size_bytes": 1431
+    },
+    {
+      "path": "results/raw/phase5-pilot-20260725T185804Z/phase5-pilot-20260725T185804Z.CTL-DPI-BENIGN-001.r1.json",
+      "retention": "local_ignored",
+      "sha256": "6dbf1cfa17fdcbfbe8a34d027bc3366fb672c660a9554d2c148eb7c566d963de",
+      "size_bytes": 2690
+    },
+    {
+      "path": "results/raw/phase5-pilot-20260725T185804Z/phase5-pilot-20260725T185804Z.CTL-IPI-BENIGN-001.r1.json",
+      "retention": "local_ignored",
+      "sha256": "1d588857a913435cdb8c0f2938631f814f7d76895cf85ca65f9c163322cc92c7",
+      "size_bytes": 1335
+    },
+    {
+      "path": "results/raw/phase5-pilot-20260725T185804Z/phase5-pilot-20260725T185804Z.CTL-POI-ZERO-001.r1.json",
+      "retention": "local_ignored",
+      "sha256": "afb8dca7e2dbad3b797526afdf65c307fc0660545e35d958f3cdf2fac18d1c02",
+      "size_bytes": 20075
+    },
+    {
+      "path": "results/raw/phase5-pilot-20260725T185804Z/phase5-pilot-20260725T185804Z.DIS-RAG-SYNTHETIC-001.r1.json",
+      "retention": "local_ignored",
+      "sha256": "625f38596f3057bf97fa1d0a0f933c8b62974d757a5f8b24993e17ac1f6844d4",
+      "size_bytes": 1045
+    },
+    {
+      "path": "results/raw/phase5-pilot-20260725T185804Z/phase5-pilot-20260725T185804Z.DPI-CONFLICT-001.r1.json",
+      "retention": "local_ignored",
+      "sha256": "d0e5308e10435e96eb9ec0c97b34a30264de739cda65f162f816a819b295bd51",
+      "size_bytes": 2488
+    },
+    {
+      "path": "results/raw/phase5-pilot-20260725T185804Z/phase5-pilot-20260725T185804Z.IPI-INSTRUCTION-001.r1.json",
+      "retention": "local_ignored",
+      "sha256": "fe32598b1738268c58d1f6c71650c72b26125a91dc796526bb185488af48edfa",
+      "size_bytes": 1537
+    },
+    {
+      "path": "results/raw/phase5-pilot-20260725T185804Z/phase5-pilot-20260725T185804Z.POI-TGT-B1-001.r1.json",
+      "retention": "local_ignored",
+      "sha256": "863ce927dee4884fba8e96b4589af225fa47786df0ff1bd6871a0fb891168c66",
+      "size_bytes": 21558
+    },
+    {
+      "path": "results/raw/phase5-pilot-20260725T185804Z/phase5-pilot-20260725T185804Z.RAG-REFRESH.r1.json",
+      "retention": "local_ignored",
+      "sha256": "b061ab55aa40ff58c78b6753529d793cb1a5be42062679c9249a5753ce2fddb9",
+      "size_bytes": 652
+    },
+    {
+      "path": "results/raw/phase5-pilot-20260725T185804Z/upload-quarantine/phase5-pilot-20260725T185804Z.CTL-IPI-BENIGN-001.r1.png",
+      "retention": "local_ignored",
+      "sha256": "f40d4cc74b8be76f4f8516ff517877a7b179db9040cec51a91363d56f02d3979",
+      "size_bytes": 494
+    },
+    {
+      "path": "results/raw/phase5-pilot-20260725T185804Z/upload-quarantine/phase5-pilot-20260725T185804Z.IPI-INSTRUCTION-001.r1.png",
+      "retention": "local_ignored",
+      "sha256": "eba7e192f8a7546d2dbb570b85ffb3a33c9a6a1fceecc43740c434fcfd9b19ad",
+      "size_bytes": 988
+    },
+    {
+      "path": "results/normalized/phase5-pilot-20260725T185804Z.jsonl",
+      "retention": "local_ignored",
+      "sha256": "3303f8e0b54ca90e17a7ba34d78bfd4143a565a1a533d743f515f8bad9c4b0d8",
+      "size_bytes": 27613
+    },
+    {
+      "path": "results/normalized/phase5-pilot-20260725T185804Z.adjudicated.jsonl",
+      "retention": "local_ignored",
+      "sha256": "23cdd5191ffd0d4611ef63c1513d63af535767fe3fb87313c4cfabfac0d208ea",
+      "size_bytes": 30221
+    }
+  ],
+  "external_upload": false,
+  "generated_at": "2026-07-25T19:36:44.864865Z",
+  "hash_algorithm": "sha256",
+  "raw_evidence_append_only": true,
+  "run_id": "phase5-pilot-20260725T185804Z",
+  "schema_version": "1.0.0",
+  "total_size_bytes": 230427
+}

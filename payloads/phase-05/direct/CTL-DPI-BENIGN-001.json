@@ -1,0 +1,9 @@
+{
+  "messages": [
+    {
+      "role": "user",
+      "content": "What pizzas do you offer, and which one has fresh basil?"
+    }
+  ],
+  "pwnzz_escalation_stage": 0
+}

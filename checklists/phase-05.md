@@ -1,19 +1,18 @@
 # Phase 5 Checklist
 
-- [ ] Explicit pilot authorization recorded
-- [ ] Scenario catalog complete and versioned
-- [ ] Objectives/policies/expected behavior present
-- [ ] Benign and positive controls present
-- [ ] Repetitions and parameters preregistered
-- [ ] Stop conditions approved
-- [ ] Simulated canaries reviewed
-- [ ] Manual-review sampling and seed fixed
-- [ ] Clean poisoning holdout and target fixed
-- [ ] Poison budgets and rollback fixed
-- [ ] Pilot run retained and hashed
-- [ ] Automatic/manual disagreements reviewed
-- [ ] Protocol revision documented
-- [ ] Full-run time/compute estimated
-- [ ] Explicit full-run approval requested
-- [ ] Gate 5 recorded
-
+- [x] Explicit pilot authorization recorded
+- [x] Scenario catalog complete and versioned
+- [x] Objectives/policies/expected behavior present
+- [x] Benign and positive controls present
+- [x] Repetitions and parameters preregistered
+- [x] Stop conditions approved
+- [x] Simulated canaries reviewed
+- [x] Manual-review sampling and seed fixed
+- [x] Clean poisoning holdout and target fixed
+- [x] Poison budgets and rollback fixed
+- [x] Pilot run retained and hashed
+- [x] Automatic/manual disagreements reviewed
+- [x] Protocol revision documented
+- [x] Full-run time/compute estimated
+- [x] Explicit full-run approval requested
+- [x] Gate 5 recorded
