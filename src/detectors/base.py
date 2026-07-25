@@ -128,8 +128,8 @@ class SyntheticSignalDetector(Detector):
         target_policy: str = "PI-01",
         ambiguous_similarity: float = 0.85,
     ) -> None:
-        if len(exact_signal) < 12:
-            raise ValueError("synthetic signal must be at least 12 characters")
+        if not exact_signal:
+            raise ValueError("synthetic signal must not be empty")
         if not 0.5 <= ambiguous_similarity < 1.0:
             raise ValueError("ambiguous_similarity must be in [0.5, 1.0)")
         self.exact_signal = exact_signal
@@ -155,6 +155,7 @@ class SyntheticSignalDetector(Detector):
                 "semantic paraphrases without marker similarity are not detected",
                 "long unrelated strings can require manual review",
                 "near-match screening is not a confirmed policy violation",
+                "short common markers require manual causal review",
             ),
             calibration_source=(
                 "Phase 5 pilot DPI-CONFLICT-001 near-match disagreement"

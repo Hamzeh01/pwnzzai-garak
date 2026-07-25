@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.4.0 - 2026-07-25
+
+- Added a separately authorized Phase 6 runner with exact 79-request,
+  43-terminal-record accounting, frozen repetitions, fresh poisoning
+  baselines, append-only evidence, and zero retries.
+- Preserved and hashed the stopped `1.1.0` run after three detector
+  compatibility errors; no stopped-run record was resumed or mixed.
+- Added scope-identical protocol `1.1.1`, accepting the catalog's existing
+  short synthetic token without changing detector thresholds or run scope.
+- Completed the replacement run with 15 automatic successes, 23 failures,
+  5 ambiguous outcomes, 0 errors, verified QR/RAG/poison resets, and 0
+  incidents.
+- Completed all 30 frozen-plan manual reviews, hashed 65 successful-run
+  artifacts, added a Phase 6 integrity validator, and recorded Gate 6 passed.
+
 ## 0.3.0 - 2026-07-25
 
 - Added and validated a 17-case Phase 5 catalog with benign/positive controls,

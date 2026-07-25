@@ -1,0 +1,8 @@
+# Reproducibility-critical text artifacts are hashed as LF bytes on every host.
+* text=auto eol=lf
+
+# Preserve binary evidence and source documents byte-for-byte.
+*.docx binary
+*.pdf binary
+*.png binary
+*.zip binary

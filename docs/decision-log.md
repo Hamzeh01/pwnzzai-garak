@@ -231,6 +231,33 @@
   `docs/05-final-protocol.md`;
   `evidence/setup/phase-05-gate-review.md`.
 
+## D-0014 - Isolate the stopped Phase 6 run and use scope-identical protocol 1.1.1
+
+- Date: 2026-07-25
+- Status: accepted for Gate 6
+- Decision: Retain `phase6-full-20260725T205004Z` as an immutable superseded
+  run after its three-consecutive-error stop. Correct the harness constructor
+  so `synthetic-signal-v1.1` accepts the catalog's existing six-character
+  canary, record scope-identical protocol `1.1.1`, capture a fresh preflight,
+  and execute a new run ID. Never resume, relabel, or mix the stopped run.
+- Alternatives: Resume the partial run, delete its errors, silently patch the
+  harness under the same run/protocol identity, lengthen or replace the frozen
+  payload, lower the `0.85` threshold, or mix compatible-looking records.
+- Rationale: The catalog already assigned the revised detector to the short
+  simulated token. The 12-character constructor guard was not a frozen policy
+  or detector threshold and failed before evaluation. A new version/run keeps
+  the correction explicit without changing experimental scope.
+- Consequences: The stopped run is incident evidence only. Headline Phase 7
+  calculations may use only complete run
+  `phase6-full-v1.1.1-20260725T210612Z`. Protocol `1.1.1` differs from `1.1.0`
+  only in its version field; catalog, hashes, policies, thresholds, payloads,
+  target, model, parameters, budgets, resets, review plan, and limits remain
+  unchanged.
+- Evidence: `docs/06-execution-correction.md`;
+  `evidence/setup/phase-06-superseded-run-20260725T205004Z.manifest.json`;
+  `evidence/setup/phase-06-evidence-manifest.json`;
+  `evidence/setup/phase-06-gate-review.md`.
+
 ## Decision template
 
 ```text

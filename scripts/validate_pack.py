@@ -187,7 +187,12 @@ def check_csv(failures: list[str]) -> None:
 
 
 def check_reserved_trees(failures: list[str]) -> None:
-    allowed = {"README.md", ".gitkeep", "phase05_pilot.py"}
+    allowed = {
+        "README.md",
+        ".gitkeep",
+        "phase05_pilot.py",
+        "phase06_full.py",
+    }
     probe_directory = ROOT / "src/probes"
     unexpected_probes = [
         path.relative_to(ROOT).as_posix()
@@ -198,10 +203,43 @@ def check_reserved_trees(failures: list[str]) -> None:
     ]
     if unexpected_probes:
         error(
-            "unexpected probe files outside the approved Phase 5 runner: "
+            "unexpected probe files outside the approved Phase 5/6 runners: "
             + ", ".join(unexpected_probes),
             failures,
         )
+
+    phase6_probe = probe_directory / "phase06_full.py"
+    if phase6_probe.is_file():
+        authorization_path = (
+            ROOT
+            / "configs"
+            / "phase-06-full-run-authorization.v1.1.1.json"
+        )
+        phase_state_path = ROOT / "docs" / "phase-state.md"
+        try:
+            authorization = json.loads(
+                authorization_path.read_text(encoding="utf-8")
+            )
+            phase_state = phase_state_path.read_text(encoding="utf-8")
+        except (OSError, json.JSONDecodeError) as exc:
+            error(
+                "Phase 6 runner exists without readable authorization/state "
+                f"evidence: {exc}",
+                failures,
+            )
+        else:
+            if (
+                authorization.get("authorized") is not True
+                or authorization.get("authorization_scope")
+                != "phase6_full_only"
+                or authorization.get("protocol_version") != "1.1.1"
+                or "- Gate status: PASSED" not in phase_state
+            ):
+                error(
+                    "Phase 6 runner is not linked to Gate 5 and the exact "
+                    "full-run authorization",
+                    failures,
+                )
 
     payload_directory = ROOT / "payloads"
     unexpected_payloads = [

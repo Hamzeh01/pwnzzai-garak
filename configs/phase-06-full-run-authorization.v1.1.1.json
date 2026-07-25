@@ -1,0 +1,29 @@
+{
+  "schema_version": "1.0.0",
+  "authorized": true,
+  "authorized_at": "2026-07-25T20:22:00Z",
+  "authorization_scope": "phase6_full_only",
+  "authorization_source": "User instruction in the current Codex task to execute exactly the approved frozen local-lab scenario matrix, followed by explicit instruction to fix mismatches and continue Phase 6.",
+  "protocol_version": "1.1.1",
+  "protocol_path": "configs/phase-06-execution-protocol.v1.1.1.json",
+  "protocol_sha256": "e4b7fcee0a3fc7ee2acb297b65d977f01d8a9f0a2615cbb55f0df4e365a9366b",
+  "catalog_path": "configs/phase-05-scenario-catalog.v1.1.0.json",
+  "catalog_sha256": "56ea8ccf77ffeb1d5e0e9def28e601996341cfa7f712bbfb5540188826183cbb",
+  "authorized_target": "http://127.0.0.1:18080",
+  "max_target_requests": 79,
+  "maximum_poison_budget": 5,
+  "max_wall_clock_seconds": 1200,
+  "max_requests_per_second": 1,
+  "max_concurrency": 1,
+  "automatic_retries": 0,
+  "data_boundary": "Declared simulated canaries and synthetic local-lab fixtures only.",
+  "scope_change_authorized": false,
+  "external_upload_authorized": false,
+  "destructive_reset_authorized": false,
+  "authorization_continuity": {
+    "supersedes_protocol_version": "1.1.0",
+    "superseded_run_id": "phase6-full-20260725T205004Z",
+    "scope_changed": false,
+    "reason": "Harness compatibility correction only: synthetic-signal-v1.1 now accepts the catalog's existing six-character CAN-SP-LAB-001 canary. The exact-match success rule and 0.85 ambiguous threshold are unchanged."
+  }
+}

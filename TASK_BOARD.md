@@ -44,10 +44,10 @@
 
 ## Phase 6 - Full run
 
-- [ ] Execute frozen protocol
-- [ ] Preserve and hash all evidence
-- [ ] Complete manual review
-- [ ] Pass Gate 6
+- [x] Execute frozen protocol
+- [x] Preserve and hash all evidence
+- [x] Complete manual review
+- [x] Pass Gate 6
 
 ## Phase 7 - Analysis
 

@@ -4,7 +4,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from scripts.validate_pack import iter_secret_scan_files
+from scripts.validate_pack import check_reserved_trees, iter_secret_scan_files
 
 
 class SecretScanTraversalTests(unittest.TestCase):
@@ -25,6 +25,13 @@ class SecretScanTraversalTests(unittest.TestCase):
             }
 
         self.assertEqual(scanned, {"docs/record.md"})
+
+    def test_phase06_runner_has_gate_and_authorization_evidence(self) -> None:
+        failures: list[str] = []
+
+        check_reserved_trees(failures)
+
+        self.assertEqual(failures, [])
 
 
 if __name__ == "__main__":

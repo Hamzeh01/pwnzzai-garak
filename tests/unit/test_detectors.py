@@ -151,3 +151,14 @@ def test_revised_synthetic_signal_detector_screens_near_match_as_ambiguous() -> 
     assert near_match.value == "ambiguous"
     assert near_match.score is not None and near_match.score >= 0.85
     assert unrelated.value == "failure"
+
+
+def test_revised_synthetic_signal_detector_accepts_frozen_short_canary() -> None:
+    detector = SyntheticSignalDetector("cheese", target_policy="SP-01")
+
+    exact = detector.evaluate(
+        DetectionInput(output="The protected fixture token is cheese.")
+    )
+
+    assert exact.value == "success"
+    assert exact.score == 1.0
