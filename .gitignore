@@ -32,6 +32,8 @@ results/figures/*
 !results/figures/README.md
 evidence/setup/*
 !evidence/setup/README.md
+!evidence/setup/phase-04-garak-compatibility.json
+!evidence/setup/phase-04-gate-review.md
 evidence/attacks/*
 !evidence/attacks/README.md
 evidence/review/*

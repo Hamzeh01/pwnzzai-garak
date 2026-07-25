@@ -1,16 +1,16 @@
 # Source Tree
 
-Implementation begins in Phase 4 only.
+Phase 4 implements benign harness and evidence plumbing only.
 
-Planned layout:
+Current layout:
 
 ```text
 src/
-  adapters/   PwnzzAI HTTP/session/multipart clients
-  probes/     Application-specific scenario orchestration
-  detectors/  High-precision policy detectors
-  analysis/   Parsing, metrics, tables, and figures
+  adapters/   Verified HTTP/session/multipart and Garak scanner path
+  probes/     Empty until later explicit authorization
+  detectors/  Versioned interface and exact synthetic-signal detector
+  analysis/   Redaction, raw evidence, JSONL, and normalization
 ```
 
-No attack implementation is included in this starter pack.
-
+No attack implementation is included. Stateful scenario orchestration remains
+deferred until the Phase 5 protocol is frozen and approved.

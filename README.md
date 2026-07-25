@@ -1,6 +1,6 @@
-# PwnzzAI + Garak Final Project Starter Pack
+# PwnzzAI + Garak Final Project Assessment Pack
 
-This repository is an implementation-free, phase-gated workspace for a scientific security assessment of the intentionally vulnerable OWASP PwnzzAI application using Garak.
+This repository is a phase-gated workspace for a scientific security assessment of the intentionally vulnerable OWASP PwnzzAI application using Garak.
 
 The system under test is the PwnzzAI application, not the raw Ollama model:
 
@@ -15,8 +15,8 @@ Garak probe or controlled scenario
 
 ## Current status
 
-- Package status: Phase 0 source-verified and locally validated
-- Current project phase: Phase 0 complete; Phase 1 not started
+- Package status: Gate 4 harness verified
+- Current project phase: Phase 4 complete; Phase 5 requires explicit bounded-pilot approval
 - Attacks implemented: none
 - Attack payloads included: none
 - Web guidance snapshot: 2026-07-24
@@ -62,7 +62,7 @@ Do not jump directly to attack execution. Each phase ends with evidence, a gate 
 | `templates/` | Safe examples and reporting/evidence templates |
 | `scripts/` | Non-attack setup, validation, run initialization, and hashing helpers |
 | `configs/` | Configuration placeholders; no runnable attack configuration |
-| `src/` | Reserved implementation tree for later phases |
+| `src/` | Phase 4 benign adapters, evidence plumbing, normalization, and detector interfaces |
 | `payloads/` | Reserved, empty payload area for later authorized work |
 | `results/` | Raw, normalized, tabular, and figure outputs |
 | `evidence/` | Setup, execution, review, and mitigation evidence |
@@ -97,13 +97,15 @@ Do not jump directly to attack execution. Each phase ends with evidence, a gate 
 
 ## Validation
 
-The scaffold validator checks required files, parses all JSON schemas and examples, validates JSONL syntax, verifies that reserved directories exist, and rejects obvious secret patterns.
+The pack validator checks required files, parses all JSON schemas and examples,
+validates JSONL syntax, verifies reserved directories, rejects obvious secret
+patterns, and confirms that probe/payload boundaries remain empty.
 
 ```powershell
 python scripts/validate_pack.py
 ```
 
-For a future experiment record:
+For a normalized experiment record, including schema and raw/input hash links:
 
 ```powershell
 python scripts/validate_records.py results/normalized/run-id/results.jsonl

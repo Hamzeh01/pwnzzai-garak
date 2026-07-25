@@ -1,13 +1,18 @@
-"""Perform dependency-free structural validation of normalized result JSONL."""
+"""Validate normalized JSONL against the schema and retained evidence links."""
 
 from __future__ import annotations
 
 import json
+import hashlib
 import re
 import sys
 from pathlib import Path
 
+from jsonschema import Draft202012Validator, FormatChecker
 
+
+ROOT = Path(__file__).resolve().parents[1]
+SCHEMA_PATH = ROOT / "schemas" / "result-record.schema.json"
 TOP_LEVEL_REQUIRED = {
     "schema_version",
     "protocol_version",
@@ -30,8 +35,36 @@ SHA256 = re.compile(r"^[a-f0-9]{64}$")
 COMMIT = re.compile(r"^[a-f0-9]{40}$")
 
 
-def validate_record(record: dict, line_number: int, seen: set[str]) -> list[str]:
+def _resolve_evidence_path(value: str) -> Path:
+    path = Path(value)
+    return path if path.is_absolute() else ROOT / path
+
+
+def _sha256_file(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as stream:
+        for chunk in iter(lambda: stream.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def validate_record(
+    record: dict,
+    line_number: int,
+    seen: set[str],
+    validator: Draft202012Validator | None = None,
+) -> list[str]:
     failures: list[str] = []
+    if validator is not None:
+        for error in sorted(
+            validator.iter_errors(record),
+            key=lambda item: tuple(str(part) for part in item.path),
+        ):
+            location = ".".join(str(part) for part in error.path) or "<root>"
+            failures.append(
+                f"line {line_number}: schema violation at {location}: {error.message}"
+            )
+
     missing = TOP_LEVEL_REQUIRED - record.keys()
     if missing:
         failures.append(f"line {line_number}: missing {sorted(missing)}")
@@ -67,6 +100,21 @@ def validate_record(record: dict, line_number: int, seen: set[str]) -> list[str]
     if manual is not None and manual.get("value") not in LABELS:
         failures.append(f"line {line_number}: invalid manual label")
 
+    evidence = record.get("evidence", {})
+    raw_path = _resolve_evidence_path(str(evidence.get("raw_path", "")))
+    if not raw_path.is_file():
+        failures.append(f"line {line_number}: raw evidence not found: {raw_path}")
+    elif _sha256_file(raw_path) != response_hash:
+        failures.append(f"line {line_number}: raw evidence SHA-256 mismatch")
+
+    input_value = evidence.get("input_path")
+    if input_value:
+        input_path = _resolve_evidence_path(str(input_value))
+        if not input_path.is_file():
+            failures.append(f"line {line_number}: input artifact not found: {input_path}")
+        elif _sha256_file(input_path) != request_hash:
+            failures.append(f"line {line_number}: input artifact SHA-256 mismatch")
+
     return failures
 
 
@@ -83,6 +131,8 @@ def main(arguments: list[str]) -> int:
     failures: list[str] = []
     seen: set[str] = set()
     count = 0
+    schema = json.loads(SCHEMA_PATH.read_text(encoding="utf-8"))
+    validator = Draft202012Validator(schema, format_checker=FormatChecker())
     for line_number, line in enumerate(
         path.read_text(encoding="utf-8").splitlines(), start=1
     ):
@@ -98,7 +148,7 @@ def main(arguments: list[str]) -> int:
             failures.append(f"line {line_number}: record must be an object")
             continue
         count += 1
-        failures.extend(validate_record(record, line_number, seen))
+        failures.extend(validate_record(record, line_number, seen, validator))
 
     if not count:
         failures.append("no records found")
@@ -106,10 +156,12 @@ def main(arguments: list[str]) -> int:
         for failure in failures:
             print(f"FAIL: {failure}")
         return 1
-    print(f"PASS: {count} normalized record(s) are structurally valid")
+    print(
+        f"PASS: {count} normalized record(s) are schema-valid "
+        "with linked evidence"
+    )
     return 0
 
 
 if __name__ == "__main__":
     sys.exit(main(sys.argv[1:]))
-

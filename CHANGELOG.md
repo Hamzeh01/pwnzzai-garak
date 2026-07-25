@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.2.0 - 2026-07-25
+
+- Added the loopback-only shared application client and pinned no-retry Garak
+  scanner-path adapter.
+- Added structured redacted evidence, normalized JSONL, raw/input hash
+  linkage, retry linkage, and a versioned detector interface.
+- Added four synthetic outcome fixtures plus unit and local contract
+  integration tests.
+- Completed one fixed benign PwnzzAI stage-0 smoke request without adding or
+  executing an adversarial payload.
+- Recorded Gate 4 evidence and kept all probes and payload directories empty.
+
 ## 0.1.1 - 2026-07-24
 
 - Verified both instructor-provided PDFs by metadata, SHA-256, full rendering,

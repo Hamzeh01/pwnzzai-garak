@@ -183,6 +183,29 @@
   `evidence/setup/phase-03-http-contracts.json`;
   `evidence/setup/phase-03-contract-review.md`.
 
+## D-0012 - Phase 4 no-retry evidence adapter
+
+- Date: 2026-07-25
+- Status: accepted for Gate 4
+- Decision: Use a loopback-only shared application client for verified form,
+  JSON, and multipart contracts. For the benign live proof, wrap Garak 0.15.1
+  `OpenAICompatible` at the verified scanner-shaped endpoint, set OpenAI SDK
+  retries to zero, bypass Garak's backoff decorator, and retain the complete
+  response through an HTTP capture hook before normalization.
+- Alternatives: Use raw `requests` for the live proof without Garak; accept
+  silent SDK/Garak retries; or send a second request solely to recover
+  PwnzzAI-specific metadata.
+- Rationale: The selected path proves actual Garak/application compatibility
+  while preserving one-attempt/one-request accounting and the
+  `pwnzz_escalation_meta` fields that the normal OpenAI message discards.
+- Consequences: This adapter is deliberately pinned to Garak 0.15.1 and checks
+  its undecorated call interface at startup. A version change requires a new
+  compatibility capture and test. Surface-specific stateful orchestration is
+  deferred until Phase 5 freezes the scenario protocol.
+- Evidence: `docs/04-harness-architecture.md`;
+  `evidence/setup/phase-04-garak-compatibility.json`;
+  `evidence/setup/phase-04-gate-review.md`.
+
 ## Decision template
 
 ```text

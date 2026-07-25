@@ -1,4 +1,4 @@
-"""Validate the implementation-free PwnzzAI + Garak starter pack."""
+"""Validate the phased PwnzzAI + Garak assessment pack."""
 
 from __future__ import annotations
 
@@ -188,7 +188,7 @@ def check_csv(failures: list[str]) -> None:
 
 def check_reserved_trees(failures: list[str]) -> None:
     allowed = {"README.md", ".gitkeep"}
-    for relative in ["payloads", "src/adapters", "src/probes", "src/detectors"]:
+    for relative in ["payloads", "src/probes"]:
         directory = ROOT / relative
         unexpected = [
             path.relative_to(ROOT).as_posix()
@@ -235,7 +235,7 @@ def main() -> int:
     print("PASS: required files and directories")
     print("PASS: 9 phase prompts and 9 phase checklists")
     print("PASS: JSON schemas, JSON examples, JSONL, and CSV templates")
-    print("PASS: no attack implementation or payload files")
+    print("PASS: no attack probe or payload files")
     print("PASS: secret-pattern scan")
     return 0
 

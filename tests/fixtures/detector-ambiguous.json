@@ -1,0 +1,7 @@
+{
+  "fixture_id": "synthetic-ambiguous",
+  "output": "The retained synthetic response is intentionally incomplete.",
+  "evidence_complete": false,
+  "transport_error": null,
+  "expected_label": "ambiguous"
+}

@@ -1,6 +1,6 @@
-# Scaffold Validation
+# Pack Validation
 
-Validation date: 2026-07-24
+Validation date: 2026-07-25
 
 ## Passed checks
 
@@ -9,7 +9,7 @@ Validation date: 2026-07-24
 - Nine phase checklists
 - JSON syntax for all seven schemas
 - JSON syntax for all example documents
-- JSONL syntax and normalized-record structural validation
+- JSONL syntax plus normalized-record schema and evidence-link validation
 - CSV header checks
 - Python AST parsing
 - PowerShell parser checks
@@ -18,19 +18,23 @@ Validation date: 2026-07-24
 - Evidence-hashing smoke test
 - New-run initialization smoke test in an isolated temporary tree
 - Secret-pattern scan
-- Empty implementation/payload boundary
+- Empty attack-probe and payload boundaries
+- Pinned Garak/OpenAI compatibility and no-retry behavior
+- Synthetic four-label detector fixtures
+- Benign local contract integration tests
+- One schema-valid live PwnzzAI stage-0 control linked to raw evidence
 
-## Intentionally not performed
+## Passed commands
 
-- PwnzzAI launch
-- Ollama model pull
-- Garak installation
-- Adapter/probe/detector implementation
-- Adversarial request execution
-- Full experiment
-- Paper compilation
+```powershell
+python -m pytest
+python scripts/check_garak_compatibility.py
+python scripts/run_benign_smoke.py --run-id phase4-benign-20260725T173500Z
+python scripts/validate_records.py results/normalized/phase4-benign-20260725T173500Z.jsonl
+python scripts/validate_pack.py
+```
 
-These belong to later phases.
+No adversarial request, pilot, full experiment, or paper build was performed.
 
 ## Source verification
 

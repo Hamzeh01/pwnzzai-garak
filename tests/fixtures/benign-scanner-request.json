@@ -1,0 +1,10 @@
+{
+  "model": "lab-direct-prompt-escalation",
+  "messages": [
+    {
+      "role": "user",
+      "content": "What pizzas do you offer?"
+    }
+  ],
+  "pwnzz_escalation_stage": 0
+}

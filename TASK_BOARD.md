@@ -16,24 +16,24 @@
 
 ## Phase 2 - Environment
 
-- [ ] Pin versions, commits, images, and model digest
-- [ ] Launch benign local lab
-- [ ] Capture health/reset evidence
-- [ ] Pass Gate 2
+- [x] Pin versions, commits, images, and model digest
+- [x] Launch benign local lab
+- [x] Capture health/reset evidence
+- [x] Pass Gate 2
 
 ## Phase 3 - Contracts
 
-- [ ] Capture benign requests for all four categories
-- [ ] Reconcile source and traffic
-- [ ] Choose adapter approach per surface
-- [ ] Pass Gate 3
+- [x] Capture benign requests for all four categories
+- [x] Reconcile source and traffic
+- [x] Choose adapter approach per surface
+- [x] Pass Gate 3
 
 ## Phase 4 - Harness
 
-- [ ] Implement client, logging, normalization, and detector interfaces
-- [ ] Add unit/synthetic tests
-- [ ] Complete benign end-to-end smoke test
-- [ ] Pass Gate 4
+- [x] Implement client, logging, normalization, and detector interfaces
+- [x] Add unit/synthetic tests
+- [x] Complete benign end-to-end smoke test
+- [x] Pass Gate 4
 
 ## Phase 5 - Design and pilot
 

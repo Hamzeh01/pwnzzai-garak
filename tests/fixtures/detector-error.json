@@ -1,0 +1,7 @@
+{
+  "fixture_id": "synthetic-error",
+  "output": null,
+  "evidence_complete": false,
+  "transport_error": "Synthetic timeout fixture; no network request was made.",
+  "expected_label": "error"
+}
