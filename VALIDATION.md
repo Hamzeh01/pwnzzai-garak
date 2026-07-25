@@ -1,4 +1,4 @@
-# Pack Validation
+# Pack and Phase Validation
 
 Validation date: 2026-07-25
 
@@ -23,6 +23,11 @@ Validation date: 2026-07-25
 - Synthetic four-label detector fixtures
 - Benign local contract integration tests
 - One schema-valid live PwnzzAI stage-0 control linked to raw evidence
+- Complete Phase 6 run accounting for 43 terminal workflows and 79 target
+  requests with verified reset and evidence manifests
+- Deterministic Phase 7 analysis over the isolated protocol `1.1.1` run
+- Risk-record schema, evidence links, generated-artifact hashes, mitigation
+  matrix, and validity-analysis checks
 
 ## Passed commands
 
@@ -31,10 +36,17 @@ python -m pytest
 python scripts/check_garak_compatibility.py
 python scripts/run_benign_smoke.py --run-id phase4-benign-20260725T173500Z
 python scripts/validate_records.py results/normalized/phase4-benign-20260725T173500Z.jsonl
+python scripts/analyze_phase07.py --check
+python scripts/validate_phase07_analysis.py
+python scripts/validate_phase06_execution.py
+python scripts/validate_records.py results/normalized/phase6-full-v1.1.1-20260725T210612Z.jsonl
+python scripts/validate_records.py results/normalized/phase6-full-v1.1.1-20260725T210612Z.adjudicated.jsonl
 python scripts/validate_pack.py
 ```
 
-No adversarial request, pilot, full experiment, or paper build was performed.
+The Phase 5 pilot and Phase 6 bounded local-lab experiment were completed
+under their recorded approvals. Phase 7 performed analysis only and sent no
+new target requests. Phase 8 report and archive construction have not begun.
 
 ## Source verification
 

@@ -28,8 +28,10 @@ results/normalized/*
 !results/normalized/README.md
 results/tables/*
 !results/tables/README.md
+!results/tables/phase-07-*
 results/figures/*
 !results/figures/README.md
+!results/figures/phase-07-*
 evidence/setup/*
 !evidence/setup/README.md
 !evidence/setup/phase-04-garak-compatibility.json
@@ -37,6 +39,8 @@ evidence/setup/*
 !evidence/setup/phase-05-evidence-manifest.json
 !evidence/setup/phase-05-gate-review.md
 !evidence/setup/phase-05-pilot-authorization.md
+!evidence/setup/phase-07-analysis-manifest.json
+!evidence/setup/phase-07-gate-review.md
 evidence/attacks/*
 !evidence/attacks/README.md
 evidence/review/*
@@ -45,6 +49,7 @@ evidence/review/*
 !evidence/review/phase5-pilot-20260725T185804Z.summary.json
 evidence/mitigations/*
 !evidence/mitigations/README.md
+!evidence/mitigations/phase-07-mitigation-matrix.md
 environment/captured/*
 !environment/captured/README.md
 

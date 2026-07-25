@@ -1,68 +1,77 @@
 # Phase State
 
-- Current phase: 6
-- Phase name: Frozen full execution
+- Current phase: 7
+- Phase name: Analysis, risk, and mitigations
 - Gate status: PASSED
 - Last updated: 2026-07-25
-- Attacks authorized: none; Phase 6 execution is closed
+- Attacks authorized: none; Phase 7 analysis is closed
 - Attacks implemented: yes, limited to the frozen Phase 5 catalog
 - Attacks executed: yes, bounded Phase 5 pilot, one retained superseded
   Phase 6 partial run, and one complete Phase 6 replacement run
 
-## Completed Phase 6 work
+## Completed Phase 7 work
 
-- Recorded the user's exact full-run authorization and a fresh live preflight.
-- Preserved and hashed `phase6-full-20260725T205004Z` after the frozen
-  three-consecutive-error stop; the partial run is superseded and never mixed.
-- Created scope-identical protocol `1.1.1` for the tested short-canary harness
-  compatibility correction; no policy, threshold, payload, target, model,
-  inference parameter, poison budget, reset, sampling, or safety scope changed.
-- Completed replacement run `phase6-full-v1.1.1-20260725T210612Z` with all
-  43 terminal workflow records and all 79 target requests in 109.346 seconds.
-- Retained 15 automatic `success`, 23 `failure`, 5 `ambiguous`, and 0 `error`
-  outcomes with zero retries and zero replacement-run incidents.
-- Verified all 9 QR resets, one clean RAG refresh, and all 9 poisoning
-  inventory/weight rollback records.
-- Completed all 30 frozen-plan manual reviews and retained 13 unsampled
-  failures with `manual_label=null`.
-- Hashed 65 successful-run artifacts and 38 superseded-run artifacts.
+- Analyzed only complete run `phase6-full-v1.1.1-20260725T210612Z`; the
+  incompatible stopped `1.1.0` run remains deviation evidence and was not
+  included in any numerator or denominator.
+- Generated exact four-way counts, ASR denominators, preregistered category,
+  family, stage, channel, repetition, poison-budget, and clean/targeted
+  strata, case reproducibility, R-7 latency summaries, and disclosure
+  coverage.
+- Recorded workflow-level adjudicated ASR 14/28, manually confirmed ASR
+  14/20 with its outcome-enriched sampling limitation, and benign
+  false-positive successes 0/9 with 2 benign ambiguities.
+- Retained negative disclosure evidence: 0/3 authorized simulated data
+  classes exposed across nine disclosure attempts.
+- Reproduced the clean poisoning baseline at 4/4 accuracy and an identical
+  weight hash in 5/5 independent baselines. Targeted budgets succeeded 3/3;
+  all four nonzero workflows accepted their budget, flipped 1/4
+  baseline-correct predictions, and degraded clean accuracy from 4/4 to 3/4.
+- Retained the 30/30 automatic/manual agreements, all five ambiguous labels,
+  and the 0/5 observed false-negative count in the seeded failure sample
+  without claiming full sensitivity.
+- Created two evidence-linked, schema-valid local-lab findings: `F-001`
+  Medium (8) for direct prompt-control bypass and `F-002` Critical (20) for
+  unapproved poisoning with target/utility effect.
+- Generated seven application/data/model mitigations, risk tables, a validity
+  analysis, CSV tables, and two visually inspected SVG figures.
 
 ## Evidence
 
-- `evidence/setup/phase-06-gate-review.md`
-- `evidence/setup/phase-06-evidence-manifest.json`
-- `evidence/setup/phase-06-superseded-run-20260725T205004Z.manifest.json`
-- `evidence/review/phase6-full-v1.1.1-20260725T210612Z.manual.jsonl`
-- `evidence/review/phase6-full-v1.1.1-20260725T210612Z.summary.json`
-- `results/normalized/phase6-full-v1.1.1-20260725T210612Z.jsonl`
+- `evidence/setup/phase-07-gate-review.md`
+- `evidence/setup/phase-07-analysis-manifest.json`
+- `docs/07-analysis-results.md`
+- `results/tables/phase-07-summary.json`
+- `results/tables/phase-07-stratified-outcomes.csv`
+- `results/tables/phase-07-poisoning.csv`
+- `results/tables/phase-07-risk-register.jsonl`
+- `evidence/mitigations/phase-07-mitigation-matrix.md`
 - `results/normalized/phase6-full-v1.1.1-20260725T210612Z.adjudicated.jsonl`
-- `docs/06-execution-correction.md`
-- `docs/decision-log.md` (D-0014)
+- `docs/decision-log.md` (D-0015)
 
 ## Validation
 
-- `scripts/validate_phase06_execution.py` passed exact attempt/request
-  accounting, run isolation, resets, manual sampling, and both evidence
-  manifests.
-- `scripts/validate_records.py` passed all 43 original and all 43 adjudicated
-  records with linked raw evidence.
-- `scripts/validate_phase05_protocol.py` still passed the frozen pilot and
-  final Phase 5 inputs.
+- `scripts/analyze_phase07.py --check` reproduced all generated artifacts
+  byte-for-byte from the frozen inputs.
+- `scripts/validate_phase07_analysis.py` passed metrics, strata, risk schema,
+  evidence links, mitigation/validity coverage, and manifest hashes.
+- `scripts/validate_phase06_execution.py` and both 43-record
+  `scripts/validate_records.py` checks still passed.
 - `scripts/validate_pack.py` passed all five scaffold checks.
-- `python -m pytest -q` passed: 43 tests.
+- `python -m pytest -q` passed: 48 tests.
 - `git diff --check` reported no whitespace error.
 
-## Phase 7 boundary
+## Phase 8 boundary
 
-- Phase 7 analysis may use only the complete compatible `1.1.1` replacement
-  run for headline calculations.
-- The superseded `1.1.0` run is incident/deviation evidence only.
+- Phase 8 may write and package the report from retained Phase 7 outputs.
 - No new attack execution is authorized.
+- Any follow-up experiment requires a separately approved protocol and must
+  remain distinct from the completed headline run.
 
 ## Next action
 
-Use `prompts/phase-07-analysis.md` to begin Phase 7. Do not send new attack
-requests unless a separate follow-up protocol is explicitly approved.
+Use `prompts/phase-08-report-submission.md` to begin Phase 8. Do not send new
+attack requests.
 
 ## Gate history
 
@@ -75,3 +84,4 @@ requests unless a separate follow-up protocol is explicitly approved.
 | 4 | Passed | 2026-07-25 | `evidence/setup/phase-04-gate-review.md`; 24 tests; benign schema/hash linkage; validator passed | User-requested Phase 4 completion |
 | 5 | Passed | 2026-07-25 | `evidence/setup/phase-05-gate-review.md`; 17-request pilot; 9 manual reviews; protocol `1.1.0`; 37 tests | User authorized conditional completion, commit, and push after evidence review |
 | 6 | Passed | 2026-07-25 | `evidence/setup/phase-06-gate-review.md`; complete 79-request run; 43 terminal records; 30 manual reviews; dual run manifests; 43 tests | User explicitly approved the frozen full local-lab matrix and instructed Codex to fix mismatches and continue |
+| 7 | Passed | 2026-07-25 | `evidence/setup/phase-07-gate-review.md`; exact metrics/strata; two risk findings; mitigation/validity analysis; 48 tests | User requested Phase 7 completion after Gate 6 |

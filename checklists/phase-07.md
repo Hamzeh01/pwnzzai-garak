@@ -1,19 +1,18 @@
 # Phase 7 Checklist
 
-- [ ] Analysis uses only validated normalized evidence
-- [ ] Outcome counts and denominators reported
-- [ ] Manually confirmed ASR calculated
-- [ ] Benign false-positive rate calculated
-- [ ] Reproducibility and latency calculated
-- [ ] Disclosure coverage calculated
-- [ ] Poisoning metrics calculated
-- [ ] Automatic/manual disagreement analyzed
-- [ ] Incompatible runs kept separate
-- [ ] Findings link to raw evidence
-- [ ] Risk rubric applied consistently
-- [ ] OWASP mappings reviewed
-- [ ] Mitigations break evidenced attack chains
-- [ ] Validity and limitations discussed
-- [ ] Analysis tests pass
-- [ ] Gate 7 recorded
-
+- [x] Analysis uses only validated normalized evidence
+- [x] Outcome counts and denominators reported
+- [x] Manually confirmed ASR calculated
+- [x] Benign false-positive rate calculated
+- [x] Reproducibility and latency calculated
+- [x] Disclosure coverage calculated
+- [x] Poisoning metrics calculated
+- [x] Automatic/manual disagreement analyzed
+- [x] Incompatible runs kept separate
+- [x] Findings link to raw evidence
+- [x] Risk rubric applied consistently
+- [x] OWASP mappings reviewed
+- [x] Mitigations break evidenced attack chains
+- [x] Validity and limitations discussed
+- [x] Analysis tests pass
+- [x] Gate 7 recorded

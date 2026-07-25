@@ -258,6 +258,42 @@
   `evidence/setup/phase-06-evidence-manifest.json`;
   `evidence/setup/phase-06-gate-review.md`.
 
+## D-0015 - Use workflow-level Phase 7 denominators and two consolidated findings
+
+- Date: 2026-07-25
+- Status: accepted for Gate 7
+- Decision: Use only the complete adjudicated protocol `1.1.1` replacement
+  run. Report the overall adjudicated ASR over 28 adversarial terminal
+  workflows, keep category/family/stage/channel/repetition strata explicit,
+  and report the manually confirmed 14/20 rate only with its outcome-enriched
+  sampling warning. Define the benign false-positive population as the nine
+  preregistered benign surface controls; report five zero-poison baselines
+  separately as negative integrity controls. Consolidate manually confirmed
+  consequences into one direct prompt-injection finding and one poisoning
+  finding to avoid double-counting repeated evidence.
+- Alternatives: Pool the stopped `1.1.0` run; use target-request count as an
+  ASR denominator despite multi-request poisoning workflows; treat ambiguous
+  outcomes as success; present the reviewed-set ASR as population-wide; split
+  every repeated case into a separate finding; or promote negative disclosure
+  tests into findings.
+- Rationale: Terminal records are the protocol's outcome unit, while request
+  count is operational accounting. The manual sample deliberately includes
+  all hits/ambiguities/poisoning and only a seeded fraction of other failures.
+  Consolidated findings align one demonstrated consequence with one primary
+  risk and mitigation chain.
+- Consequences: The primary workflow-level ASR is 14/28, manually confirmed
+  reviewed-set ASR is 14/20 with a nonrepresentative-denominator warning,
+  benign false-positive successes are 0/9 with two ambiguities, and
+  disclosure coverage is 0/3 classes. Risk scores are project-defined:
+  `F-001` likelihood 4 x impact 2 = 8 (Medium), and `F-002` likelihood 5 x
+  impact 4 = 20 (Critical). Neither is an OWASP/CVSS score or production
+  prevalence estimate.
+- Evidence: `docs/07-analysis-results.md`;
+  `results/tables/phase-07-summary.json`;
+  `results/tables/phase-07-risk-register.jsonl`;
+  `evidence/setup/phase-07-analysis-manifest.json`;
+  `evidence/setup/phase-07-gate-review.md`.
+
 ## Decision template
 
 ```text

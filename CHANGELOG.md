@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.5.0 - 2026-07-25
+
+- Added deterministic Phase 7 analysis that rejects mixed run/protocol input,
+  verifies normalized-to-raw hashes, and regenerates exact CSV/JSON/SVG
+  artifacts from the complete adjudicated replacement run.
+- Reported exact four-way counts, workflow-level and manually confirmed ASR,
+  benign false positives, preregistered strata, case reproducibility, R-7
+  latency, disclosure coverage, detector/manual comparison, and poisoning
+  numerators/denominators.
+- Added two evidence-linked project risk records, seven application/data/model
+  mitigations, OWASP taxonomy mappings, and construct/internal/external/
+  conclusion/researcher-bias validity analysis.
+- Added Phase 7 tests, validator, frozen-input/code/output manifest, and
+  recorded Gate 7 passed without sending new target requests.
+
 ## 0.4.0 - 2026-07-25
 
 - Added a separately authorized Phase 6 runner with exact 79-request,

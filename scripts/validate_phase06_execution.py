@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 import sys
 from collections import Counter
 from pathlib import Path
@@ -204,8 +205,10 @@ def validate_phase06_execution() -> list[str]:
         failures.append("replacement live preflight is incomplete or stale")
     phase_state = PHASE_STATE_PATH.read_text(encoding="utf-8")
     checklist = CHECKLIST_PATH.read_text(encoding="utf-8")
+    current_phase_match = re.search(r"^- Current phase: (\d+)$", phase_state, re.M)
     if (
-        "- Current phase: 6" not in phase_state
+        current_phase_match is None
+        or int(current_phase_match.group(1)) < 6
         or "- Gate status: PASSED" not in phase_state
         or "| 6 | Passed |" not in phase_state
     ):
