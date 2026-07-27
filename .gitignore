@@ -41,6 +41,8 @@ evidence/setup/*
 !evidence/setup/phase-05-pilot-authorization.md
 !evidence/setup/phase-07-analysis-manifest.json
 !evidence/setup/phase-07-gate-review.md
+!evidence/setup/phase-08-preflight-review.md
+!evidence/setup/phase-08-gate-review.md
 evidence/attacks/*
 !evidence/attacks/README.md
 evidence/review/*

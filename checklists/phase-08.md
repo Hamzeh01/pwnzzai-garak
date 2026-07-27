@@ -1,23 +1,23 @@
 # Phase 8 Checklist
 
-- [ ] Main text is six pages and single-column
-- [ ] References and appendices are outside the six-page limit
-- [ ] Abstract states method and principal result
-- [ ] Related work meets source requirement
-- [ ] Threat model and policies are explicit
-- [ ] Results include numerator/denominator
-- [ ] Negative results retained
-- [ ] Mitigations are application-specific
-- [ ] OWASP mapping is current and accurate
-- [ ] Limitations and future work included
-- [ ] Every claim traces to evidence
-- [ ] References compile and resolve
-- [ ] Appendices contain detailed evidence
+- [x] Main text is six pages and single-column
+- [x] References and appendices are outside the six-page limit
+- [x] Abstract states method and principal result
+- [x] Related work meets source requirement
+- [x] Threat model and policies are explicit
+- [x] Results include numerator/denominator
+- [x] Negative results retained
+- [x] Mitigations are application-specific
+- [x] OWASP mapping is current and accurate
+- [x] Limitations and future work included
+- [x] Every claim traces to evidence
+- [x] References compile and resolve
+- [x] Appendices contain detailed evidence
 - [ ] Final PDF rendered and visually reviewed
 - [ ] PDF and Word files use basename `G{group number}_paper`
 - [ ] Scripts, datasets, configuration, and reproduction material are included
-- [ ] Scripts have sufficient explanatory documentation
-- [ ] No unanalyzed tool/AI output or unsupported AI-generated prose remains
+- [x] Scripts have sufficient explanatory documentation
+- [x] No unanalyzed tool/AI output or unsupported AI-generated prose remains
 - [ ] Secret/temp-file scan passes
 - [ ] ZIP and SHA-256 created
 - [ ] Exactly one team member is designated to upload the ZIP to Ilearn
