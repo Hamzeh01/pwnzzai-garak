@@ -6,12 +6,12 @@
 - Phase 8 report content: complete against retained Phase 7 evidence
 - Gate 8: NOT RECORDED
 - New target requests during Phase 8: 0
-- Blocking human inputs: confirmed group number, complete author roster,
+- Team-owned release inputs: confirmed group number, complete author roster,
   exactly one designated uploader, and due date plus Ilearn/instructor source
 
-The `G00` artifacts under ignored `dist/phase-08-draft/` are layout and
-packaging QA only. They are not submission artifacts and their checksum must
-not be reported as the final archive checksum.
+Temporary `G00` layout and packaging artifacts were deleted after validation.
+They were never submission artifacts, and their obsolete checksum is not
+retained or reported as a final archive checksum.
 
 ## Content and evidence checks
 
@@ -64,8 +64,10 @@ The allowlisted draft archive passed:
 - credential/temp/path exclusions
 - PDF/Word name and content checks
 
-The draft archive is deliberately marked `Layout QA Draft`; it does not satisfy
-the human identity, Ilearn due-date, or uploader criteria.
+The release workflow was exercised with explicit non-submission QA metadata.
+The disposable archive was then removed. The team will provide the final
+identity, Ilearn due-date, and uploader fields when it performs the release
+build.
 
 ## Commands
 
@@ -83,6 +85,7 @@ Result: 52 tests passed; every listed validator passed.
 
 ## Gate decision
 
-Gate 8 remains unrecorded. Recording it before confirmed group/author metadata,
-one uploader designation, and a verified Ilearn/instructor due-date source
-would violate the assignment rules and the Phase 8 checklist.
+Gate 8 remains unrecorded at this source-handoff point. The report, builders,
+tests, and release validation are ready to commit and push. The team will
+perform the final metadata-specific export, archive scan/checksum, Ilearn
+deadline check, uploader designation, and Gate 8 recording.

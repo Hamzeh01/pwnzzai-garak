@@ -23,3 +23,11 @@
 - [ ] Exactly one team member is designated to upload the ZIP to Ilearn
 - [ ] Due date checked in Ilearn or a separate instructor announcement
 - [ ] Gate 8 recorded
+
+## Release handoff
+
+The unchecked items are intentionally team-owned release actions. The team
+will supply final identity/Ilearn metadata, rebuild the PDF and Word files,
+repeat final PDF visual review, create and scan the ZIP, record its SHA-256,
+and then record Gate 8. Temporary `G00` QA artifacts were removed after the
+report and packaging workflows passed validation.
