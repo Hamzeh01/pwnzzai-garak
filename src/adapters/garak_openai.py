@@ -6,18 +6,19 @@ import importlib.metadata
 import inspect
 import io
 import json
+from collections.abc import Callable
 from contextlib import redirect_stdout
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, cast
 from urllib.parse import urlparse
 
 import httpx
 import openai
 from garak.attempt import Conversation, Message
 from garak.generators.openai import OpenAICompatible
+from typing_extensions import Self
 
 from .client import validate_loopback_base_url
-
 
 PINNED_GARAK_VERSION = "0.15.1"
 MODEL_NAME = "lab-direct-prompt-escalation"
@@ -41,11 +42,27 @@ _SUPPRESSED_PARAMETERS = (
 )
 
 
+_UndecoratedOpenAICall = Callable[
+    [OpenAICompatible, Conversation | list[dict[str, str]], int],
+    list[Message | None],
+]
+
+
+def _get_undecorated_openai_call() -> _UndecoratedOpenAICall | None:
+    """Return Garak's decorated implementation when the pinned API exposes it."""
+
+    decorated_call = inspect.getattr_static(OpenAICompatible, "_call_model", None)
+    unwrapped_call = getattr(decorated_call, "__wrapped__", None)
+    if not callable(unwrapped_call):
+        return None
+    return cast(_UndecoratedOpenAICall, unwrapped_call)
+
+
 def verify_garak_compatibility() -> dict[str, Any]:
     """Describe whether the installed Garak exposes the pinned adapter API."""
 
     version = importlib.metadata.version("garak")
-    unwrapped_call = getattr(OpenAICompatible._call_model, "__wrapped__", None)
+    unwrapped_call = _get_undecorated_openai_call()
     call_signature = (
         inspect.signature(unwrapped_call) if unwrapped_call is not None else None
     )
@@ -169,6 +186,7 @@ class PwnzzAIOpenAICompatible(OpenAICompatible):
 
     ENV_VAR = None
     generator_family_name = "PwnzzAIOpenAICompatible"
+    uri: str
 
     def __init__(
         self,
@@ -181,19 +199,19 @@ class PwnzzAIOpenAICompatible(OpenAICompatible):
         compatibility = verify_garak_compatibility()
         if not compatibility["compatible"]:
             raise RuntimeError(f"incompatible Garak installation: {compatibility}")
-        if isinstance(stage, bool) or not isinstance(stage, int) or not 0 <= stage <= 9:
+        if isinstance(stage, bool) or not isinstance(stage, int):
+            raise TypeError("stage must be an integer")
+        if not 0 <= stage <= 9:
             raise ValueError("stage must be an integer from 0 through 9")
 
-        self._base_url = validate_loopback_base_url(base_url)
-        self._stage = stage
+        validated_base_url = validate_loopback_base_url(base_url)
         self._timeout_seconds = timeout_seconds
         self._transport = transport
         self._captures: list[CapturedOpenAIExchange] = []
-        self._owns_http_client = True
 
         config = _build_generator_config(
             adapter_name=self.__class__.__name__,
-            base_url=self._base_url,
+            base_url=validated_base_url,
             stage=stage,
             timeout_seconds=timeout_seconds,
         )
@@ -227,7 +245,9 @@ class PwnzzAIOpenAICompatible(OpenAICompatible):
     ) -> list[Message | None]:
         """Call Garak's implementation once, without its backoff decorator."""
 
-        unwrapped = OpenAICompatible._call_model.__wrapped__
+        unwrapped = _get_undecorated_openai_call()
+        if unwrapped is None:
+            raise RuntimeError("Garak's undecorated _call_model is unavailable")
         return unwrapped(self, prompt, generations_this_call)
 
     def generate_once(self, prompt: str) -> GarakGenerationResult:
@@ -258,7 +278,7 @@ class PwnzzAIOpenAICompatible(OpenAICompatible):
         if getattr(self, "client", None) is not None:
             self.client.close()
 
-    def __enter__(self) -> PwnzzAIOpenAICompatible:
+    def __enter__(self) -> Self:
         return self
 
     def __exit__(self, *_: object) -> None:

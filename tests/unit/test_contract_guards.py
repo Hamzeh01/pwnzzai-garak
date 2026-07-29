@@ -32,10 +32,19 @@ def test_rejects_non_loopback_or_credentialed_target(url: str) -> None:
         validate_loopback_base_url(url)
 
 
-@pytest.mark.parametrize("stage", [-1, 10, True, "0"])
-def test_rejects_stage_outside_verified_integer_range(stage: object) -> None:
-    with pytest.raises(ValueError):
+@pytest.mark.parametrize("stage", [True, "0"])
+def test_rejects_non_integer_stage(stage: object) -> None:
+    with pytest.raises(TypeError):
         PwnzzAIOpenAICompatible(
             "http://127.0.0.1:18080",
             stage=stage,  # type: ignore[arg-type]
+        )
+
+
+@pytest.mark.parametrize("stage", [-1, 10])
+def test_rejects_stage_outside_verified_integer_range(stage: int) -> None:
+    with pytest.raises(ValueError):
+        PwnzzAIOpenAICompatible(
+            "http://127.0.0.1:18080",
+            stage=stage,
         )

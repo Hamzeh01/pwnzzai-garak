@@ -7,7 +7,6 @@ from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from typing import Any
 
-
 REDACTED = "<REDACTED>"
 _SENSITIVE_KEY = re.compile(
     r"(?:authorization|cookie|password|passwd|api[_-]?key|secret|session|token)",
@@ -30,9 +29,7 @@ class Redactor:
             for key, item in value.items():
                 text_key = str(key)
                 redacted[text_key] = (
-                    REDACTED
-                    if _SENSITIVE_KEY.search(text_key)
-                    else self._redact(item)
+                    REDACTED if _SENSITIVE_KEY.search(text_key) else self._redact(item)
                 )
             return redacted
 

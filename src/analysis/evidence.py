@@ -12,7 +12,6 @@ from typing import Any
 
 from .redaction import Redactor
 
-
 _SAFE_ID = re.compile(r"^[A-Za-z0-9._-]{3,120}$")
 
 
@@ -105,12 +104,7 @@ class EvidenceStore:
 
     @staticmethod
     def _append_line(path: Path, body: bytes) -> None:
-        flags = (
-            os.O_WRONLY
-            | os.O_CREAT
-            | os.O_APPEND
-            | getattr(os, "O_BINARY", 0)
-        )
+        flags = os.O_WRONLY | os.O_CREAT | os.O_APPEND | getattr(os, "O_BINARY", 0)
         descriptor = os.open(path, flags, 0o600)
         with os.fdopen(descriptor, "ab") as stream:
             stream.write(body)
