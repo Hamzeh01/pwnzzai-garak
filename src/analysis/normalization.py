@@ -10,6 +10,8 @@ from src.detectors.base import DetectionResult
 
 @dataclass(frozen=True)
 class TargetMetadata:
+    """Pinned identifiers for the system and model under test."""
+
     system: str
     base_url: str
     pwnzzai_commit: str
@@ -20,6 +22,8 @@ class TargetMetadata:
 
 @dataclass(frozen=True)
 class AttemptMetadata:
+    """Identifiers and timing data for one assessment attempt."""
+
     protocol_version: str
     run_id: str
     attempt_id: str
@@ -70,6 +74,8 @@ def build_result_record(
     reset_applied: bool,
     notes: str = "",
 ) -> dict[str, Any]:
+    """Build one schema-ready normalized assessment record."""
+
     evidence = {
         "raw_path": raw_path,
         "normalized_path": normalized_path,

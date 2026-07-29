@@ -1,8 +1,12 @@
 {
   "analysis_code": [
     {
+      "path": "src/analysis/evidence.py",
+      "sha256": "b9ed2113b123f0aea1eba0ce35fd528ba367da34db204fad9ce20fae3e4fc31c"
+    },
+    {
       "path": "src/analysis/phase07.py",
-      "sha256": "aff7dceaee7cf55f00e6613a89837518fa06dd7c851e9a3252694562b937d7b5"
+      "sha256": "7432fbfd1fcefe8dab0ee9482cfd443bb0e47c4ffd2dd460cad1c22d4e2744ac"
     },
     {
       "path": "scripts/analyze_phase07.py",

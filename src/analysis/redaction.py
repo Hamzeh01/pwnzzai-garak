@@ -21,6 +21,8 @@ class Redactor:
     sensitive_values: tuple[str, ...] = ()
 
     def redact(self, value: Any) -> Any:
+        """Return a recursively redacted copy of a supported value."""
+
         return self._redact(value)
 
     def _redact(self, value: Any) -> Any:

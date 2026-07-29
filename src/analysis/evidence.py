@@ -16,6 +16,8 @@ _SAFE_ID = re.compile(r"^[A-Za-z0-9._-]{3,120}$")
 
 
 def canonical_json_bytes(value: Any) -> bytes:
+    """Serialize a value as stable UTF-8 JSON with one trailing newline."""
+
     return (
         json.dumps(
             value,
@@ -28,10 +30,14 @@ def canonical_json_bytes(value: Any) -> bytes:
 
 
 def sha256_bytes(value: bytes) -> str:
+    """Return the lowercase SHA-256 digest of a byte string."""
+
     return hashlib.sha256(value).hexdigest()
 
 
 def sha256_file(path: Path) -> str:
+    """Return the lowercase SHA-256 digest of a file."""
+
     digest = hashlib.sha256()
     with path.open("rb") as stream:
         for chunk in iter(lambda: stream.read(1024 * 1024), b""):
@@ -50,6 +56,8 @@ class EvidenceStore:
         *,
         redactor: Redactor | None = None,
     ) -> None:
+        """Create an evidence store rooted at the supplied project paths."""
+
         self.project_root = project_root.resolve()
         self.raw_directory = raw_directory.resolve()
         self.normalized_path = normalized_path.resolve()
@@ -58,9 +66,13 @@ class EvidenceStore:
         self.normalized_path.parent.mkdir(parents=True, exist_ok=True)
 
     def relative_path(self, path: Path) -> str:
+        """Return a project-relative path with portable separators."""
+
         return path.resolve().relative_to(self.project_root).as_posix()
 
     def write_raw(self, attempt_id: str, payload: dict[str, Any]) -> tuple[Path, str]:
+        """Write one immutable raw evidence file and return its path and digest."""
+
         if not _SAFE_ID.fullmatch(attempt_id):
             raise ValueError(f"unsafe attempt ID: {attempt_id!r}")
 
@@ -70,6 +82,8 @@ class EvidenceStore:
         return path, sha256_bytes(body)
 
     def append_event(self, event: str, **fields: Any) -> Path:
+        """Append a timestamped event to the raw event log."""
+
         path = self.raw_directory / "events.jsonl"
         record = {
             "timestamp": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
@@ -80,6 +94,8 @@ class EvidenceStore:
         return path
 
     def append_normalized(self, record: dict[str, Any]) -> Path:
+        """Append one redacted record to the normalized JSONL output."""
+
         self._append_line(
             self.normalized_path,
             canonical_json_bytes(self.redactor.redact(record)),

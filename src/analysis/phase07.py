@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import csv
-import hashlib
 import html
 import io
 import json
@@ -13,6 +12,8 @@ from collections.abc import Iterable
 from pathlib import Path
 from statistics import mean, median
 from typing import Any
+
+from .evidence import sha256_bytes, sha256_file
 
 LABELS = ("success", "failure", "ambiguous", "error")
 EXPECTED_RUN_ID = "phase6-full-v1.1.1-20260725T210612Z"
@@ -41,18 +42,6 @@ def _read_jsonl(path: Path) -> list[dict[str, Any]]:
     if not all(isinstance(record, dict) for record in records):
         raise ValueError(f"expected JSON objects in {path}")
     return records
-
-
-def _sha256(path: Path) -> str:
-    digest = hashlib.sha256()
-    with path.open("rb") as stream:
-        for chunk in iter(lambda: stream.read(1024 * 1024), b""):
-            digest.update(chunk)
-    return digest.hexdigest()
-
-
-def _sha256_bytes(value: bytes) -> str:
-    return hashlib.sha256(value).hexdigest()
 
 
 def _final_label(record: dict[str, Any]) -> str:
@@ -175,7 +164,7 @@ def _validate_raw_links(root: Path, enriched: list[dict[str, Any]]) -> None:
         if not raw_path.is_file():
             raise ValueError(f"missing raw evidence: {raw_path}")
         expected = record["response"]["raw_evidence_sha256"]
-        actual = _sha256(raw_path)
+        actual = sha256_file(raw_path)
         if actual != expected:
             raise ValueError(f"raw evidence SHA-256 mismatch for {item['attempt_id']}")
 
@@ -672,6 +661,8 @@ def _mitigations() -> list[dict[str, str]]:
 
 
 def build_analysis(root: Path) -> dict[str, Any]:
+    """Build the complete Phase 7 analysis from frozen local evidence."""
+
     root = root.resolve()
     catalog = _read_json(root / CATALOG_PATH)
     protocol = _read_json(root / PROTOCOL_PATH)
@@ -1382,6 +1373,8 @@ def _risk_csv_rows(findings: list[dict[str, Any]]) -> list[dict[str, Any]]:
 
 
 def render_artifacts(root: Path, analysis: dict[str, Any]) -> dict[str, bytes]:
+    """Render every deterministic Phase 7 artifact without writing files."""
+
     public_summary = {
         key: value
         for key, value in analysis.items()
@@ -1459,6 +1452,7 @@ def render_artifacts(root: Path, analysis: dict[str, Any]) -> dict[str, bytes]:
     }
 
     code_paths = (
+        Path("src/analysis/evidence.py"),
         Path("src/analysis/phase07.py"),
         Path("scripts/analyze_phase07.py"),
     )
@@ -1468,19 +1462,19 @@ def render_artifacts(root: Path, analysis: dict[str, Any]) -> dict[str, bytes]:
         "protocol_version": EXPECTED_PROTOCOL_VERSION,
         "headline_input": {
             "path": ADJUDICATED_PATH.as_posix(),
-            "sha256": _sha256(root / ADJUDICATED_PATH),
+            "sha256": sha256_file(root / ADJUDICATED_PATH),
         },
         "frozen_inputs": [
             {
                 "path": path.as_posix(),
-                "sha256": _sha256(root / path),
+                "sha256": sha256_file(root / path),
             }
             for path in (CATALOG_PATH, PROTOCOL_PATH, MANUAL_SUMMARY_PATH)
         ],
         "analysis_code": [
             {
                 "path": path.as_posix(),
-                "sha256": _sha256(root / path),
+                "sha256": sha256_file(root / path),
             }
             for path in code_paths
         ],
@@ -1488,7 +1482,7 @@ def render_artifacts(root: Path, analysis: dict[str, Any]) -> dict[str, bytes]:
         "generated_artifacts": [
             {
                 "path": path,
-                "sha256": _sha256_bytes(content),
+                "sha256": sha256_bytes(content),
                 "size_bytes": len(content),
             }
             for path, content in sorted(artifacts.items())
@@ -1500,6 +1494,8 @@ def render_artifacts(root: Path, analysis: dict[str, Any]) -> dict[str, bytes]:
 
 
 def generate_phase07(root: Path) -> dict[str, bytes]:
+    """Write the deterministic Phase 7 artifacts and return their bytes."""
+
     root = root.resolve()
     analysis = build_analysis(root)
     artifacts = render_artifacts(root, analysis)
@@ -1511,6 +1507,8 @@ def generate_phase07(root: Path) -> dict[str, bytes]:
 
 
 def check_generated_artifacts(root: Path) -> list[str]:
+    """Return freshness errors for the retained Phase 7 artifacts."""
+
     root = root.resolve()
     analysis = build_analysis(root)
     expected = render_artifacts(root, analysis)

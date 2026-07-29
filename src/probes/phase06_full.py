@@ -145,18 +145,6 @@ class Phase06FullRun(Phase05Pilot):
         ):
             raise SafetyStop("live Phase 6 preflight does not match target pins")
 
-    @staticmethod
-    def _validate_baseline(
-        baseline: PoisoningBaseline, minimum_accuracy: float
-    ) -> None:
-        if (
-            baseline.accuracy < minimum_accuracy
-            or not baseline.target_baseline_correct
-        ):
-            raise SafetyStop(
-                "zero-poison baseline failed its preregistered validity rule"
-            )
-
     def _attempt_id(
         self, case_id: str, repetition: int, attempt_tag: str | None
     ) -> str:
@@ -274,6 +262,8 @@ class Phase06FullRun(Phase05Pilot):
         return result
 
     def run(self) -> dict[str, Any]:
+        """Execute the authorized full matrix and return a run summary."""
+
         self._validate_entry_conditions()
         case_ids = [case["test_case_id"] for case in self.catalog["cases"]]
         expected_case_ids = [

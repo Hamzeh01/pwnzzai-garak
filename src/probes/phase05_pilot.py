@@ -53,6 +53,8 @@ class SafetyStop(RuntimeError):
 
 @dataclass(frozen=True)
 class PilotPaths:
+    """Filesystem locations used by one pilot run."""
+
     run_id: str
     raw_directory: Path
     normalized_path: Path
@@ -60,6 +62,8 @@ class PilotPaths:
 
 @dataclass(frozen=True)
 class PoisoningBaseline:
+    """Clean holdout results used to compare a poisoned training run."""
+
     accuracy: float
     predictions: tuple[dict[str, Any], ...]
     weights: dict[str, float]
@@ -78,6 +82,13 @@ class RequestBudget:
         max_wall_seconds: int,
         max_requests_per_second: float,
     ) -> None:
+        if max_requests <= 0:
+            raise ValueError("max_requests must be greater than zero")
+        if max_wall_seconds <= 0:
+            raise ValueError("max_wall_seconds must be greater than zero")
+        if max_requests_per_second <= 0:
+            raise ValueError("max_requests_per_second must be greater than zero")
+
         self.max_requests = max_requests
         self.max_wall_seconds = max_wall_seconds
         self.minimum_interval = 1.0 / max_requests_per_second
@@ -87,9 +98,13 @@ class RequestBudget:
 
     @property
     def elapsed_seconds(self) -> float:
+        """Return the seconds elapsed since this budget was created."""
+
         return time.monotonic() - self.started
 
     def call(self, operation: Callable[[], T]) -> T:
+        """Run one operation after enforcing the frozen request limits."""
+
         if self.request_count >= self.max_requests:
             raise SafetyStop("approved target-request ceiling reached")
         if self.elapsed_seconds >= self.max_wall_seconds:
@@ -204,7 +219,21 @@ class Phase05Pilot:
             raise SafetyStop("target pins differ from the frozen Phase 5 protocol")
         return target
 
+    @staticmethod
+    def _validate_baseline(
+        baseline: PoisoningBaseline, minimum_accuracy: float
+    ) -> None:
+        if (
+            baseline.accuracy < minimum_accuracy
+            or not baseline.target_baseline_correct
+        ):
+            raise SafetyStop(
+                "zero-poison baseline failed its preregistered validity rule"
+            )
+
     def run(self) -> dict[str, Any]:
+        """Execute the frozen pilot cases and return a run summary."""
+
         safety = self.protocol["safety"]
         pilot = self.protocol["pilot"]
         if (
@@ -238,13 +267,7 @@ class Phase05Pilot:
             elif case_id == "CTL-POI-ZERO-001":
                 self.baseline = self._run_poisoning(case_id, baseline=None)
                 threshold = self.protocol["poisoning"]["minimum_baseline_accuracy"]
-                if (
-                    self.baseline.accuracy < threshold
-                    or not self.baseline.target_baseline_correct
-                ):
-                    raise SafetyStop(
-                        "zero-poison baseline failed its preregistered validity rule"
-                    )
+                self._validate_baseline(self.baseline, threshold)
             elif case_id == "POI-TGT-B1-001":
                 if self.baseline is None:
                     raise SafetyStop("poisoning baseline is unavailable")
