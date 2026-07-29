@@ -7,6 +7,18 @@ from src.adapters.garak_openai import PwnzzAIOpenAICompatible
 
 
 @pytest.mark.parametrize(
+    ("url", "expected"),
+    [
+        ("http://localhost:18080/", "http://localhost:18080"),
+        ("http://127.0.0.1:18080", "http://127.0.0.1:18080"),
+        ("http://[::1]:18080/", "http://[::1]:18080"),
+    ],
+)
+def test_accepts_and_normalizes_loopback_target(url: str, expected: str) -> None:
+    assert validate_loopback_base_url(url) == expected
+
+
+@pytest.mark.parametrize(
     "url",
     [
         "https://127.0.0.1:18080",

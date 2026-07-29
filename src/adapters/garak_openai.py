@@ -13,7 +13,7 @@ from urllib.parse import urlparse
 
 import httpx
 import openai
-from garak.attempt import Conversation
+from garak.attempt import Conversation, Message
 from garak.generators.openai import OpenAICompatible
 
 from .client import validate_loopback_base_url
@@ -21,18 +21,40 @@ from .client import validate_loopback_base_url
 
 PINNED_GARAK_VERSION = "0.15.1"
 MODEL_NAME = "lab-direct-prompt-escalation"
+_DEFAULT_INFERENCE_TIMEOUT_SECONDS = 180
+_SCANNER_BASE_PATH = "/v1/lab/"
+_UNUSED_LOCAL_API_KEY = "unused-local-lab-credential"
+_NON_JSON_REQUEST_MARKER = "<NON_JSON_REQUEST_OMITTED>"
+_SUPPRESSED_PARAMETERS = (
+    "n",
+    "max_tokens",
+    "temperature",
+    "top_k",
+    "context_len",
+    "skip_seq_start",
+    "skip_seq_end",
+    "top_p",
+    "frequency_penalty",
+    "presence_penalty",
+    "seed",
+    "stop",
+)
 
 
 def verify_garak_compatibility() -> dict[str, Any]:
+    """Describe whether the installed Garak exposes the pinned adapter API."""
+
     version = importlib.metadata.version("garak")
-    unwrapped = getattr(OpenAICompatible._call_model, "__wrapped__", None)
-    signature = inspect.signature(unwrapped) if unwrapped is not None else None
+    unwrapped_call = getattr(OpenAICompatible._call_model, "__wrapped__", None)
+    call_signature = (
+        inspect.signature(unwrapped_call) if unwrapped_call is not None else None
+    )
     compatible = (
         version == PINNED_GARAK_VERSION
-        and unwrapped is not None
-        and signature is not None
-        and "prompt" in signature.parameters
-        and "generations_this_call" in signature.parameters
+        and unwrapped_call is not None
+        and call_signature is not None
+        and "prompt" in call_signature.parameters
+        and "generations_this_call" in call_signature.parameters
     )
     return {
         "garak_version": version,
@@ -40,7 +62,7 @@ def verify_garak_compatibility() -> dict[str, Any]:
         "openai_compatible_class": (
             f"{OpenAICompatible.__module__}.{OpenAICompatible.__name__}"
         ),
-        "undecorated_call_available": unwrapped is not None,
+        "undecorated_call_available": unwrapped_call is not None,
         "openai_sdk_version": importlib.metadata.version("openai"),
         "sdk_max_retries_supported": (
             "max_retries" in inspect.signature(openai.OpenAI).parameters
@@ -53,8 +75,61 @@ def verify_garak_compatibility() -> dict[str, Any]:
     }
 
 
+def _build_generator_config(
+    *,
+    adapter_name: str,
+    base_url: str,
+    stage: int,
+    timeout_seconds: float,
+) -> dict[str, Any]:
+    """Build the Garak configuration for PwnzzAI's scanner endpoint."""
+
+    return {
+        "adapters": {
+            "garak_openai": {
+                adapter_name: {
+                    "uri": f"{base_url}{_SCANNER_BASE_PATH}",
+                    "api_key": _UNUSED_LOCAL_API_KEY,
+                    "retry_json": False,
+                    "suppressed_params": list(_SUPPRESSED_PARAMETERS),
+                    "extra_params": {
+                        "extra_body": {"pwnzz_escalation_stage": stage},
+                        "timeout": timeout_seconds,
+                    },
+                }
+            }
+        }
+    }
+
+
+def _decode_request_body(request_bytes: bytes) -> Any:
+    """Decode a JSON request or return a safe omission summary."""
+
+    try:
+        return json.loads(request_bytes.decode("utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError):
+        return {
+            "length": len(request_bytes),
+            "stored": _NON_JSON_REQUEST_MARKER,
+        }
+
+
+def _decode_response_body(response: httpx.Response) -> dict[str, Any]:
+    """Decode and validate PwnzzAI's JSON response object."""
+
+    try:
+        response_body = response.json()
+    except json.JSONDecodeError as exc:
+        raise ValueError("PwnzzAI scanner response was not JSON") from exc
+    if not isinstance(response_body, dict):
+        raise ValueError("PwnzzAI scanner response must be a JSON object")
+    return response_body
+
+
 @dataclass(frozen=True)
 class CapturedOpenAIExchange:
+    """A captured OpenAI-compatible request and response."""
+
     method: str
     url: str
     request_headers: dict[str, str]
@@ -64,6 +139,8 @@ class CapturedOpenAIExchange:
     response_body: dict[str, Any]
 
     def as_evidence(self) -> dict[str, Any]:
+        """Return the exchange in the project's serializable evidence shape."""
+
         return {
             "request": {
                 "method": self.method,
@@ -81,6 +158,8 @@ class CapturedOpenAIExchange:
 
 @dataclass(frozen=True)
 class GarakGenerationResult:
+    """One generated message and its captured HTTP exchange."""
+
     output: str
     exchange: CapturedOpenAIExchange
 
@@ -96,7 +175,7 @@ class PwnzzAIOpenAICompatible(OpenAICompatible):
         base_url: str,
         *,
         stage: int,
-        timeout_seconds: float = 180,
+        timeout_seconds: float = _DEFAULT_INFERENCE_TIMEOUT_SECONDS,
         transport: httpx.BaseTransport | None = None,
     ) -> None:
         compatibility = verify_garak_compatibility()
@@ -112,41 +191,20 @@ class PwnzzAIOpenAICompatible(OpenAICompatible):
         self._captures: list[CapturedOpenAIExchange] = []
         self._owns_http_client = True
 
-        config = {
-            "adapters": {
-                "garak_openai": {
-                    self.__class__.__name__: {
-                        "uri": f"{self._base_url}/v1/lab/",
-                        "api_key": "unused-local-lab-credential",
-                        "retry_json": False,
-                        "suppressed_params": [
-                            "n",
-                            "max_tokens",
-                            "temperature",
-                            "top_k",
-                            "context_len",
-                            "skip_seq_start",
-                            "skip_seq_end",
-                            "top_p",
-                            "frequency_penalty",
-                            "presence_penalty",
-                            "seed",
-                            "stop",
-                        ],
-                        "extra_params": {
-                            "extra_body": {"pwnzz_escalation_stage": stage},
-                            "timeout": timeout_seconds,
-                        },
-                    }
-                }
-            }
-        }
+        config = _build_generator_config(
+            adapter_name=self.__class__.__name__,
+            base_url=self._base_url,
+            stage=stage,
+            timeout_seconds=timeout_seconds,
+        )
         # Garak's initialization banner contains an emoji that fails on the
         # default Windows cp1252 console before any request is sent.
         with redirect_stdout(io.StringIO()):
             super().__init__(MODEL_NAME, config_root=config)
 
     def _load_unsafe(self) -> None:
+        """Create the no-retry SDK client used by Garak."""
+
         self._http_client = httpx.Client(
             transport=self._transport,
             event_hooks={"response": [self._capture_response]},
@@ -173,15 +231,19 @@ class PwnzzAIOpenAICompatible(OpenAICompatible):
         return unwrapped(self, prompt, generations_this_call)
 
     def generate_once(self, prompt: str) -> GarakGenerationResult:
+        """Generate one response for a single user prompt."""
+
         return self.generate_messages_once([{"role": "user", "content": prompt}])
 
     def generate_messages_once(
         self, messages: list[dict[str, str]]
     ) -> GarakGenerationResult:
-        before = len(self._captures)
+        """Generate one response while preserving the full message history."""
+
+        capture_count_before = len(self._captures)
         conversation = Conversation.from_openai(messages)
         generated_messages = self.generate(conversation, generations_this_call=1)
-        if len(self._captures) != before + 1:
+        if len(self._captures) != capture_count_before + 1:
             raise RuntimeError("one Garak attempt must produce one HTTP exchange")
         if len(generated_messages) != 1 or generated_messages[0] is None:
             raise RuntimeError("Garak returned no model message")
@@ -191,6 +253,8 @@ class PwnzzAIOpenAICompatible(OpenAICompatible):
         )
 
     def close(self) -> None:
+        """Close the OpenAI SDK client if it was created."""
+
         if getattr(self, "client", None) is not None:
             self.client.close()
 
@@ -201,22 +265,11 @@ class PwnzzAIOpenAICompatible(OpenAICompatible):
         self.close()
 
     def _capture_response(self, response: httpx.Response) -> None:
-        response.read()
-        request_bytes = response.request.content
-        try:
-            request_body: Any = json.loads(request_bytes.decode("utf-8"))
-        except (UnicodeDecodeError, json.JSONDecodeError):
-            request_body = {
-                "length": len(request_bytes),
-                "stored": "<NON_JSON_REQUEST_OMITTED>",
-            }
-        try:
-            response_body = response.json()
-        except json.JSONDecodeError as exc:
-            raise ValueError("PwnzzAI scanner response was not JSON") from exc
-        if not isinstance(response_body, dict):
-            raise ValueError("PwnzzAI scanner response must be a JSON object")
+        """Capture one completed HTTPX exchange for later evidence writing."""
 
+        response.read()
+        request_body = _decode_request_body(response.request.content)
+        response_body = _decode_response_body(response)
         parsed = urlparse(str(response.request.url))
         self._captures.append(
             CapturedOpenAIExchange(
