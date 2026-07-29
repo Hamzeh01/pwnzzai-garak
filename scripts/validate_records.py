@@ -2,14 +2,13 @@
 
 from __future__ import annotations
 
-import json
 import hashlib
+import json
 import re
 import sys
 from pathlib import Path
 
 from jsonschema import Draft202012Validator, FormatChecker
-
 
 ROOT = Path(__file__).resolve().parents[1]
 SCHEMA_PATH = ROOT / "schemas" / "result-record.schema.json"
@@ -111,7 +110,9 @@ def validate_record(
     if input_value:
         input_path = _resolve_evidence_path(str(input_value))
         if not input_path.is_file():
-            failures.append(f"line {line_number}: input artifact not found: {input_path}")
+            failures.append(
+                f"line {line_number}: input artifact not found: {input_path}"
+            )
         elif _sha256_file(input_path) != request_hash:
             failures.append(f"line {line_number}: input artifact SHA-256 mismatch")
 
@@ -156,10 +157,7 @@ def main(arguments: list[str]) -> int:
         for failure in failures:
             print(f"FAIL: {failure}")
         return 1
-    print(
-        f"PASS: {count} normalized record(s) are schema-valid "
-        "with linked evidence"
-    )
+    print(f"PASS: {count} normalized record(s) are schema-valid with linked evidence")
     return 0
 
 

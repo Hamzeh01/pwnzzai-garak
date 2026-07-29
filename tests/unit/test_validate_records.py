@@ -6,7 +6,6 @@ from pathlib import Path
 
 from scripts.validate_records import main
 
-
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 
 

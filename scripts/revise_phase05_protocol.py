@@ -8,7 +8,6 @@ import os
 from pathlib import Path
 from typing import Any
 
-
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE_CATALOG = ROOT / "configs" / "phase-05-scenario-catalog.v1.0.0.json"
 SOURCE_PROTOCOL = ROOT / "configs" / "phase-05-pilot-protocol.v1.0.0.json"
@@ -19,7 +18,7 @@ FINAL_PROTOCOL = ROOT / "configs" / "phase-05-final-protocol.v1.1.0.json"
 def _load(path: Path) -> dict[str, Any]:
     value = json.loads(path.read_text(encoding="utf-8"))
     if not isinstance(value, dict):
-        raise ValueError(f"JSON object required: {path}")
+        raise TypeError(f"JSON object required: {path}")
     return value
 
 

@@ -9,7 +9,6 @@ import re
 import sys
 from pathlib import Path
 
-
 ROOT = Path(__file__).resolve().parents[1]
 
 REQUIRED_FILES = [
@@ -103,9 +102,7 @@ def error(message: str, failures: list[str]) -> None:
 def iter_secret_scan_files(root: Path):
     """Yield project files while pruning ignored local dependency trees."""
     for directory, dirnames, filenames in os.walk(root):
-        dirnames[:] = [
-            name for name in dirnames if name not in LOCAL_ONLY_DIRS
-        ]
+        dirnames[:] = [name for name in dirnames if name not in LOCAL_ONLY_DIRS]
         base = Path(directory)
         yield from (base / filename for filename in filenames)
 
@@ -211,15 +208,11 @@ def check_reserved_trees(failures: list[str]) -> None:
     phase6_probe = probe_directory / "phase06_full.py"
     if phase6_probe.is_file():
         authorization_path = (
-            ROOT
-            / "configs"
-            / "phase-06-full-run-authorization.v1.1.1.json"
+            ROOT / "configs" / "phase-06-full-run-authorization.v1.1.1.json"
         )
         phase_state_path = ROOT / "docs" / "phase-state.md"
         try:
-            authorization = json.loads(
-                authorization_path.read_text(encoding="utf-8")
-            )
+            authorization = json.loads(authorization_path.read_text(encoding="utf-8"))
             phase_state = phase_state_path.read_text(encoding="utf-8")
         except (OSError, json.JSONDecodeError) as exc:
             error(
@@ -230,8 +223,7 @@ def check_reserved_trees(failures: list[str]) -> None:
         else:
             if (
                 authorization.get("authorized") is not True
-                or authorization.get("authorization_scope")
-                != "phase6_full_only"
+                or authorization.get("authorization_scope") != "phase6_full_only"
                 or authorization.get("protocol_version") != "1.1.1"
                 or "- Gate status: PASSED" not in phase_state
             ):
@@ -257,9 +249,7 @@ def check_reserved_trees(failures: list[str]) -> None:
         )
 
     phase5_payloads = [
-        path
-        for path in (payload_directory / "phase-05").rglob("*")
-        if path.is_file()
+        path for path in (payload_directory / "phase-05").rglob("*") if path.is_file()
     ]
     if phase5_payloads:
         required_phase5 = [
@@ -274,9 +264,7 @@ def check_reserved_trees(failures: list[str]) -> None:
             "docs/05-protocol-revision.md",
         ]
         missing_phase5 = [
-            relative
-            for relative in required_phase5
-            if not (ROOT / relative).is_file()
+            relative for relative in required_phase5 if not (ROOT / relative).is_file()
         ]
         if missing_phase5:
             error(

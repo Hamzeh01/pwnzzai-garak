@@ -12,38 +12,23 @@ from typing import Any
 
 from jsonschema import Draft202012Validator, FormatChecker
 
-
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from scripts.prepare_phase06_review import select_records
 
-
 RUN_ID = "phase6-full-v1.1.1-20260725T210612Z"
 SUPERSEDED_RUN_ID = "phase6-full-20260725T205004Z"
-PROTOCOL_PATH = (
-    ROOT / "configs" / "phase-06-execution-protocol.v1.1.1.json"
-)
-SOURCE_PROTOCOL_PATH = (
-    ROOT / "configs" / "phase-05-final-protocol.v1.1.0.json"
-)
-CATALOG_PATH = (
-    ROOT / "configs" / "phase-05-scenario-catalog.v1.1.0.json"
-)
-AUTHORIZATION_PATH = (
-    ROOT / "configs" / "phase-06-full-run-authorization.v1.1.1.json"
-)
+PROTOCOL_PATH = ROOT / "configs" / "phase-06-execution-protocol.v1.1.1.json"
+SOURCE_PROTOCOL_PATH = ROOT / "configs" / "phase-05-final-protocol.v1.1.0.json"
+CATALOG_PATH = ROOT / "configs" / "phase-05-scenario-catalog.v1.1.0.json"
+AUTHORIZATION_PATH = ROOT / "configs" / "phase-06-full-run-authorization.v1.1.1.json"
 PREFLIGHT_PATH = (
-    ROOT
-    / "environment"
-    / "captured"
-    / "phase6-preflight-v1.1.1-20260725T205537Z.json"
+    ROOT / "environment" / "captured" / "phase6-preflight-v1.1.1-20260725T205537Z.json"
 )
 NORMALIZED_PATH = ROOT / "results" / "normalized" / f"{RUN_ID}.jsonl"
-ADJUDICATED_PATH = (
-    ROOT / "results" / "normalized" / f"{RUN_ID}.adjudicated.jsonl"
-)
+ADJUDICATED_PATH = ROOT / "results" / "normalized" / f"{RUN_ID}.adjudicated.jsonl"
 RAW_DIRECTORY = ROOT / "results" / "raw" / RUN_ID
 MANUAL_PATH = ROOT / "evidence" / "review" / f"{RUN_ID}.manual.jsonl"
 SUMMARY_PATH = ROOT / "evidence" / "review" / f"{RUN_ID}.summary.json"
@@ -64,7 +49,7 @@ MANUAL_SCHEMA_PATH = ROOT / "schemas" / "manual-adjudication.schema.json"
 def _load_json(path: Path) -> dict[str, Any]:
     value = json.loads(path.read_text(encoding="utf-8-sig"))
     if not isinstance(value, dict):
-        raise ValueError(f"JSON object required: {path}")
+        raise TypeError(f"JSON object required: {path}")
     return value
 
 
@@ -177,9 +162,7 @@ def validate_phase06_execution() -> list[str]:
     comparable["protocol_version"] = "1.1.0"
     if comparable != source_protocol:
         failures.append("protocol 1.1.1 changed scope beyond its version field")
-    if protocol.get("scenario_catalog", {}).get("sha256") != _sha256(
-        CATALOG_PATH
-    ):
+    if protocol.get("scenario_catalog", {}).get("sha256") != _sha256(CATALOG_PATH):
         failures.append("protocol/catalog SHA-256 mismatch")
     if (
         authorization.get("authorized") is not True
@@ -189,9 +172,7 @@ def validate_phase06_execution() -> list[str]:
         or authorization.get("max_target_requests") != 79
         or authorization.get("maximum_poison_budget") != 5
         or authorization.get("automatic_retries") != 0
-        or authorization.get("authorization_continuity", {}).get(
-            "scope_changed"
-        )
+        or authorization.get("authorization_continuity", {}).get("scope_changed")
         is not False
     ):
         failures.append("replacement authorization receipt is invalid")
@@ -205,7 +186,9 @@ def validate_phase06_execution() -> list[str]:
         failures.append("replacement live preflight is incomplete or stale")
     phase_state = PHASE_STATE_PATH.read_text(encoding="utf-8")
     checklist = CHECKLIST_PATH.read_text(encoding="utf-8")
-    current_phase_match = re.search(r"^- Current phase: (\d+)$", phase_state, re.M)
+    current_phase_match = re.search(
+        r"^- Current phase: (\d+)$", phase_state, re.MULTILINE
+    )
     if (
         current_phase_match is None
         or int(current_phase_match.group(1)) < 6
@@ -238,12 +221,8 @@ def validate_phase06_execution() -> list[str]:
         failures.append("normalized evidence mixes protocol versions")
     if any(record.get("retry_of") is not None for record in records):
         failures.append("unexpected retry linkage exists despite zero retries")
-    automatic_counts = Counter(
-        record["automatic_label"]["value"] for record in records
-    )
-    if automatic_counts != Counter(
-        {"success": 15, "failure": 23, "ambiguous": 5}
-    ):
+    automatic_counts = Counter(record["automatic_label"]["value"] for record in records)
+    if automatic_counts != Counter({"success": 15, "failure": 23, "ambiguous": 5}):
         failures.append("automatic terminal-state counts changed")
     if automatic_counts.get("error", 0) != 0:
         failures.append("complete replacement run contains terminal errors")
@@ -266,7 +245,9 @@ def validate_phase06_execution() -> list[str]:
             failures.append(f"wrong normalized path: {record['attempt_id']}")
 
     events = _load_jsonl(RAW_DIRECTORY / "events.jsonl")
-    completion = [event for event in events if event.get("event") == "full_run_completed"]
+    completion = [
+        event for event in events if event.get("event") == "full_run_completed"
+    ]
     starts = [event for event in events if event.get("event") == "full_run_started"]
     incidents = [event for event in events if event.get("event") == "incident_recorded"]
     completed_attempts = [
@@ -323,8 +304,7 @@ def validate_phase06_execution() -> list[str]:
             or inventory.get("unchanged") is not True
             or inventory.get("before") != inventory.get("after")
             or rollback.get("server_side_artifact_created") is not False
-            or rollback.get("client_weights_retained_in_raw_evidence_only")
-            is not True
+            or rollback.get("client_weights_retained_in_raw_evidence_only") is not True
             or rollback.get("in_memory_poisoned_weights_discarded_after_record")
             is not True
         ):
@@ -336,9 +316,8 @@ def validate_phase06_execution() -> list[str]:
         failures.append("clean RAG refresh event count is not one")
     else:
         raw_path = ROOT / rag_refreshes[0]["raw_path"]
-        if (
-            not raw_path.is_file()
-            or rag_refreshes[0]["raw_evidence_sha256"] != _sha256(raw_path)
+        if not raw_path.is_file() or rag_refreshes[0]["raw_evidence_sha256"] != _sha256(
+            raw_path
         ):
             failures.append("clean RAG refresh evidence hash mismatch")
 
@@ -350,9 +329,7 @@ def validate_phase06_execution() -> list[str]:
         failures.append("manual review count is not 30")
     for index, review in enumerate(reviews, start=1):
         for error in manual_validator.iter_errors(review):
-            failures.append(
-                f"manual review {index} schema violation: {error.message}"
-            )
+            failures.append(f"manual review {index} schema violation: {error.message}")
     selected, sampled = select_records(records)
     selected_ids = {record["attempt_id"] for record, _ in selected}
     reviewed_ids = {review["attempt_id"] for review in reviews}

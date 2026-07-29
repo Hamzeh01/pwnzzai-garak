@@ -8,7 +8,6 @@ from pathlib import Path
 import qrcode
 from qrcode.constants import ERROR_CORRECT_M
 
-
 ROOT = Path(__file__).resolve().parents[1]
 QR_DIRECTORY = ROOT / "payloads" / "phase-05" / "qr"
 INPUTS = (

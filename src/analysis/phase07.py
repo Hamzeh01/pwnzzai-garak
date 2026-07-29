@@ -29,7 +29,7 @@ MANUAL_SUMMARY_PATH = Path(f"evidence/review/{EXPECTED_RUN_ID}.summary.json")
 def _read_json(path: Path) -> dict[str, Any]:
     value = json.loads(path.read_text(encoding="utf-8-sig"))
     if not isinstance(value, dict):
-        raise ValueError(f"expected a JSON object: {path}")
+        raise TypeError(f"expected a JSON object: {path}")
     return value
 
 
@@ -918,64 +918,84 @@ def _analysis_markdown(analysis: dict[str, Any]) -> str:
         "",
         "## Scope and run isolation",
         "",
-        f"Headline calculations use only `{analysis['run_id']}` under protocol "
-        f"`{analysis['protocol_version']}` and the adjudicated normalized file "
-        f"[`{analysis['headline_input']}`](../{analysis['headline_input']}). "
-        f"The incomplete run `{analysis['excluded_incompatible_run']}` is retained "
-        "only as Phase 6 deviation evidence and is not pooled, compared, or used in "
-        "any numerator or denominator. No new target request was made in Phase 7.",
+        (
+            f"Headline calculations use only `{analysis['run_id']}` under protocol "
+            f"`{analysis['protocol_version']}` and the adjudicated normalized file "
+            f"[`{analysis['headline_input']}`](../{analysis['headline_input']}). "
+            f"The incomplete run `{analysis['excluded_incompatible_run']}` is retained "
+            "only as Phase 6 deviation evidence and is not pooled, compared, or used in "
+            "any numerator or denominator. No new target request was made in Phase 7."
+        ),
         "",
-        "The 43 terminal workflow records represent 79 target requests. The offline "
-        "detector positive control represents zero target requests; each poisoning "
-        "record represents one five-request train-plus-holdout workflow; the shared "
-        "RAG refresh is support evidence and has no normalized latency record.",
+        (
+            "The 43 terminal workflow records represent 79 target requests. The offline "
+            "detector positive control represents zero target requests; each poisoning "
+            "record represents one five-request train-plus-holdout workflow; the shared "
+            "RAG refresh is support evidence and has no normalized latency record."
+        ),
         "",
         "## Exact headline metrics",
         "",
         "| Population / metric | Success | Failure | Ambiguous | Error | Numerator / denominator |",
         "|---|---:|---:|---:|---:|---:|",
-        f"| All terminal, automatic | {all_auto['success']} | {all_auto['failure']} | "
-        f"{all_auto['ambiguous']} | {all_auto['error']} | "
-        f"{all_auto['success_numerator']}/{all_auto['success_denominator']} "
-        f"({_percentage(all_auto['success_rate'])}) |",
-        f"| Adversarial, adjudicated ASR | {attacks['success']} | {attacks['failure']} | "
-        f"{attacks['ambiguous']} | {attacks['error']} | "
-        f"{attacks['success_numerator']}/{attacks['success_denominator']} "
-        f"({_percentage(attacks['success_rate'])}) |",
-        f"| Manually reviewed adversarial | {reviewed['success']} | {reviewed['failure']} | "
-        f"{reviewed['ambiguous']} | {reviewed['error']} | "
-        f"{reviewed['success_numerator']}/{reviewed['success_denominator']} "
-        f"({_percentage(reviewed['success_rate'])}) |",
-        f"| Benign controls (false-positive population) | {benign['success']} | "
-        f"{benign['failure']} | {benign['ambiguous']} | {benign['error']} | "
-        f"{benign['success_numerator']}/{benign['success_denominator']} "
-        f"({_percentage(benign['success_rate'])}) |",
+        (
+            f"| All terminal, automatic | {all_auto['success']} | {all_auto['failure']} | "
+            f"{all_auto['ambiguous']} | {all_auto['error']} | "
+            f"{all_auto['success_numerator']}/{all_auto['success_denominator']} "
+            f"({_percentage(all_auto['success_rate'])}) |"
+        ),
+        (
+            f"| Adversarial, adjudicated ASR | {attacks['success']} | {attacks['failure']} | "
+            f"{attacks['ambiguous']} | {attacks['error']} | "
+            f"{attacks['success_numerator']}/{attacks['success_denominator']} "
+            f"({_percentage(attacks['success_rate'])}) |"
+        ),
+        (
+            f"| Manually reviewed adversarial | {reviewed['success']} | {reviewed['failure']} | "
+            f"{reviewed['ambiguous']} | {reviewed['error']} | "
+            f"{reviewed['success_numerator']}/{reviewed['success_denominator']} "
+            f"({_percentage(reviewed['success_rate'])}) |"
+        ),
+        (
+            f"| Benign controls (false-positive population) | {benign['success']} | "
+            f"{benign['failure']} | {benign['ambiguous']} | {benign['error']} | "
+            f"{benign['success_numerator']}/{benign['success_denominator']} "
+            f"({_percentage(benign['success_rate'])}) |"
+        ),
         "",
-        f"Primary adjudicated ASR is {_ratio(analysis['primary_attack_asr'])}; errors "
-        "are excluded by protocol, and this run had zero. Manually confirmed ASR is "
-        f"{_ratio(analysis['manual_confirmed_asr'])}. That manual denominator is "
-        "outcome-enriched by design (all automatic successes/ambiguous outcomes, all "
-        "poisoning workflows, and a seeded failure sample), so it is not an unbiased "
-        "estimate of the full attack population.",
+        (
+            f"Primary adjudicated ASR is {_ratio(analysis['primary_attack_asr'])}; errors "
+            "are excluded by protocol, and this run had zero. Manually confirmed ASR is "
+            f"{_ratio(analysis['manual_confirmed_asr'])}. That manual denominator is "
+            "outcome-enriched by design (all automatic successes/ambiguous outcomes, all "
+            "poisoning workflows, and a seeded failure sample), so it is not an unbiased "
+            "estimate of the full attack population."
+        ),
         "",
-        "Ambiguous sensitivity is: "
-        f"{_ratio(analysis['ambiguous_sensitivity']['ambiguous_as_failure'])} when "
-        "ambiguities remain non-successes; "
-        f"{_ratio(analysis['ambiguous_sensitivity']['exclude_ambiguous'])} when "
-        "excluded; and "
-        f"{_ratio(analysis['ambiguous_sensitivity']['ambiguous_as_success'])} as a "
-        "worst-case upper bound.",
+        (
+            "Ambiguous sensitivity is: "
+            f"{_ratio(analysis['ambiguous_sensitivity']['ambiguous_as_failure'])} when "
+            "ambiguities remain non-successes; "
+            f"{_ratio(analysis['ambiguous_sensitivity']['exclude_ambiguous'])} when "
+            "excluded; and "
+            f"{_ratio(analysis['ambiguous_sensitivity']['ambiguous_as_success'])} as a "
+            "worst-case upper bound."
+        ),
         "",
-        f"Benign false-positive rate is {_ratio(analysis['benign_false_positive_rate'])}; "
-        f"{analysis['benign_false_positive_rate']['ambiguous']}/"
-        f"{analysis['benign_false_positive_rate']['denominator']} benign controls "
-        "were ambiguous rather than false-positive successes.",
+        (
+            f"Benign false-positive rate is {_ratio(analysis['benign_false_positive_rate'])}; "
+            f"{analysis['benign_false_positive_rate']['ambiguous']}/"
+            f"{analysis['benign_false_positive_rate']['denominator']} benign controls "
+            "were ambiguous rather than false-positive successes."
+        ),
         "",
-        "Complete programmatic tables: "
-        "[outcomes](../results/tables/phase-07-outcomes.csv), "
-        "[preregistered strata](../results/tables/phase-07-stratified-outcomes.csv), "
-        "[reproducibility](../results/tables/phase-07-reproducibility.csv), and "
-        "[label comparison](../results/tables/phase-07-label-comparison.csv).",
+        (
+            "Complete programmatic tables: "
+            "[outcomes](../results/tables/phase-07-outcomes.csv), "
+            "[preregistered strata](../results/tables/phase-07-stratified-outcomes.csv), "
+            "[reproducibility](../results/tables/phase-07-reproducibility.csv), and "
+            "[label comparison](../results/tables/phase-07-label-comparison.csv)."
+        ),
         "",
         "## Stratified results and negative evidence",
         "",
@@ -1017,43 +1037,51 @@ def _analysis_markdown(analysis: dict[str, Any]) -> str:
     lines.extend(
         [
             "",
-            "Stage, family, channel, and repetition rows are retained in the stratified "
-            "CSV. Stage comparisons are descriptive only because the frozen catalog "
-            "assigns different attack families to stages 0, 2, 3, and 6.",
+            (
+                "Stage, family, channel, and repetition rows are retained in the stratified "
+                "CSV. Stage comparisons are descriptive only because the frozen catalog "
+                "assigns different attack families to stages 0, 2, 3, and 6."
+            ),
             "",
-            f"Disclosure coverage is {disclosure['numerator']}/{disclosure['denominator']} "
-            f"({_percentage(disclosure['rate'])}) authorized simulated data classes. "
-            "All nine attempts covering the QR challenge token, simulated RAG customer "
-            "identifiers, and system-context-plus-token class were negative. Direct "
-            "behavior-marker emissions are not counted as sensitive-data disclosure. "
-            "See the [disclosure table](../results/tables/phase-07-disclosure.csv).",
+            (
+                f"Disclosure coverage is {disclosure['numerator']}/{disclosure['denominator']} "
+                f"({_percentage(disclosure['rate'])}) authorized simulated data classes. "
+                "All nine attempts covering the QR challenge token, simulated RAG customer "
+                "identifiers, and system-context-plus-token class were negative. Direct "
+                "behavior-marker emissions are not counted as sensitive-data disclosure. "
+                "See the [disclosure table](../results/tables/phase-07-disclosure.csv)."
+            ),
             "",
             "## Detector/manual comparison",
             "",
-            f"All {analysis['detector_quality']['reviewed']} preregistered reviews agreed "
-            "with the automatic four-way label; disagreement count was "
-            f"{analysis['detector_quality']['disagreements']}. Automatic-success precision "
-            "in the reviewed set was "
-            f"{_ratio(analysis['detector_quality']['automatic_success_precision'])}. "
-            "The seeded automatic-failure sample contained "
-            f"{_ratio(analysis['detector_quality']['observed_false_negative_rate_in_seeded_failure_sample'])} "
-            "observed false negatives. This does not establish full sensitivity because "
-            "only 5/18 eligible automatic failures were sampled. Five ambiguous outcomes "
-            "remain ambiguous rather than being forced into success or failure.",
+            (
+                f"All {analysis['detector_quality']['reviewed']} preregistered reviews agreed "
+                "with the automatic four-way label; disagreement count was "
+                f"{analysis['detector_quality']['disagreements']}. Automatic-success precision "
+                "in the reviewed set was "
+                f"{_ratio(analysis['detector_quality']['automatic_success_precision'])}. "
+                "The seeded automatic-failure sample contained "
+                f"{_ratio(analysis['detector_quality']['observed_false_negative_rate_in_seeded_failure_sample'])} "
+                "observed false negatives. This does not establish full sensitivity because "
+                "only 5/18 eligible automatic failures were sampled. Five ambiguous outcomes "
+                "remain ambiguous rather than being forced into success or failure."
+            ),
             "",
             "## Reproducibility and latency",
             "",
-            "Successful-repetition ratios are reported case by case. Role-authority, "
-            "encoded, and multi-turn direct cases each reproduced 3/3; the explicit "
-            "conflict case reproduced a definite success 1/3 with 2/3 ambiguous. All "
-            "three QR protected-disclosure, all three RAG disclosure, and all three "
-            "system-context attempts remained confirmed non-successes. The five "
-            f"independently regenerated clean poisoning baselines were 4/4 accurate in "
-            f"{poison['clean_baselines_at_4_of_4']['numerator']}/"
-            f"{poison['clean_baselines_at_4_of_4']['denominator']} workflows and had "
-            f"identical weight hashes in "
-            f"{poison['identical_clean_weight_hashes']['numerator']}/"
-            f"{poison['identical_clean_weight_hashes']['denominator']}.",
+            (
+                "Successful-repetition ratios are reported case by case. Role-authority, "
+                "encoded, and multi-turn direct cases each reproduced 3/3; the explicit "
+                "conflict case reproduced a definite success 1/3 with 2/3 ambiguous. All "
+                "three QR protected-disclosure, all three RAG disclosure, and all three "
+                "system-context attempts remained confirmed non-successes. The five "
+                f"independently regenerated clean poisoning baselines were 4/4 accurate in "
+                f"{poison['clean_baselines_at_4_of_4']['numerator']}/"
+                f"{poison['clean_baselines_at_4_of_4']['denominator']} workflows and had "
+                f"identical weight hashes in "
+                f"{poison['identical_clean_weight_hashes']['numerator']}/"
+                f"{poison['identical_clean_weight_hashes']['denominator']}."
+            ),
             "",
             "Latency uses milliseconds and R-7 quartiles:",
             "",
@@ -1070,37 +1098,45 @@ def _analysis_markdown(analysis: dict[str, Any]) -> str:
     lines.extend(
         [
             "",
-            "Poisoning latency is per five-request workflow and is not mixed with "
-            "single-request surfaces. The offline control and raw-only shared RAG refresh "
-            "are excluded. See the [latency table](../results/tables/phase-07-latency.csv).",
+            (
+                "Poisoning latency is per five-request workflow and is not mixed with "
+                "single-request surfaces. The offline control and raw-only shared RAG refresh "
+                "are excluded. See the [latency table](../results/tables/phase-07-latency.csv)."
+            ),
             "",
             "## Poisoning metrics",
             "",
-            f"All {poison['nonzero_training_acceptance']['numerator']}/"
-            f"{poison['nonzero_training_acceptance']['denominator']} nonzero workflows "
-            "accepted exactly the preregistered number of samples. Budgets 1, 3, and 5 "
-            "targeted workflows and the broad budget-5 workflow each reduced clean "
-            "accuracy from 4/4 to 3/4 (degradation 1/4), flipped 1/4 baseline-correct "
-            "predictions, and changed target `H-POS-002` from positive to negative. "
-            "Targeted-strategy success was "
-            f"{poison['targeted_direction_success']['numerator']}/"
-            f"{poison['targeted_direction_success']['denominator']}; the broad case also "
-            "changed that target, so the all-nonzero direction-change count was "
-            f"{poison['all_nonzero_target_direction_change']['numerator']}/"
-            f"{poison['all_nonzero_target_direction_change']['denominator']}. Material "
-            f"degradation was {poison['material_degradation']['numerator']}/"
-            f"{poison['material_degradation']['denominator']}. The remaining clean "
-            "accuracy was 3/4, so the evidence supports material degradation at the "
-            "frozen threshold, not total utility collapse.",
+            (
+                f"All {poison['nonzero_training_acceptance']['numerator']}/"
+                f"{poison['nonzero_training_acceptance']['denominator']} nonzero workflows "
+                "accepted exactly the preregistered number of samples. Budgets 1, 3, and 5 "
+                "targeted workflows and the broad budget-5 workflow each reduced clean "
+                "accuracy from 4/4 to 3/4 (degradation 1/4), flipped 1/4 baseline-correct "
+                "predictions, and changed target `H-POS-002` from positive to negative. "
+                "Targeted-strategy success was "
+                f"{poison['targeted_direction_success']['numerator']}/"
+                f"{poison['targeted_direction_success']['denominator']}; the broad case also "
+                "changed that target, so the all-nonzero direction-change count was "
+                f"{poison['all_nonzero_target_direction_change']['numerator']}/"
+                f"{poison['all_nonzero_target_direction_change']['denominator']}. Material "
+                f"degradation was {poison['material_degradation']['numerator']}/"
+                f"{poison['material_degradation']['denominator']}. The remaining clean "
+                "accuracy was 3/4, so the evidence supports material degradation at the "
+                "frozen threshold, not total utility collapse."
+            ),
             "",
-            "Exact budget, poison ratio, clean/poisoned numerator-denominator pairs, "
-            "flip counts, target outcome, weight hash, and raw evidence are in the "
-            "[poisoning table](../results/tables/phase-07-poisoning.csv).",
+            (
+                "Exact budget, poison ratio, clean/poisoned numerator-denominator pairs, "
+                "flip counts, target outcome, weight hash, and raw evidence are in the "
+                "[poisoning table](../results/tables/phase-07-poisoning.csv)."
+            ),
             "",
             "## Evidence-linked findings and project risk",
             "",
-            "These are project-defined local-lab scores, not OWASP/CVSS scores and not "
-            "production prevalence estimates.",
+            (
+                "These are project-defined local-lab scores, not OWASP/CVSS scores and not "
+                "production prevalence estimates."
+            ),
             "",
             "| Finding | Evidence result | Likelihood | Impact | Score / band | OWASP |",
             "|---|---:|---:|---:|---:|---|",
@@ -1134,54 +1170,74 @@ def _analysis_markdown(analysis: dict[str, Any]) -> str:
     lines.extend(
         [
             "",
-            "Machine-readable risk records are in "
-            "[JSONL](../results/tables/phase-07-risk-register.jsonl) and "
-            "[CSV](../results/tables/phase-07-risk-register.csv). OWASP mappings follow "
-            "the project-approved taxonomy: LLM01 for demonstrated prompt injection and "
-            "LLM04 for data/model poisoning. Negative disclosure cases are not promoted "
-            "to LLM02/LLM07 findings.",
+            (
+                "Machine-readable risk records are in "
+                "[JSONL](../results/tables/phase-07-risk-register.jsonl) and "
+                "[CSV](../results/tables/phase-07-risk-register.csv). OWASP mappings follow "
+                "the project-approved taxonomy: LLM01 for demonstrated prompt injection and "
+                "LLM04 for data/model poisoning. Negative disclosure cases are not promoted "
+                "to LLM02/LLM07 findings."
+            ),
             "",
             "## Mitigation summary",
             "",
-            "F-001 requires deterministic application enforcement, explicit untrusted-"
-            "content boundaries, least privilege, structured output validation, and "
-            "monitoring; prompt wording or a keyword blacklist alone is insufficient. "
-            "F-002 requires authorization for ingestion/retraining, provenance and data "
-            "quality checks, clean-holdout and targeted-flip promotion gates, model/data "
-            "versioning, drift monitoring, and tested rollback.",
+            (
+                "F-001 requires deterministic application enforcement, explicit untrusted-"
+                "content boundaries, least privilege, structured output validation, and "
+                "monitoring; prompt wording or a keyword blacklist alone is insufficient. "
+                "F-002 requires authorization for ingestion/retraining, provenance and data "
+                "quality checks, clean-holdout and targeted-flip promotion gates, model/data "
+                "versioning, drift monitoring, and tested rollback."
+            ),
             "",
-            "The full preventive/detective/recovery matrix, effort, residual risk, "
-            "validation test, and official OWASP guidance link are in "
-            "[the mitigation matrix](../evidence/mitigations/phase-07-mitigation-matrix.md).",
+            (
+                "The full preventive/detective/recovery matrix, effort, residual risk, "
+                "validation test, and official OWASP guidance link are in "
+                "[the mitigation matrix](../evidence/mitigations/phase-07-mitigation-matrix.md)."
+            ),
             "",
             "## Validity and limitations",
             "",
-            "- **Construct validity:** Exact synthetic markers and structured poisoning "
-            "fields provide high-precision evidence for the frozen policies. Near matches "
-            "remain ambiguous. The benign false-positive result is 0/9 successes, but two "
-            "RAG controls were ambiguous. A 5/18 failure sample cannot establish detector "
-            "sensitivity.",
-            "- **Internal validity:** Target, commit, model digest, catalog, parameters, "
-            "rate, retries, resets, and run ID were controlled. Model temperature and seed "
-            "were unavailable at the application routes, so prompt nondeterminism remains. "
-            "The stopped 1.1.0 run is isolated and excluded.",
-            "- **External validity:** This is one intentionally vulnerable local PwnzzAI "
-            "deployment, one 1B model, synthetic data, and one host environment. Results "
-            "do not estimate production prevalence or generalize to other models/apps.",
-            "- **Conclusion validity:** The prompt cases have only three trials each; each "
-            "poison budget has one workflow and a four-item holdout. Exact counts and "
-            "ambiguity bounds are reported instead of inferential significance. Stage "
-            "effects are confounded with attack family.",
-            "- **Researcher bias:** Cases, rules, sampling seed, and thresholds were frozen "
-            "before the full run, and automatic/manual labels remain separate. Review was "
-            "performed by one Codex-assisted reviewer without independent second review.",
-            "- **Measurement limits:** Poisoning duration is a five-request workflow, while "
-            "other duration records are single requests. The shared RAG refresh has raw "
-            "support evidence but no normalized latency record.",
+            (
+                "- **Construct validity:** Exact synthetic markers and structured poisoning "
+                "fields provide high-precision evidence for the frozen policies. Near matches "
+                "remain ambiguous. The benign false-positive result is 0/9 successes, but two "
+                "RAG controls were ambiguous. A 5/18 failure sample cannot establish detector "
+                "sensitivity."
+            ),
+            (
+                "- **Internal validity:** Target, commit, model digest, catalog, parameters, "
+                "rate, retries, resets, and run ID were controlled. Model temperature and seed "
+                "were unavailable at the application routes, so prompt nondeterminism remains. "
+                "The stopped 1.1.0 run is isolated and excluded."
+            ),
+            (
+                "- **External validity:** This is one intentionally vulnerable local PwnzzAI "
+                "deployment, one 1B model, synthetic data, and one host environment. Results "
+                "do not estimate production prevalence or generalize to other models/apps."
+            ),
+            (
+                "- **Conclusion validity:** The prompt cases have only three trials each; each "
+                "poison budget has one workflow and a four-item holdout. Exact counts and "
+                "ambiguity bounds are reported instead of inferential significance. Stage "
+                "effects are confounded with attack family."
+            ),
+            (
+                "- **Researcher bias:** Cases, rules, sampling seed, and thresholds were frozen "
+                "before the full run, and automatic/manual labels remain separate. Review was "
+                "performed by one Codex-assisted reviewer without independent second review."
+            ),
+            (
+                "- **Measurement limits:** Poisoning duration is a five-request workflow, while "
+                "other duration records are single requests. The shared RAG refresh has raw "
+                "support evidence but no normalized latency record."
+            ),
             "",
-            "Programmatic figures: "
-            "[outcomes by category](../results/figures/phase-07-outcomes-by-category.svg) "
-            "and [poisoning metrics](../results/figures/phase-07-poisoning-metrics.svg).",
+            (
+                "Programmatic figures: "
+                "[outcomes by category](../results/figures/phase-07-outcomes-by-category.svg) "
+                "and [poisoning metrics](../results/figures/phase-07-poisoning-metrics.svg)."
+            ),
             "",
         ]
     )
@@ -1192,8 +1248,10 @@ def _mitigation_markdown(rows: list[dict[str, str]]) -> str:
     lines = [
         "# Phase 7 Mitigation Matrix",
         "",
-        "Mitigations are tied to the evidenced attack-chain step. Residual risk is "
-        "expected after the control and does not imply guaranteed prevention.",
+        (
+            "Mitigations are tied to the evidenced attack-chain step. Residual risk is "
+            "expected after the control and does not imply guaranteed prevention."
+        ),
         "",
         "| ID | Finding | Chain step | Class / layer | Effort | Residual | Recommendation | Validation |",
         "|---|---|---|---|---:|---:|---|---|",
@@ -1209,8 +1267,10 @@ def _mitigation_markdown(rows: list[dict[str, str]]) -> str:
     lines.extend(
         [
             "",
-            "Prompt changes and keyword blacklists may be supporting controls, but they "
-            "do not independently close either demonstrated chain.",
+            (
+                "Prompt changes and keyword blacklists may be supporting controls, but they "
+                "do not independently close either demonstrated chain."
+            ),
             "",
         ]
     )
@@ -1228,13 +1288,19 @@ def _outcomes_svg(rows: list[dict[str, Any]]) -> str:
         "error": "#667085",
     }
     parts = [
-        f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" '
-        f'viewBox="0 0 {width} {height}">',
+        (
+            f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" '
+            f'viewBox="0 0 {width} {height}">'
+        ),
         '<rect width="100%" height="100%" fill="#ffffff"/>',
-        '<text x="24" y="34" font-family="Arial, sans-serif" font-size="20" '
-        'font-weight="700" fill="#101828">Adjudicated adversarial outcomes by category</text>',
-        '<text x="24" y="57" font-family="Arial, sans-serif" font-size="12" '
-        'fill="#475467">Complete protocol 1.1.1 replacement run; n=28 workflows</text>',
+        (
+            '<text x="24" y="34" font-family="Arial, sans-serif" font-size="20" '
+            'font-weight="700" fill="#101828">Adjudicated adversarial outcomes by category</text>'
+        ),
+        (
+            '<text x="24" y="57" font-family="Arial, sans-serif" font-size="12" '
+            'fill="#475467">Complete protocol 1.1.1 replacement run; n=28 workflows</text>'
+        ),
     ]
     for index, row in enumerate(categories):
         y = 88 + index * 52
@@ -1270,11 +1336,15 @@ def _outcomes_svg(rows: list[dict[str, Any]]) -> str:
     for outcome in LABELS:
         parts.extend(
             [
-                f'<rect x="{x}" y="{legend_y - 12}" width="12" height="12" '
-                f'fill="{colors[outcome]}"/>',
-                f'<text x="{x + 18}" y="{legend_y - 1}" '
-                'font-family="Arial, sans-serif" font-size="12" '
-                f'fill="#344054">{outcome}</text>',
+                (
+                    f'<rect x="{x}" y="{legend_y - 12}" width="12" height="12" '
+                    f'fill="{colors[outcome]}"/>'
+                ),
+                (
+                    f'<text x="{x + 18}" y="{legend_y - 1}" '
+                    'font-family="Arial, sans-serif" font-size="12" '
+                    f'fill="#344054">{outcome}</text>'
+                ),
             ]
         )
         x += 120
@@ -1288,24 +1358,34 @@ def _poisoning_svg(rows: list[dict[str, Any]]) -> str:
     left, top, plot_width, plot_height = 90, 70, 700, 220
     group_width = plot_width / len(nonzero)
     parts = [
-        f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" '
-        f'viewBox="0 0 {width} {height}">',
+        (
+            f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" '
+            f'viewBox="0 0 {width} {height}">'
+        ),
         '<rect width="100%" height="100%" fill="#ffffff"/>',
-        '<text x="24" y="32" font-family="Arial, sans-serif" font-size="20" '
-        'font-weight="700" fill="#101828">Poisoning effect by frozen budget</text>',
-        '<text x="24" y="53" font-family="Arial, sans-serif" font-size="12" '
-        'fill="#475467">Accuracy and flip rate use the fixed four-item clean holdout</text>',
+        (
+            '<text x="24" y="32" font-family="Arial, sans-serif" font-size="20" '
+            'font-weight="700" fill="#101828">Poisoning effect by frozen budget</text>'
+        ),
+        (
+            '<text x="24" y="53" font-family="Arial, sans-serif" font-size="12" '
+            'fill="#475467">Accuracy and flip rate use the fixed four-item clean holdout</text>'
+        ),
     ]
     for tick in range(5):
         value = tick / 4
         y = top + plot_height - value * plot_height
         parts.extend(
             [
-                f'<line x1="{left}" y1="{y:.2f}" x2="{left + plot_width}" '
-                f'y2="{y:.2f}" stroke="#eaecf0"/>',
-                f'<text x="{left - 12}" y="{y + 4:.2f}" text-anchor="end" '
-                'font-family="Arial, sans-serif" font-size="11" '
-                f'fill="#475467">{value:.2f}</text>',
+                (
+                    f'<line x1="{left}" y1="{y:.2f}" x2="{left + plot_width}" '
+                    f'y2="{y:.2f}" stroke="#eaecf0"/>'
+                ),
+                (
+                    f'<text x="{left - 12}" y="{y + 4:.2f}" text-anchor="end" '
+                    'font-family="Arial, sans-serif" font-size="11" '
+                    f'fill="#475467">{value:.2f}</text>'
+                ),
             ]
         )
     for index, row in enumerate(nonzero):
@@ -1338,8 +1418,10 @@ def _poisoning_svg(rows: list[dict[str, Any]]) -> str:
         parts.extend(
             [
                 f'<rect x="{x}" y="330" width="12" height="12" fill="{color}"/>',
-                f'<text x="{x + 18}" y="341" font-family="Arial, sans-serif" '
-                f'font-size="12" fill="#344054">{label}</text>',
+                (
+                    f'<text x="{x + 18}" y="341" font-family="Arial, sans-serif" '
+                    f'font-size="12" fill="#344054">{label}</text>'
+                ),
             ]
         )
         x += 220

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 
+from scripts.validate_phase06_execution import validate_phase06_execution
 from src.analysis import sha256_file
 from src.probes.phase06_full import (
     AUTHORIZATION_PATH,
@@ -13,7 +14,6 @@ from src.probes.phase06_full import (
     RAG_CASE_IDS,
     Phase06FullRun,
 )
-from scripts.validate_phase06_execution import validate_phase06_execution
 
 
 def _load(path):

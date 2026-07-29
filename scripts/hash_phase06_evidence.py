@@ -10,7 +10,6 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
-
 ROOT = Path(__file__).resolve().parents[1]
 
 
@@ -69,9 +68,7 @@ def _create_once(path: Path, value: dict[str, Any]) -> None:
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--run-id", required=True)
-    parser.add_argument(
-        "--status", required=True, choices=("superseded", "complete")
-    )
+    parser.add_argument("--status", required=True, choices=("superseded", "complete"))
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
 
@@ -99,13 +96,9 @@ def main() -> int:
     for path in _event_references(events_path):
         artifacts[path] = "tracked_run_entry_evidence"
 
-    authorization_paths = [
-        path for path in artifacts if "authorization" in path.name
-    ]
+    authorization_paths = [path for path in artifacts if "authorization" in path.name]
     for authorization_path in authorization_paths:
-        authorization = json.loads(
-            authorization_path.read_text(encoding="utf-8")
-        )
+        authorization = json.loads(authorization_path.read_text(encoding="utf-8"))
         for field in ("protocol_path", "catalog_path"):
             value = authorization.get(field)
             if isinstance(value, str):
@@ -113,9 +106,7 @@ def main() -> int:
                 if candidate.is_file():
                     artifacts[candidate] = "tracked_frozen_input"
 
-    for path in (
-        ROOT / "evidence" / "review"
-    ).glob(f"{args.run_id}*"):
+    for path in (ROOT / "evidence" / "review").glob(f"{args.run_id}*"):
         if path.is_file():
             artifacts[path.resolve()] = "tracked_manual_review"
             if path.name.endswith(".summary.json"):
@@ -126,9 +117,7 @@ def main() -> int:
                     if candidate.is_file():
                         artifacts[candidate] = "tracked_manual_decisions"
     for suffix in (".adjudicated.jsonl",):
-        path = (
-            ROOT / "results" / "normalized" / f"{args.run_id}{suffix}"
-        )
+        path = ROOT / "results" / "normalized" / f"{args.run_id}{suffix}"
         if path.is_file():
             artifacts[path.resolve()] = "local_normalized_adjudicated"
     if args.status == "superseded":
@@ -162,9 +151,7 @@ def main() -> int:
             if path.is_file():
                 artifacts[path.resolve()] = retention
 
-    preflight_paths = [
-        path for path in artifacts if "preflight" in path.name
-    ]
+    preflight_paths = [path for path in artifacts if "preflight" in path.name]
     for preflight_path in preflight_paths:
         preflight = json.loads(preflight_path.read_text(encoding="utf-8"))
         source_manifest = preflight.get("source_environment_manifest")

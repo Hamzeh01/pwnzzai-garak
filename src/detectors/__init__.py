@@ -8,8 +8,8 @@ from .base import (
     ExactSignalDetector,
     PoisoningEffectDetector,
     PoisoningMetricsInput,
-    SyntheticSignalDetector,
     SyntheticRagLeakageDetector,
+    SyntheticSignalDetector,
     SystemContextConsequenceDetector,
 )
 
@@ -21,7 +21,7 @@ __all__ = [
     "ExactSignalDetector",
     "PoisoningEffectDetector",
     "PoisoningMetricsInput",
-    "SyntheticSignalDetector",
     "SyntheticRagLeakageDetector",
+    "SyntheticSignalDetector",
     "SystemContextConsequenceDetector",
 ]

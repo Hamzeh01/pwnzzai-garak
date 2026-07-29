@@ -12,7 +12,6 @@ from typing import Any
 
 from jsonschema import Draft202012Validator, FormatChecker
 
-
 ROOT = Path(__file__).resolve().parents[1]
 DECISIONS_PATH = ROOT / "configs" / "phase-05-pilot-adjudication.json"
 CATALOG_PATH = ROOT / "configs" / "phase-05-scenario-catalog.v1.0.0.json"
@@ -23,7 +22,7 @@ RESULT_SCHEMA_PATH = ROOT / "schemas" / "result-record.schema.json"
 def _load_json(path: Path) -> dict[str, Any]:
     value = json.loads(path.read_text(encoding="utf-8"))
     if not isinstance(value, dict):
-        raise ValueError(f"JSON object required: {path}")
+        raise TypeError(f"JSON object required: {path}")
     return value
 
 
@@ -67,9 +66,7 @@ def main() -> int:
     run_id = decisions["run_id"]
     source_path = ROOT / "results" / "normalized" / f"{run_id}.jsonl"
     review_path = ROOT / "evidence" / "review" / f"{run_id}.manual.jsonl"
-    adjudicated_path = (
-        ROOT / "results" / "normalized" / f"{run_id}.adjudicated.jsonl"
-    )
+    adjudicated_path = ROOT / "results" / "normalized" / f"{run_id}.adjudicated.jsonl"
     summary_path = ROOT / "evidence" / "review" / f"{run_id}.summary.json"
 
     source_records = [
@@ -82,9 +79,7 @@ def main() -> int:
         case["test_case_id"]: case["policy_id"]
         for case in _load_json(CATALOG_PATH)["cases"]
     }
-    decision_by_case = {
-        item["test_case_id"]: item for item in decisions["decisions"]
-    }
+    decision_by_case = {item["test_case_id"]: item for item in decisions["decisions"]}
     if set(by_case) != set(decision_by_case):
         raise ValueError("manual decisions must cover exactly all pilot outcomes")
 
@@ -135,25 +130,19 @@ def main() -> int:
         for review in reviews
         if review["automatic_label"] != review["manual_label"]
     ]
-    automatic_counts = Counter(
-        review["automatic_label"] for review in reviews
-    )
+    automatic_counts = Counter(review["automatic_label"] for review in reviews)
     manual_counts = Counter(review["manual_label"] for review in reviews)
     automatic_successes = [
         review for review in reviews if review["automatic_label"] == "success"
     ]
     confirmed_automatic_successes = [
-        review
-        for review in automatic_successes
-        if review["manual_label"] == "success"
+        review for review in automatic_successes if review["manual_label"] == "success"
     ]
     automatic_non_hits = [
         review for review in reviews if review["automatic_label"] == "failure"
     ]
     manual_success_non_hits = [
-        review
-        for review in automatic_non_hits
-        if review["manual_label"] == "success"
+        review for review in automatic_non_hits if review["manual_label"] == "success"
     ]
     benign_case_ids = {
         "CTL-DPI-BENIGN-001",
@@ -206,9 +195,7 @@ def main() -> int:
             "too small for a general sensitivity claim."
         ),
         "source_normalized_path": source_path.relative_to(ROOT).as_posix(),
-        "adjudicated_normalized_path": adjudicated_path.relative_to(
-            ROOT
-        ).as_posix(),
+        "adjudicated_normalized_path": adjudicated_path.relative_to(ROOT).as_posix(),
         "manual_review_path": review_path.relative_to(ROOT).as_posix(),
     }
     _create_once(review_path, _jsonl_bytes(reviews))
@@ -216,14 +203,11 @@ def main() -> int:
     _create_once(
         summary_path,
         (
-            json.dumps(summary, indent=2, ensure_ascii=False, sort_keys=True)
-            + "\n"
+            json.dumps(summary, indent=2, ensure_ascii=False, sort_keys=True) + "\n"
         ).encode("utf-8"),
     )
     print(f"manual_review={review_path.relative_to(ROOT).as_posix()}")
-    print(
-        f"adjudicated_normalized={adjudicated_path.relative_to(ROOT).as_posix()}"
-    )
+    print(f"adjudicated_normalized={adjudicated_path.relative_to(ROOT).as_posix()}")
     print(f"summary={summary_path.relative_to(ROOT).as_posix()}")
     print(f"disagreements={len(disagreements)}")
     return 0

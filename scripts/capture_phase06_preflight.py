@@ -14,11 +14,8 @@ from pathlib import Path
 from typing import Any
 from urllib.request import urlopen
 
-
 ROOT = Path(__file__).resolve().parents[1]
-PROTOCOL_PATH = (
-    ROOT / "configs" / "phase-06-execution-protocol.v1.1.1.json"
-)
+PROTOCOL_PATH = ROOT / "configs" / "phase-06-execution-protocol.v1.1.1.json"
 CATALOG_PATH = ROOT / "configs" / "phase-05-scenario-catalog.v1.1.0.json"
 LOCK_PATH = ROOT / "environment" / "requirements-lock.txt"
 OLD_MANIFEST_PATH = (
@@ -74,9 +71,7 @@ def _listener_addresses() -> dict[int, list[str]]:
     rows = value if isinstance(value, list) else [value]
     by_port: dict[int, list[str]] = {}
     for row in rows:
-        by_port.setdefault(int(row["LocalPort"]), []).append(
-            str(row["LocalAddress"])
-        )
+        by_port.setdefault(int(row["LocalPort"]), []).append(str(row["LocalAddress"]))
     return by_port
 
 
@@ -109,9 +104,7 @@ def main() -> int:
         raise ValueError("preflight output must be in environment/captured")
 
     protocol = json.loads(PROTOCOL_PATH.read_text(encoding="utf-8"))
-    old_manifest = json.loads(
-        OLD_MANIFEST_PATH.read_text(encoding="utf-8-sig")
-    )
+    old_manifest = json.loads(OLD_MANIFEST_PATH.read_text(encoding="utf-8-sig"))
     configured = protocol["principal_target"]
 
     home_status: int
@@ -125,6 +118,8 @@ def main() -> int:
         "http://127.0.0.1:11434/api/version"
     )
     tags_status, tags = _get_json("http://127.0.0.1:11434/api/tags")
+    if tags_status != 200:
+        raise RuntimeError(f"Ollama tags endpoint returned HTTP {tags_status}")
     model = next(
         (
             item
@@ -134,7 +129,7 @@ def main() -> int:
         None,
     )
     if not isinstance(model, dict):
-        raise RuntimeError("pinned model is absent from the live Ollama tags")
+        raise TypeError("pinned model is absent from the live Ollama tags")
 
     source_commit = _run(
         "git", "-C", str(ROOT / "vendor" / "PwnzzAI"), "rev-parse", "HEAD"
@@ -191,9 +186,7 @@ def main() -> int:
     )
 
     lock_lines = LOCK_PATH.read_text(encoding="utf-8-sig").splitlines()
-    live_freeze = _run(
-        sys.executable, "-m", "pip", "freeze"
-    ).splitlines()
+    live_freeze = _run(sys.executable, "-m", "pip", "freeze").splitlines()
     requirements_match = lock_lines == live_freeze
     garak_version = _run(
         sys.executable,
@@ -211,12 +204,10 @@ def main() -> int:
     )
     expected_binds = ["downloads", "instance", "uploads"]
     pwnzzai_binding = port_bindings.get("8080/tcp", [])
-    pwnzzai_loopback = pwnzzai_binding == [
-        {"HostIp": "127.0.0.1", "HostPort": "18080"}
+    pwnzzai_loopback = pwnzzai_binding == [{"HostIp": "127.0.0.1", "HostPort": "18080"}]
+    listener_match = listeners.get(18080) == ["127.0.0.1"] and listeners.get(11434) == [
+        "127.0.0.1"
     ]
-    listener_match = listeners.get(18080) == ["127.0.0.1"] and listeners.get(
-        11434
-    ) == ["127.0.0.1"]
     image_digest_match = image_reference.endswith("@" + EXPECTED_IMAGE_DIGEST)
 
     checks = {
@@ -236,9 +227,7 @@ def main() -> int:
             .removeprefix("Docker version ")
             .split(",")[0]
         ),
-        "garak_version_matches": (
-            garak_version == old_manifest["garak"]["version"]
-        ),
+        "garak_version_matches": (garak_version == old_manifest["garak"]["version"]),
         "home_available": home_status == 200,
         "image_digest_matches": image_digest_match,
         "model_digest_matches": model.get("digest") == configured["model_digest"],
@@ -249,12 +238,10 @@ def main() -> int:
         ),
         "ollama_version_matches": (
             ollama_version_status == 200
-            and ollama_version_body.get("version")
-            == old_manifest["ollama"]["version"]
+            and ollama_version_body.get("version") == old_manifest["ollama"]["version"]
         ),
         "pwnzzai_commit_matches": (
-            source_commit == configured["pwnzzai_commit"]
-            and source_status == ""
+            source_commit == configured["pwnzzai_commit"] and source_status == ""
         ),
         "python_version_matches": (
             platform.python_version()
@@ -274,9 +261,7 @@ def main() -> int:
         "protocol_sha256": _sha256(PROTOCOL_PATH),
         "catalog_path": CATALOG_PATH.relative_to(ROOT).as_posix(),
         "catalog_sha256": _sha256(CATALOG_PATH),
-        "source_environment_manifest": OLD_MANIFEST_PATH.relative_to(
-            ROOT
-        ).as_posix(),
+        "source_environment_manifest": OLD_MANIFEST_PATH.relative_to(ROOT).as_posix(),
         "dependency_manifest_correction": {
             "reason": (
                 "Phase 5 added qrcode==8.2 for local QR artifact generation "

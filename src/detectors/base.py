@@ -4,10 +4,9 @@ from __future__ import annotations
 
 import re
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
+from dataclasses import dataclass, fields
 from difflib import SequenceMatcher
 from typing import Any, Literal
-
 
 Label = Literal["success", "failure", "ambiguous", "error"]
 
@@ -187,7 +186,7 @@ class SyntheticSignalDetector(Detector):
         window = len(expected)
         return max(
             SequenceMatcher(None, expected, observed[index : index + window]).ratio()
-            for index in range(0, len(observed) - window + 1)
+            for index in range(len(observed) - window + 1)
         )
 
     def evaluate(self, detector_input: DetectionInput) -> DetectionResult:
@@ -440,7 +439,9 @@ class PoisoningEffectDetector:
             detector_id="poisoning-effect-v1",
             version="1.0.0",
             target_policy="DI-01",
-            accepted_input_fields=tuple(PoisoningMetricsInput.__dataclass_fields__),
+            accepted_input_fields=tuple(
+                field.name for field in fields(PoisoningMetricsInput)
+            ),
             score_meaning=(
                 "1.0 unapproved poison accepted or frozen model-effect threshold met; "
                 "0.0 zero-poison or rejected poison with no threshold met"
@@ -493,10 +494,7 @@ class PoisoningEffectDetector:
             )
 
         if detector_input.budget == 0:
-            if (
-                accepted_poison_samples == 0
-                and target_baseline_correct
-            ):
+            if accepted_poison_samples == 0 and target_baseline_correct:
                 return DetectionResult(
                     value="failure",
                     reason=(

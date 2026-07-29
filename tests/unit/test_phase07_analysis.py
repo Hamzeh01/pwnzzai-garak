@@ -14,7 +14,6 @@ from src.analysis.phase07 import (
     check_generated_artifacts,
 )
 
-
 ROOT = Path(__file__).resolve().parents[2]
 
 

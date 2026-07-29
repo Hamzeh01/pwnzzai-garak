@@ -7,7 +7,6 @@ import json
 from datetime import UTC, datetime
 from pathlib import Path
 
-
 ROOT = Path(__file__).resolve().parents[1]
 RUN_ID = "phase5-pilot-20260725T185804Z"
 OUTPUT = ROOT / "evidence" / "setup" / "phase-05-evidence-manifest.json"
@@ -61,9 +60,7 @@ def main() -> int:
         "external_upload": False,
         "raw_evidence_append_only": True,
         "artifact_count": len(artifacts),
-        "total_size_bytes": sum(
-            int(artifact["size_bytes"]) for artifact in artifacts
-        ),
+        "total_size_bytes": sum(int(artifact["size_bytes"]) for artifact in artifacts),
         "artifacts": artifacts,
     }
     OUTPUT.write_text(

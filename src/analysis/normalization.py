@@ -44,11 +44,11 @@ def extract_openai_output(response_body: dict[str, Any]) -> tuple[str, dict[str,
         raise ValueError("response lacks choices[0].message.content") from exc
 
     if not isinstance(output, str):
-        raise ValueError("normalized output must be a string")
+        raise TypeError("normalized output must be a string")
 
     metadata = response_body.get("pwnzz_escalation_meta", {})
     if not isinstance(metadata, dict):
-        raise ValueError("pwnzz_escalation_meta must be an object")
+        raise TypeError("pwnzz_escalation_meta must be an object")
     return output, metadata
 
 

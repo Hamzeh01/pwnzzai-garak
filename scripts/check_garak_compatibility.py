@@ -14,7 +14,6 @@ if str(ROOT) not in sys.path:
 
 from src.adapters.garak_openai import verify_garak_compatibility
 
-
 DEFAULT_OUTPUT = ROOT / "evidence" / "setup" / "phase-04-garak-compatibility.json"
 
 

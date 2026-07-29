@@ -2,33 +2,30 @@
 
 from __future__ import annotations
 
-import json
 import time
+from collections.abc import Callable
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any
 
 from src.analysis import sha256_file
 from src.detectors import DetectionResult
 from src.probes.phase05_pilot import (
     CATALOG_PATH as PILOT_CATALOG_PATH,
+)
+from src.probes.phase05_pilot import (
     PROTOCOL_PATH as PILOT_PROTOCOL_PATH,
+)
+from src.probes.phase05_pilot import (
+    ROOT,
     Phase05Pilot,
     PoisoningBaseline,
-    ROOT,
     SafetyStop,
 )
 
-
-FINAL_CATALOG_PATH = (
-    ROOT / "configs" / "phase-05-scenario-catalog.v1.1.0.json"
-)
-FINAL_PROTOCOL_PATH = (
-    ROOT / "configs" / "phase-06-execution-protocol.v1.1.1.json"
-)
-AUTHORIZATION_PATH = (
-    ROOT / "configs" / "phase-06-full-run-authorization.v1.1.1.json"
-)
+FINAL_CATALOG_PATH = ROOT / "configs" / "phase-05-scenario-catalog.v1.1.0.json"
+FINAL_PROTOCOL_PATH = ROOT / "configs" / "phase-06-execution-protocol.v1.1.1.json"
+AUTHORIZATION_PATH = ROOT / "configs" / "phase-06-full-run-authorization.v1.1.1.json"
 
 DIRECT_CASE_IDS = {
     "CTL-DPI-BENIGN-001",
@@ -112,10 +109,8 @@ class Phase06FullRun(Phase05Pilot):
             authorization.get("authorized") is not True
             or authorization.get("authorization_scope") != "phase6_full_only"
             or authorization.get("protocol_version") != "1.1.1"
-            or authorization.get("protocol_sha256")
-            != sha256_file(FINAL_PROTOCOL_PATH)
-            or authorization.get("catalog_sha256")
-            != sha256_file(FINAL_CATALOG_PATH)
+            or authorization.get("protocol_sha256") != sha256_file(FINAL_PROTOCOL_PATH)
+            or authorization.get("catalog_sha256") != sha256_file(FINAL_CATALOG_PATH)
             or authorization.get("max_target_requests") != 79
             or authorization.get("maximum_poison_budget") != 5
             or authorization.get("max_wall_clock_seconds") != 1200
@@ -130,8 +125,7 @@ class Phase06FullRun(Phase05Pilot):
         if (
             preflight.get("status") != "passed"
             or preflight.get("protocol_version") != "1.1.1"
-            or preflight.get("protocol_sha256")
-            != sha256_file(FINAL_PROTOCOL_PATH)
+            or preflight.get("protocol_sha256") != sha256_file(FINAL_PROTOCOL_PATH)
             or preflight.get("catalog_sha256") != sha256_file(FINAL_CATALOG_PATH)
             or preflight.get("pwnzzai_commit") != configured["pwnzzai_commit"]
             or preflight.get("pwnzzai_image_digest")
@@ -148,10 +142,7 @@ class Phase06FullRun(Phase05Pilot):
     def _attempt_id(
         self, case_id: str, repetition: int, attempt_tag: str | None
     ) -> str:
-        return (
-            f"{self.paths.run_id}.{case_id}."
-            f"{attempt_tag or f'r{repetition}'}"
-        )
+        return f"{self.paths.run_id}.{case_id}.{attempt_tag or f'r{repetition}'}"
 
     def _record_terminal_error(
         self,
@@ -300,9 +291,7 @@ class Phase06FullRun(Phase05Pilot):
             surface="offline",
             repetition=1,
             attempt_tag=None,
-            operation=lambda: self._run_offline_positive(
-                "CTL-DET-POS-001"
-            ),
+            operation=lambda: self._run_offline_positive("CTL-DET-POS-001"),
             fatal_on_error=True,
         )
 
@@ -347,9 +336,7 @@ class Phase06FullRun(Phase05Pilot):
                         fatal_on_error=False,
                     )
 
-        minimum_accuracy = self.protocol["poisoning"][
-            "minimum_baseline_accuracy"
-        ]
+        minimum_accuracy = self.protocol["poisoning"]["minimum_baseline_accuracy"]
         initial_baseline = self._run_terminal(
             case_id="CTL-POI-ZERO-001",
             surface="poison",
@@ -428,9 +415,7 @@ class Phase06FullRun(Phase05Pilot):
             "duration_ms": elapsed_ms,
             "incident_count": self.incident_count,
             "raw_directory": self.store.relative_path(self.paths.raw_directory),
-            "normalized_path": self.store.relative_path(
-                self.paths.normalized_path
-            ),
+            "normalized_path": self.store.relative_path(self.paths.normalized_path),
         }
 
 

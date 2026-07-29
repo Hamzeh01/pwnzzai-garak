@@ -9,11 +9,8 @@ import random
 from pathlib import Path
 from typing import Any
 
-
 ROOT = Path(__file__).resolve().parents[1]
-CATALOG_PATH = (
-    ROOT / "configs" / "phase-05-scenario-catalog.v1.1.0.json"
-)
+CATALOG_PATH = ROOT / "configs" / "phase-05-scenario-catalog.v1.1.0.json"
 SEED = 20260725
 NON_HIT_RATE = 0.25
 
@@ -28,8 +25,7 @@ def select_records(
     other_failures = sorted(
         record["attempt_id"]
         for record in records
-        if record["automatic_label"]["value"] == "failure"
-        and not _is_poison(record)
+        if record["automatic_label"]["value"] == "failure" and not _is_poison(record)
     )
     sample_size = math.ceil(len(other_failures) * NON_HIT_RATE)
     sampled = sorted(random.Random(SEED).sample(other_failures, sample_size))
@@ -57,19 +53,14 @@ def main() -> int:
     parser.add_argument("--start", type=int, default=1)
     parser.add_argument("--end", type=int)
     args = parser.parse_args()
-    source_path = (
-        ROOT / "results" / "normalized" / f"{args.run_id}.jsonl"
-    )
+    source_path = ROOT / "results" / "normalized" / f"{args.run_id}.jsonl"
     records = [
         json.loads(line)
         for line in source_path.read_text(encoding="utf-8").splitlines()
         if line.strip()
     ]
     catalog = json.loads(CATALOG_PATH.read_text(encoding="utf-8"))
-    rules = {
-        case["test_case_id"]: case["manual_rule"]
-        for case in catalog["cases"]
-    }
+    rules = {case["test_case_id"]: case["manual_rule"] for case in catalog["cases"]}
     selected, sampled = select_records(records)
     print(
         f"selected={len(selected)} total={len(records)} "
@@ -92,10 +83,7 @@ def main() -> int:
             f"reason={record['automatic_label']['reason']}"
         )
         print(f"rule={rules[record['test_case_id']]}")
-        print(
-            "output="
-            + record["response"]["normalized_output"].replace("\n", " ")
-        )
+        print("output=" + record["response"]["normalized_output"].replace("\n", " "))
         print(
             "metadata="
             + json.dumps(

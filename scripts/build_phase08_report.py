@@ -6,18 +6,17 @@ import argparse
 import csv
 import json
 import re
+from collections.abc import Iterable
 from pathlib import Path
-from typing import Any, Iterable
+from typing import Any
 
 from docx import Document
-from docx.enum.section import WD_SECTION
 from docx.enum.table import WD_ALIGN_VERTICAL, WD_TABLE_ALIGNMENT
-from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_BREAK, WD_LINE_SPACING
+from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_LINE_SPACING
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
 from docx.shared import Inches, Pt, RGBColor
 from PIL import Image, ImageDraw, ImageFont
-
 
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE_PATH = ROOT / "paper" / "report-content.md"
@@ -95,9 +94,9 @@ def environment_tokens() -> dict[str, str]:
     principal = models["principal_model"]
     return {
         "GARAK_VERSION": python_lines["garak_version"],
-        "PWNZZAI_COMMIT": (
-            ROOT / "environment" / "pwnzzai-commit.txt"
-        ).read_text(encoding="utf-8").strip(),
+        "PWNZZAI_COMMIT": (ROOT / "environment" / "pwnzzai-commit.txt")
+        .read_text(encoding="utf-8")
+        .strip(),
         "PWNZZAI_IMAGE_DIGEST": image_digest["registry_manifest_digest"],
         "OLLAMA_VERSION": models["ollama_version"],
         "MODEL_TAG": principal["tag"],
@@ -162,20 +161,14 @@ def build_tokens(summary: dict[str, Any]) -> dict[str, str]:
         "ELIGIBLE_FAILURES": "18",
         "DISCLOSURE_SUCCESS": str(disclosure["numerator"]),
         "DISCLOSURE_DEN": str(disclosure["denominator"]),
-        "CLEAN_BASELINE_NUM": str(
-            poisoning["clean_baselines_at_4_of_4"]["numerator"]
-        ),
+        "CLEAN_BASELINE_NUM": str(poisoning["clean_baselines_at_4_of_4"]["numerator"]),
         "CLEAN_BASELINE_DEN": str(
             poisoning["clean_baselines_at_4_of_4"]["denominator"]
         ),
         "POI_SUCCESS": str(poisoning["nonzero_training_acceptance"]["numerator"]),
         "POI_DEN": str(poisoning["nonzero_training_acceptance"]["denominator"]),
-        "TARGETED_POI_NUM": str(
-            poisoning["targeted_direction_success"]["numerator"]
-        ),
-        "TARGETED_POI_DEN": str(
-            poisoning["targeted_direction_success"]["denominator"]
-        ),
+        "TARGETED_POI_NUM": str(poisoning["targeted_direction_success"]["numerator"]),
+        "TARGETED_POI_DEN": str(poisoning["targeted_direction_success"]["denominator"]),
     }
     tokens.update(category("DPI", "direct_prompt_injection"))
     tokens.update(category("IPI", "indirect_prompt_injection"))
@@ -465,7 +458,7 @@ def add_category_table(doc: Document, summary: dict[str, Any]) -> None:
         rows.append(
             [
                 label_map[row["value"]],
-                f'{row["success"]}/{row["asr_denominator"]}',
+                f"{row['success']}/{row['asr_denominator']}",
                 row["failure"],
                 row["ambiguous"],
                 pct(float(row["asr"])),
@@ -474,7 +467,7 @@ def add_category_table(doc: Document, summary: dict[str, Any]) -> None:
     add_caption(
         doc,
         "Table 1. Adjudicated adversarial outcomes. Source: "
-        f'{summary["run_id"]}; results/tables/phase-07-stratified-outcomes.csv.',
+        f"{summary['run_id']}; results/tables/phase-07-stratified-outcomes.csv.",
     )
     add_data_table(
         doc,
@@ -488,7 +481,9 @@ def add_category_table(doc: Document, summary: dict[str, Any]) -> None:
 def load_font(size: int, *, bold: bool = False) -> ImageFont.ImageFont:
     candidates = [
         Path("C:/Windows/Fonts/arialbd.ttf" if bold else "C:/Windows/Fonts/arial.ttf"),
-        Path("C:/Windows/Fonts/calibrib.ttf" if bold else "C:/Windows/Fonts/calibri.ttf"),
+        Path(
+            "C:/Windows/Fonts/calibrib.ttf" if bold else "C:/Windows/Fonts/calibri.ttf"
+        ),
     ]
     for candidate in candidates:
         if candidate.is_file():
@@ -554,7 +549,7 @@ def draw_category_figure() -> Path:
             cursor += width
         draw.text(
             (852, y + 2),
-            f'{row["success"]}/{row["asr_denominator"]} success',
+            f"{row['success']}/{row['asr_denominator']} success",
             fill=(52, 64, 84),
             font=load_font(12),
         )
@@ -590,7 +585,7 @@ def add_category_figure(doc: Document, summary: dict[str, Any]) -> None:
     add_caption(
         doc,
         "Figure 1. Four-way category outcomes. Source: "
-        f'{summary["run_id"]}; generated from phase-07-stratified-outcomes.csv.',
+        f"{summary['run_id']}; generated from phase-07-stratified-outcomes.csv.",
     )
 
 
@@ -598,7 +593,12 @@ def add_owasp_table(doc: Document) -> None:
     rows = [
         ["Direct injection", "PI-01", "LLM01:2025", "10/12 success"],
         ["Indirect QR injection", "PI-01", "LLM01:2025", "0/6; 1 ambiguous"],
-        ["Disclosure/system context", "SD-01/SP-01", "LLM02/LLM07 if consequence", "0/6; no finding"],
+        [
+            "Disclosure/system context",
+            "SD-01/SP-01",
+            "LLM02/LLM07 if consequence",
+            "0/6; no finding",
+        ],
         ["Classifier poisoning", "DI-01", "LLM04:2025", "4/4 success"],
     ]
     add_caption(
@@ -660,21 +660,21 @@ def add_appendix_environment(doc: Document, tokens: dict[str, str]) -> None:
         doc,
         "The table below is generated from the sanitized environment manifests. "
         "The full lock, resolved Compose configuration, source/image/model metadata, "
-        "and artifact hashes are included in the submission archive."
+        "and artifact hashes are included in the submission archive.",
     )
     rows = [
-        ["Host", f'Windows 11 Enterprise build {tokens["WINDOWS_BUILD"]}'],
+        ["Host", f"Windows 11 Enterprise build {tokens['WINDOWS_BUILD']}"],
         [
             "Docker",
-            f'Desktop {tokens["DOCKER_DESKTOP_VERSION"]}; Engine {tokens["DOCKER_ENGINE_VERSION"]}',
+            f"Desktop {tokens['DOCKER_DESKTOP_VERSION']}; Engine {tokens['DOCKER_ENGINE_VERSION']}",
         ],
-        ["Python / Garak", f'{tokens["PYTHON_VERSION"]} / {tokens["GARAK_VERSION"]}'],
+        ["Python / Garak", f"{tokens['PYTHON_VERSION']} / {tokens['GARAK_VERSION']}"],
         ["PwnzzAI source", tokens["PWNZZAI_COMMIT"]],
         ["PwnzzAI image", tokens["PWNZZAI_IMAGE_DIGEST"]],
         ["Ollama", tokens["OLLAMA_VERSION"]],
         [
             "Principal model",
-            f'{tokens["MODEL_TAG"]}; {tokens["MODEL_PARAMETER_SIZE"]}; {tokens["MODEL_QUANTIZATION"]}',
+            f"{tokens['MODEL_TAG']}; {tokens['MODEL_PARAMETER_SIZE']}; {tokens['MODEL_QUANTIZATION']}",
         ],
         ["Model digest", tokens["MODEL_DIGEST"]],
         ["Application bind", "127.0.0.1:18080"],
@@ -685,7 +685,7 @@ def add_appendix_environment(doc: Document, tokens: dict[str, str]) -> None:
         doc,
         "Primary files: environment/system-info.json, python-environment.txt, "
         "ollama-models.json, pwnzzai-commit.txt, pwnzzai-image-digest.txt, "
-        "requirements-lock.txt, compose-resolved.yml, and artifact-hashes.txt."
+        "requirements-lock.txt, compose-resolved.yml, and artifact-hashes.txt.",
     )
 
 
@@ -695,30 +695,28 @@ def add_appendix_catalog_and_payloads(doc: Document) -> None:
     catalog = read_json(CATALOG_PATH)
     add_body_paragraph(
         doc,
-        f'The authoritative catalog is {CATALOG_PATH.relative_to(ROOT)} '
-        f'({len(catalog["cases"])} cases). The entries below preserve objective, '
-        "policy, surface, repetitions, expected secure behavior, detector, and artifact hash."
+        f"The authoritative catalog is {CATALOG_PATH.relative_to(ROOT)} "
+        f"({len(catalog['cases'])} cases). The entries below preserve objective, "
+        "policy, surface, repetitions, expected secure behavior, detector, and artifact hash.",
     )
     for case in catalog["cases"]:
-        heading = doc.add_heading(
-            f'{case["test_case_id"]}: {case["title"]}', level=2
-        )
+        heading = doc.add_heading(f"{case['test_case_id']}: {case['title']}", level=2)
         heading.paragraph_format.keep_with_next = True
         surface = case["surface"]
         detector = ", ".join(case["automatic_detector_ids"])
         add_body_paragraph(
             doc,
-            f'Category/family: {case["category"]} / {case["family"]}. '
-            f'Policy: {case["policy_id"]}. Surface: {surface["method"]} '
-            f'{surface["path"]}. Repetitions: {case["repetitions"]}. '
-            f'Objective: {case["objective"]} Expected secure behavior: '
-            f'{case["expected_secure_behavior"]} Detector(s): {detector}.'
+            f"Category/family: {case['category']} / {case['family']}. "
+            f"Policy: {case['policy_id']}. Surface: {surface['method']} "
+            f"{surface['path']}. Repetitions: {case['repetitions']}. "
+            f"Objective: {case['objective']} Expected secure behavior: "
+            f"{case['expected_secure_behavior']} Detector(s): {detector}.",
         )
         artifact = case["input_artifact"]
         add_body_paragraph(
             doc,
-            f'Input artifact: {artifact["path"]}; SHA-256 {artifact["sha256"]}. '
-            f'Reset/isolation: {case["state"]["reset"]}'
+            f"Input artifact: {artifact['path']}; SHA-256 {artifact['sha256']}. "
+            f"Reset/isolation: {case['state']['reset']}",
         )
 
     doc.add_heading("B.1 Payload artifact contents", level=2)
@@ -732,9 +730,7 @@ def add_appendix_catalog_and_payloads(doc: Document) -> None:
         if path.suffix.lower() == ".png":
             paragraph = doc.add_paragraph()
             paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
-            picture = paragraph.add_run().add_picture(
-                str(path), width=Inches(1.25)
-            )
+            picture = paragraph.add_run().add_picture(str(path), width=Inches(1.25))
             set_picture_alt(
                 picture,
                 f"QR input artifact {path.name} retained for the named scenario.",
@@ -795,8 +791,9 @@ def add_appendix_results(doc: Document) -> None:
         doc,
         title="Table C2. Family-level adversarial outcomes",
         path=STRATA_PATH,
-        predicate=lambda row: row["population"] == "adversarial"
-        and row["dimension"] == "family",
+        predicate=lambda row: (
+            row["population"] == "adversarial" and row["dimension"] == "family"
+        ),
         columns=[
             ("value", "Family"),
             ("total", "n"),
@@ -891,7 +888,7 @@ def add_appendix_results(doc: Document) -> None:
         doc,
         "The archive also includes phase-07-reproducibility.csv, "
         "phase-07-mitigation-matrix.csv, all raw records for the complete run, "
-        "the original and adjudicated normalized JSONL, and the manual-review JSONL."
+        "the original and adjudicated normalized JSONL, and the manual-review JSONL.",
     )
 
 
@@ -909,7 +906,10 @@ def build_claim_manifest(summary: dict[str, Any]) -> dict[str, Any]:
                 "terminal_workflows": summary["record_count"],
                 "target_requests": summary["target_request_count"],
             },
-            "evidence": [summary["headline_input"], "evidence/setup/phase-06-evidence-manifest.json"],
+            "evidence": [
+                summary["headline_input"],
+                "evidence/setup/phase-06-evidence-manifest.json",
+            ],
         },
         {
             "claim_id": "C-002",
@@ -920,7 +920,10 @@ def build_claim_manifest(summary: dict[str, Any]) -> dict[str, Any]:
                 "ambiguous": adversarial["ambiguous"],
                 "error": adversarial["error"],
             },
-            "evidence": ["results/tables/phase-07-summary.json", "results/tables/phase-07-outcomes.csv"],
+            "evidence": [
+                "results/tables/phase-07-summary.json",
+                "results/tables/phase-07-outcomes.csv",
+            ],
         },
         {
             "claim_id": "C-003",
@@ -1026,23 +1029,21 @@ def add_appendix_evidence(doc: Document, summary: dict[str, Any]) -> None:
     )
     add_body_paragraph(
         doc,
-        f'Headline normalized input: {summary["headline_input"]}. '
+        f"Headline normalized input: {summary['headline_input']}. "
         "Raw evidence is indexed by attempt_id under "
-        f'results/raw/{summary["run_id"]}/. The Phase 7 analysis manifest records '
+        f"results/raw/{summary['run_id']}/. The Phase 7 analysis manifest records "
         "the SHA-256 of every generated table and figure; the Phase 6 evidence "
-        "manifest records the complete-run raw and normalized evidence."
+        "manifest records the complete-run raw and normalized evidence.",
     )
     add_code_block(
         doc,
-        "\n".join(
-            [
-                "Adjudicated JSONL SHA-256:",
-                "a79bbd9a7a985b8d3212449c2e3661090c63ce6bc0b8e261a3243a4a3966ad12",
-                "Protocol SHA-256:",
-                "e4b7fcee0a3fc7ee2acb297b65d977f01d8a9f0a2615cbb55f0df4e365a9366b",
-                "Catalog SHA-256:",
-                "56ea8ccf77ffeb1d5e0e9def28e601996341cfa7f712bbfb5540188826183cbb",
-            ]
+        (
+            "Adjudicated JSONL SHA-256:\n"
+            "a79bbd9a7a985b8d3212449c2e3661090c63ce6bc0b8e261a3243a4a3966ad12\n"
+            "Protocol SHA-256:\n"
+            "e4b7fcee0a3fc7ee2acb297b65d977f01d8a9f0a2615cbb55f0df4e365a9366b\n"
+            "Catalog SHA-256:\n"
+            "56ea8ccf77ffeb1d5e0e9def28e601996341cfa7f712bbfb5540188826183cbb"
         ),
     )
 
@@ -1054,22 +1055,22 @@ def add_appendix_reproduction(doc: Document, group_number: str, authors: str) ->
         doc,
         "The default reproduction path is offline analysis of the retained run. "
         "It contacts no target and requires no credentials. On Windows PowerShell, "
-        "from the extracted submission root:"
+        "from the extracted submission root:",
     )
     add_code_block(
         doc,
-        "\n".join(
-            [
-                "py -3.12 -m venv .venv",
-                ".\\.venv\\Scripts\\python.exe -m pip install -r environment\\requirements-lock.txt",
-                ".\\.venv\\Scripts\\python.exe scripts\\validate_pack.py",
-                ".\\.venv\\Scripts\\python.exe scripts\\validate_phase05_protocol.py",
-                ".\\.venv\\Scripts\\python.exe scripts\\validate_phase06_execution.py",
-                ".\\.venv\\Scripts\\python.exe scripts\\validate_records.py results\\normalized\\phase6-full-v1.1.1-20260725T210612Z.adjudicated.jsonl",
-                ".\\.venv\\Scripts\\python.exe scripts\\analyze_phase07.py --check",
-                ".\\.venv\\Scripts\\python.exe scripts\\validate_phase07_analysis.py",
-                ".\\.venv\\Scripts\\python.exe -m pytest -q",
-            ]
+        (
+            "py -3.12 -m venv .venv\n"
+            ".\\.venv\\Scripts\\python.exe -m pip install "
+            "-r environment\\requirements-lock.txt\n"
+            ".\\.venv\\Scripts\\python.exe scripts\\validate_pack.py\n"
+            ".\\.venv\\Scripts\\python.exe scripts\\validate_phase05_protocol.py\n"
+            ".\\.venv\\Scripts\\python.exe scripts\\validate_phase06_execution.py\n"
+            ".\\.venv\\Scripts\\python.exe scripts\\validate_records.py "
+            "results\\normalized\\phase6-full-v1.1.1-20260725T210612Z.adjudicated.jsonl\n"
+            ".\\.venv\\Scripts\\python.exe scripts\\analyze_phase07.py --check\n"
+            ".\\.venv\\Scripts\\python.exe scripts\\validate_phase07_analysis.py\n"
+            ".\\.venv\\Scripts\\python.exe -m pytest -q"
         ),
     )
     add_body_paragraph(
@@ -1078,11 +1079,10 @@ def add_appendix_reproduction(doc: Document, group_number: str, authors: str) ->
         "PwnzzAI/Ollama environment, loopback bindings, exact model/image/source "
         "digests, benign health and reset verification, and a new explicit execution "
         "authorization. The historical Phase 6 authorization receipt is evidence for "
-        "the retained run and must not be reused as authorization on another system."
+        "the retained run and must not be reused as authorization on another system.",
     )
     add_body_paragraph(
-        doc,
-        "To rebuild the Word report with the bundled dependencies, run:"
+        doc, "To rebuild the Word report with the bundled dependencies, run:"
     )
     add_code_block(
         doc,
@@ -1096,7 +1096,7 @@ def add_appendix_reproduction(doc: Document, group_number: str, authors: str) ->
         doc,
         "The submission README, manifests, configuration files, schemas, source, "
         "tests, retained datasets/evidence, and report-building/validation scripts "
-        "provide the remaining path-level explanation."
+        "provide the remaining path-level explanation.",
     )
 
 
@@ -1109,7 +1109,7 @@ def add_appendix_ai(doc: Document) -> None:
         "formatting, and validation. Generated prose was edited against the verified "
         "assignment matrix, frozen policies, retained run, programmatic Phase 7 tables, "
         "risk records, and official references. Numeric statements are represented in "
-        "paper/claim-evidence.json and regenerated from retained inputs."
+        "paper/claim-evidence.json and regenerated from retained inputs.",
     )
     add_body_paragraph(
         doc,
@@ -1118,13 +1118,13 @@ def add_appendix_ai(doc: Document) -> None:
         "audit rather than presented as instructions or unanalyzed narrative. Exact "
         "synthetic payloads are confined to Appendix B and the dataset tree. Secret "
         "patterns, temporary files, Word metadata, references, page count, and archive "
-        "integrity are checked by the Phase 8 validation workflow."
+        "integrity are checked by the Phase 8 validation workflow.",
     )
     add_body_paragraph(
         doc,
         "Required final human action: verify the author roster, group number, uploader "
         "designation, due date, and scientific interpretation before Ilearn submission. "
-        "The archive is not uploaded automatically."
+        "The archive is not uploaded automatically.",
     )
 
 
@@ -1140,7 +1140,9 @@ def build_document(
 
     doc = Document()
     configure_document(doc, group_number)
-    doc.core_properties.title = "Application-Layer Security Assessment of PwnzzAI Using Garak"
+    doc.core_properties.title = (
+        "Application-Layer Security Assessment of PwnzzAI Using Garak"
+    )
     doc.core_properties.subject = "Phase 8 scientific report"
     doc.core_properties.author = ""
     doc.core_properties.comments = ""
@@ -1236,7 +1238,9 @@ def main() -> int:
     group_number = args.group_number.strip()
     authors = args.authors.strip()
     if not re.fullmatch(r"[A-Za-z0-9_-]+", group_number):
-        raise SystemExit("group number must contain only letters, digits, underscore, or hyphen")
+        raise SystemExit(
+            "group number must contain only letters, digits, underscore, or hyphen"
+        )
     if not authors or "pending" in authors.lower() or "[" in authors:
         raise SystemExit("authors must be the confirmed report author roster")
     output = build_document(

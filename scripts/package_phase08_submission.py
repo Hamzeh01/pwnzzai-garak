@@ -9,10 +9,9 @@ import re
 import shutil
 import tempfile
 import zipfile
+from collections.abc import Iterable
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Iterable
-
 
 ROOT = Path(__file__).resolve().parents[1]
 RUN_ID = "phase6-full-v1.1.1-20260725T210612Z"
@@ -91,8 +90,7 @@ def eligible(path: Path) -> bool:
     if path.name.lower() in FORBIDDEN_NAMES:
         return False
     return not (
-        path.name.startswith("~$")
-        or path.suffix.lower() in {".pyc", ".pyo", ".tmp"}
+        path.name.startswith("~$") or path.suffix.lower() in {".pyc", ".pyo", ".tmp"}
     )
 
 
@@ -163,10 +161,11 @@ def scan_tree(root: Path) -> list[str]:
             findings.append(f"forbidden path: {relative.as_posix()}")
         if path.name.lower() in FORBIDDEN_NAMES:
             findings.append(f"forbidden filename: {relative.as_posix()}")
-        if (
-            path.name.startswith("~$")
-            or path.suffix.lower() in {".pyc", ".pyo", ".tmp"}
-        ):
+        if path.name.startswith("~$") or path.suffix.lower() in {
+            ".pyc",
+            ".pyo",
+            ".tmp",
+        }:
             findings.append(f"temporary file: {relative.as_posix()}")
         data = path.read_bytes()
         for label, pattern in HIGH_CONFIDENCE_SECRET_PATTERNS:
@@ -219,9 +218,7 @@ def build_archive(
     checksum_path = output_dir / f"G{group_number}_submission.zip.sha256"
     manifest_path = output_dir / f"G{group_number}_submission-manifest.json"
 
-    with tempfile.TemporaryDirectory(
-        prefix="phase08-stage-", dir=output_dir
-    ) as temp:
+    with tempfile.TemporaryDirectory(prefix="phase08-stage-", dir=output_dir) as temp:
         stage = Path(temp)
         for source in selected_sources(report_dir, group_number):
             relative = archive_name(source, report_dir, group_number)
@@ -303,12 +300,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--uploader", required=True)
     parser.add_argument("--due-date", required=True)
     parser.add_argument("--due-date-source", required=True)
-    parser.add_argument(
-        "--report-dir", type=Path, default=ROOT / "dist" / "phase-08"
-    )
-    parser.add_argument(
-        "--output-dir", type=Path, default=ROOT / "dist" / "phase-08"
-    )
+    parser.add_argument("--report-dir", type=Path, default=ROOT / "dist" / "phase-08")
+    parser.add_argument("--output-dir", type=Path, default=ROOT / "dist" / "phase-08")
     return parser.parse_args()
 
 

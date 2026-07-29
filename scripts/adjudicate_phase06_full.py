@@ -13,7 +13,6 @@ from typing import Any
 
 from jsonschema import Draft202012Validator, FormatChecker
 
-
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
@@ -24,9 +23,7 @@ from scripts.prepare_phase06_review import (
     select_records,
 )
 
-CATALOG_PATH = (
-    ROOT / "configs" / "phase-05-scenario-catalog.v1.1.0.json"
-)
+CATALOG_PATH = ROOT / "configs" / "phase-05-scenario-catalog.v1.1.0.json"
 MANUAL_SCHEMA_PATH = ROOT / "schemas" / "manual-adjudication.schema.json"
 RESULT_SCHEMA_PATH = ROOT / "schemas" / "result-record.schema.json"
 
@@ -34,7 +31,7 @@ RESULT_SCHEMA_PATH = ROOT / "schemas" / "result-record.schema.json"
 def _load_json(path: Path) -> dict[str, Any]:
     value = json.loads(path.read_text(encoding="utf-8"))
     if not isinstance(value, dict):
-        raise ValueError(f"JSON object required: {path}")
+        raise TypeError(f"JSON object required: {path}")
     return value
 
 
@@ -75,9 +72,7 @@ def _expand_decisions(
             if attempt_id in expanded:
                 raise ValueError(f"duplicate manual decision: {attempt_id}")
             expanded[attempt_id] = {
-                key: value
-                for key, value in group.items()
-                if key != "attempt_ids"
+                key: value for key, value in group.items() if key != "attempt_ids"
             }
     return expanded
 
@@ -98,9 +93,7 @@ def main() -> int:
 
     source_path = ROOT / "results" / "normalized" / f"{run_id}.jsonl"
     review_path = ROOT / "evidence" / "review" / f"{run_id}.manual.jsonl"
-    adjudicated_path = (
-        ROOT / "results" / "normalized" / f"{run_id}.adjudicated.jsonl"
-    )
+    adjudicated_path = ROOT / "results" / "normalized" / f"{run_id}.adjudicated.jsonl"
     summary_path = ROOT / "evidence" / "review" / f"{run_id}.summary.json"
     source_records = [
         json.loads(line)
@@ -110,9 +103,7 @@ def main() -> int:
     if len(source_records) != 43:
         raise ValueError("Phase 6 source must contain exactly 43 terminal records")
     selected, sampled_failures = select_records(source_records)
-    selection_reasons = {
-        record["attempt_id"]: reasons for record, reasons in selected
-    }
+    selection_reasons = {record["attempt_id"]: reasons for record, reasons in selected}
     expected_attempt_ids = set(selection_reasons)
     decision_by_attempt = _expand_decisions(decisions)
     if set(decision_by_attempt) != expected_attempt_ids:
@@ -135,9 +126,7 @@ def main() -> int:
     )
     reviews: list[dict[str, Any]] = []
     adjudicated: list[dict[str, Any]] = []
-    source_by_attempt = {
-        record["attempt_id"]: record for record in source_records
-    }
+    source_by_attempt = {record["attempt_id"]: record for record in source_records}
     for source in source_records:
         attempt_id = source["attempt_id"]
         derived = dict(source)
@@ -155,9 +144,7 @@ def main() -> int:
                 "evidence_pointer": source["evidence"]["raw_path"],
                 "reviewer": decisions["reviewer"],
                 "reviewed_at": args.reviewed_at,
-                "second_review_required": decision[
-                    "second_review_required"
-                ],
+                "second_review_required": decision["second_review_required"],
                 "resolution": decision["resolution"],
             }
             manual_validator.validate(review)
@@ -185,12 +172,8 @@ def main() -> int:
     full_automatic_counts = Counter(
         record["automatic_label"]["value"] for record in source_records
     )
-    reviewed_automatic_counts = Counter(
-        review["automatic_label"] for review in reviews
-    )
-    reviewed_manual_counts = Counter(
-        review["manual_label"] for review in reviews
-    )
+    reviewed_automatic_counts = Counter(review["automatic_label"] for review in reviews)
+    reviewed_manual_counts = Counter(review["manual_label"] for review in reviews)
     summary = {
         "schema_version": "1.0.0",
         "run_id": run_id,
@@ -216,12 +199,8 @@ def main() -> int:
         "reviewed_record_count": len(reviews),
         "unreviewed_record_count": len(source_records) - len(reviews),
         "full_automatic_counts": dict(sorted(full_automatic_counts.items())),
-        "reviewed_automatic_counts": dict(
-            sorted(reviewed_automatic_counts.items())
-        ),
-        "reviewed_manual_counts": dict(
-            sorted(reviewed_manual_counts.items())
-        ),
+        "reviewed_automatic_counts": dict(sorted(reviewed_automatic_counts.items())),
+        "reviewed_manual_counts": dict(sorted(reviewed_manual_counts.items())),
         "disagreement_count": len(disagreements),
         "disagreements": [
             {
@@ -235,9 +214,7 @@ def main() -> int:
         "automatic_and_manual_labels_separate": True,
         "manual_review_complete_for_frozen_plan": True,
         "source_normalized_path": source_path.relative_to(ROOT).as_posix(),
-        "adjudicated_normalized_path": adjudicated_path.relative_to(
-            ROOT
-        ).as_posix(),
+        "adjudicated_normalized_path": adjudicated_path.relative_to(ROOT).as_posix(),
         "manual_review_path": review_path.relative_to(ROOT).as_posix(),
         "decisions_path": decisions_path.relative_to(ROOT).as_posix(),
     }
@@ -254,15 +231,11 @@ def main() -> int:
     _create_once(
         summary_path,
         (
-            json.dumps(summary, indent=2, ensure_ascii=False, sort_keys=True)
-            + "\n"
+            json.dumps(summary, indent=2, ensure_ascii=False, sort_keys=True) + "\n"
         ).encode("utf-8"),
     )
     print(f"manual_review={review_path.relative_to(ROOT).as_posix()}")
-    print(
-        f"adjudicated_normalized="
-        f"{adjudicated_path.relative_to(ROOT).as_posix()}"
-    )
+    print(f"adjudicated_normalized={adjudicated_path.relative_to(ROOT).as_posix()}")
     print(f"summary={summary_path.relative_to(ROOT).as_posix()}")
     print(f"reviewed={len(reviews)} disagreements={len(disagreements)}")
     return 0

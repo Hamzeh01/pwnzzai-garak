@@ -3,11 +3,9 @@
 from __future__ import annotations
 
 import json
-import sys
 from pathlib import Path
 
 from jsonschema import Draft202012Validator, FormatChecker
-
 
 ROOT = Path(__file__).resolve().parents[1]
 CATALOG_PATH = ROOT / "configs" / "phase-05-scenario-catalog.v1.0.0.json"
@@ -18,16 +16,12 @@ TEST_CASE_SCHEMA_PATH = ROOT / "schemas" / "test-case.schema.json"
 PROTOCOL_SCHEMA_PATH = ROOT / "schemas" / "experiment-config.schema.json"
 MANUAL_SCHEMA_PATH = ROOT / "schemas" / "manual-adjudication.schema.json"
 AUTHORIZATION_PATH = ROOT / "evidence" / "setup" / "phase-05-pilot-authorization.md"
-EVIDENCE_MANIFEST_PATH = (
-    ROOT / "evidence" / "setup" / "phase-05-evidence-manifest.json"
-)
+EVIDENCE_MANIFEST_PATH = ROOT / "evidence" / "setup" / "phase-05-evidence-manifest.json"
 RUN_ID = "phase5-pilot-20260725T185804Z"
 MANUAL_REVIEW_PATH = ROOT / "evidence" / "review" / f"{RUN_ID}.manual.jsonl"
 REVIEW_SUMMARY_PATH = ROOT / "evidence" / "review" / f"{RUN_ID}.summary.json"
 NORMALIZED_PATH = ROOT / "results" / "normalized" / f"{RUN_ID}.jsonl"
-ADJUDICATED_PATH = (
-    ROOT / "results" / "normalized" / f"{RUN_ID}.adjudicated.jsonl"
-)
+ADJUDICATED_PATH = ROOT / "results" / "normalized" / f"{RUN_ID}.adjudicated.jsonl"
 REVISION_PATH = ROOT / "docs" / "05-protocol-revision.md"
 
 
@@ -157,7 +151,10 @@ def validate_phase05_protocol() -> list[str]:
             dataset = _load_json(artifact_path)
             if not isinstance(dataset, dict):
                 failures.append(f"{case_id}: poison dataset is not an object")
-            elif dataset.get("budget") != budget or len(dataset.get("comments", [])) != budget:
+            elif (
+                dataset.get("budget") != budget
+                or len(dataset.get("comments", [])) != budget
+            ):
                 failures.append(f"{case_id}: poison dataset does not match its budget")
 
     selected = protocol.get("pilot", {}).get("selected_case_ids", [])
@@ -279,15 +276,18 @@ def validate_phase05_protocol() -> list[str]:
         failures.append("final upload ceiling must remain 65,536 bytes")
     if accounting.get("total_target_requests") != 79:
         failures.append("final request accounting must total exactly 79")
-    if sum(
-        int(accounting.get(field, 0))
-        for field in (
-            "non_poison_case_requests",
-            "shared_rag_refresh_requests",
-            "initial_zero_poison_control_requests",
-            "independent_poison_budget_requests",
+    if (
+        sum(
+            int(accounting.get(field, 0))
+            for field in (
+                "non_poison_case_requests",
+                "shared_rag_refresh_requests",
+                "initial_zero_poison_control_requests",
+                "independent_poison_budget_requests",
+            )
         )
-    ) != 79:
+        != 79
+    ):
         failures.append("final request-accounting components do not sum to 79")
 
     final_poisoning = final_protocol.get("poisoning", {})
@@ -330,8 +330,7 @@ def validate_phase05_protocol() -> list[str]:
     summary = _load_json(REVIEW_SUMMARY_PATH)
     if (
         summary.get("automatic_counts") != {"failure": 7, "success": 2}
-        or summary.get("manual_counts")
-        != {"ambiguous": 1, "failure": 6, "success": 2}
+        or summary.get("manual_counts") != {"ambiguous": 1, "failure": 6, "success": 2}
         or summary.get("disagreement_count") != 1
     ):
         failures.append("pilot review summary counts differ from frozen evidence")
@@ -348,8 +347,7 @@ def validate_phase05_protocol() -> list[str]:
             failures.append(f"manifest artifact is missing: {artifact_path}")
         elif artifact.get("sha256") != _sha256(artifact_path):
             failures.append(
-                f"manifest artifact SHA-256 mismatch: "
-                f"{artifact_path.relative_to(ROOT)}"
+                f"manifest artifact SHA-256 mismatch: {artifact_path.relative_to(ROOT)}"
             )
 
     return failures

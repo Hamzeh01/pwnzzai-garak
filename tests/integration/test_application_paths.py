@@ -222,9 +222,11 @@ def test_garak_scanner_path_preserves_multiturn_messages() -> None:
 def test_garak_scanner_path_does_not_retry_server_error() -> None:
     server, thread, base_url = _start_server(scanner_status=500)
     try:
-        with PwnzzAIOpenAICompatible(base_url, stage=0) as generator:
-            with pytest.raises(openai.InternalServerError):
-                generator.generate_once("What pizzas do you offer?")
+        with (
+            PwnzzAIOpenAICompatible(base_url, stage=0) as generator,
+            pytest.raises(openai.InternalServerError),
+        ):
+            generator.generate_once("What pizzas do you offer?")
     finally:
         server.shutdown()
         server.server_close()

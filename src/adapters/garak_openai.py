@@ -139,7 +139,7 @@ def _decode_response_body(response: httpx.Response) -> dict[str, Any]:
     except json.JSONDecodeError as exc:
         raise ValueError("PwnzzAI scanner response was not JSON") from exc
     if not isinstance(response_body, dict):
-        raise ValueError("PwnzzAI scanner response must be a JSON object")
+        raise TypeError("PwnzzAI scanner response must be a JSON object")
     return response_body
 
 

@@ -12,7 +12,6 @@ from scripts.build_phase08_report import (
     substitute_tokens,
 )
 
-
 ROOT = Path(__file__).resolve().parents[2]
 
 
@@ -56,9 +55,7 @@ def test_phase08_claim_manifest_regenerates_exactly() -> None:
 def test_phase08_references_and_ai_disclosure_are_explicit() -> None:
     source = SOURCE_PATH.read_text(encoding="utf-8")
     verification = json.loads(
-        (ROOT / "paper" / "reference-verification.json").read_text(
-            encoding="utf-8"
-        )
+        (ROOT / "paper" / "reference-verification.json").read_text(encoding="utf-8")
     )
 
     assert len(verification["references"]) == 7

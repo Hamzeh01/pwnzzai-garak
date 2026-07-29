@@ -5,10 +5,11 @@ from __future__ import annotations
 import json
 import re
 import time
+from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any, Callable, TypeVar
+from typing import Any, TypeVar
 
 from jsonschema import Draft202012Validator, FormatChecker
 
@@ -34,7 +35,6 @@ from src.detectors import (
     SyntheticSignalDetector,
     SystemContextConsequenceDetector,
 )
-
 
 ROOT = Path(__file__).resolve().parents[2]
 CATALOG_PATH = ROOT / "configs" / "phase-05-scenario-catalog.v1.0.0.json"
@@ -133,14 +133,12 @@ class Phase05Pilot:
     ) -> None:
         self.protocol = self._load_json(protocol_path)
         self.catalog = self._load_json(catalog_path)
-        self.cases = {
-            case["test_case_id"]: case for case in self.catalog["cases"]
-        }
+        self.cases = {case["test_case_id"]: case for case in self.catalog["cases"]}
         self.canaries = {
             item["canary_id"]: item
-            for item in self._load_json(
-                ROOT / self.catalog["canary_manifest"]["path"]
-            )["canaries"]
+            for item in self._load_json(ROOT / self.catalog["canary_manifest"]["path"])[
+                "canaries"
+            ]
         }
         self.paths = PilotPaths(
             run_id=run_id,
@@ -151,9 +149,7 @@ class Phase05Pilot:
             ROOT,
             self.paths.raw_directory,
             self.paths.normalized_path,
-            redactor=Redactor(
-                sensitive_values=("unused-local-lab-credential",)
-            ),
+            redactor=Redactor(sensitive_values=("unused-local-lab-credential",)),
         )
         self.validator = Draft202012Validator(
             self._load_json(RESULT_SCHEMA_PATH),
@@ -164,7 +160,7 @@ class Phase05Pilot:
             "max_target_requests", limits.get("max_total_attempts")
         )
         if not isinstance(max_requests, int):
-            raise ValueError("protocol request ceiling must be an integer")
+            raise TypeError("protocol request ceiling must be an integer")
         self.budget = RequestBudget(
             max_requests=max_requests,
             max_wall_seconds=limits["max_wall_clock_seconds"],
@@ -174,12 +170,8 @@ class Phase05Pilot:
             limits.get(
                 "max_poison_samples",
                 max(
-                    self.protocol.get("poisoning", {}).get(
-                        "targeted_budgets", [0]
-                    )
-                    + self.protocol.get("poisoning", {}).get(
-                        "broad_budgets", [0]
-                    )
+                    self.protocol.get("poisoning", {}).get("targeted_budgets", [0])
+                    + self.protocol.get("poisoning", {}).get("broad_budgets", [0])
                 ),
             )
         )
@@ -193,7 +185,7 @@ class Phase05Pilot:
     def _load_json(path: Path) -> dict[str, Any]:
         value = json.loads(path.read_text(encoding="utf-8"))
         if not isinstance(value, dict):
-            raise ValueError(f"JSON object required: {path}")
+            raise TypeError(f"JSON object required: {path}")
         return value
 
     def _load_target(self) -> TargetMetadata:
@@ -203,9 +195,9 @@ class Phase05Pilot:
         target = TargetMetadata(
             system="pwnzzai",
             base_url=configured["base_url"].rstrip("/"),
-            pwnzzai_commit=(
-                ROOT / "environment" / "pwnzzai-commit.txt"
-            ).read_text(encoding="utf-8").strip(),
+            pwnzzai_commit=(ROOT / "environment" / "pwnzzai-commit.txt")
+            .read_text(encoding="utf-8")
+            .strip(),
             ollama_version=ollama["ollama_version"],
             model=principal["tag"],
             model_digest=principal["digest"],
@@ -223,10 +215,7 @@ class Phase05Pilot:
     def _validate_baseline(
         baseline: PoisoningBaseline, minimum_accuracy: float
     ) -> None:
-        if (
-            baseline.accuracy < minimum_accuracy
-            or not baseline.target_baseline_correct
-        ):
+        if baseline.accuracy < minimum_accuracy or not baseline.target_baseline_correct:
             raise SafetyStop(
                 "zero-poison baseline failed its preregistered validity rule"
             )
@@ -296,9 +285,7 @@ class Phase05Pilot:
             "target_request_count": self.budget.request_count,
             "duration_ms": elapsed_ms,
             "raw_directory": self.store.relative_path(self.paths.raw_directory),
-            "normalized_path": self.store.relative_path(
-                self.paths.normalized_path
-            ),
+            "normalized_path": self.store.relative_path(self.paths.normalized_path),
         }
 
     def _case_started(
@@ -368,9 +355,7 @@ class Phase05Pilot:
             application_metadata=application_metadata,
             automatic_label=automatic_label,
             raw_path=self.store.relative_path(raw_path),
-            normalized_path=self.store.relative_path(
-                self.paths.normalized_path
-            ),
+            normalized_path=self.store.relative_path(self.paths.normalized_path),
             input_path=self.store.relative_path(artifact_path),
             state_before_id=state_before_id,
             state_after_id=state_after_id,
@@ -457,9 +442,7 @@ class Phase05Pilot:
             generation = self.budget.call(
                 lambda: generator.generate_messages_once(artifact["messages"])
             )
-        output, metadata = extract_openai_output(
-            generation.exchange.response_body
-        )
+        output, metadata = extract_openai_output(generation.exchange.response_body)
         if metadata.get("stage") != stage:
             raise SafetyStop("direct response stage metadata differs from input")
         label = self._exact_case_label(case, output)
@@ -511,9 +494,9 @@ class Phase05Pilot:
             case_id, repetition=repetition, attempt_tag=attempt_tag
         )
         image_path = ROOT / case["input_artifact"]["path"]
-        source_text = image_path.with_suffix(".txt").read_text(
-            encoding="utf-8"
-        ).rstrip("\r\n")
+        source_text = (
+            image_path.with_suffix(".txt").read_text(encoding="utf-8").rstrip("\r\n")
+        )
         remote_name = f"{attempt_id}.png"
         live_path = (ROOT / "uploads" / remote_name).resolve()
         upload_root = (ROOT / "uploads").resolve()
@@ -525,9 +508,7 @@ class Phase05Pilot:
                 lambda: client.upload_png(
                     case["surface"]["path"],
                     image_path,
-                    timeout_seconds=case["inference_parameters"][
-                        "timeout_seconds"
-                    ],
+                    timeout_seconds=case["inference_parameters"]["timeout_seconds"],
                     max_upload_bytes=case["parameters"]["max_upload_bytes"],
                     remote_filename=remote_name,
                 )
@@ -563,9 +544,7 @@ class Phase05Pilot:
                 "schema_version": "1.0.0",
                 "capture_kind": f"{self.capture_phase}-qr-application-attempt",
                 "exchange": response.exchange.as_evidence(),
-                "decoded_text_sha256": sha256_bytes(
-                    source_text.encode("utf-8")
-                ),
+                "decoded_text_sha256": sha256_bytes(source_text.encode("utf-8")),
                 "upload_reset": {
                     "remote_filename": remote_name,
                     "quarantine_path": self.store.relative_path(quarantine),
@@ -593,9 +572,7 @@ class Phase05Pilot:
         attempt_id = f"{self.paths.run_id}.RAG-REFRESH.r1"
         with ApplicationClient(self.target.base_url) as client:
             response = self.budget.call(
-                lambda: client.post_empty(
-                    "/update-rag-ollama", timeout_seconds=300
-                )
+                lambda: client.post_empty("/update-rag-ollama", timeout_seconds=300)
             )
         if (
             response.status_code != 200
@@ -704,9 +681,7 @@ class Phase05Pilot:
         budget = dataset["budget"]
         if budget > self.max_poison_samples:
             raise SafetyStop("case exceeds the approved poison budget")
-        holdout = self._load_json(
-            ROOT / self.protocol["poisoning"]["holdout_path"]
-        )
+        holdout = self._load_json(ROOT / self.protocol["poisoning"]["holdout_path"])
         before_inventory = self._runtime_inventory()
 
         exchanges: list[dict[str, Any]] = []
@@ -767,9 +742,7 @@ class Phase05Pilot:
         if before_inventory != after_inventory:
             raise SafetyStop("poison workflow changed project runtime files")
         accuracy = sum(item["correct"] for item in predictions) / len(predictions)
-        target_record = next(
-            item for item in predictions if item.get("target") is True
-        )
+        target_record = next(item for item in predictions if item.get("target") is True)
         weights_float = {key: float(value) for key, value in weights.items()}
         weights_hash = sha256_bytes(canonical_json_bytes(weights_float))
 
@@ -875,9 +848,7 @@ class Phase05Pilot:
                 "schema_version": "1.0.0",
                 "capture_kind": f"{self.capture_phase}-poisoning-workflow",
                 "dataset": dataset,
-                "holdout_sha256": self.protocol["poisoning"][
-                    "holdout_sha256"
-                ],
+                "holdout_sha256": self.protocol["poisoning"]["holdout_sha256"],
                 "exchanges": exchanges,
                 "metrics": metrics,
                 "runtime_inventory": {
@@ -925,9 +896,7 @@ class Phase05Pilot:
             weights.clear()
         return result
 
-    def _exact_case_label(
-        self, case: dict[str, Any], output: str
-    ) -> DetectionResult:
+    def _exact_case_label(self, case: dict[str, Any], output: str) -> DetectionResult:
         canary_id = case.get("parameters", {}).get("canary_id")
         if canary_id:
             signal = self.canaries[canary_id]["value"]

@@ -10,7 +10,6 @@ from typing import Any
 
 from jsonschema import Draft202012Validator
 
-
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
@@ -23,14 +22,9 @@ from src.analysis.phase07 import (
     check_generated_artifacts,
 )
 
-
 RISK_SCHEMA_PATH = ROOT / "schemas" / "risk-record.schema.json"
-RISK_RECORDS_PATH = (
-    ROOT / "results" / "tables" / "phase-07-risk-register.jsonl"
-)
-MANIFEST_PATH = (
-    ROOT / "evidence" / "setup" / "phase-07-analysis-manifest.json"
-)
+RISK_RECORDS_PATH = ROOT / "results" / "tables" / "phase-07-risk-register.jsonl"
+MANIFEST_PATH = ROOT / "evidence" / "setup" / "phase-07-analysis-manifest.json"
 GATE_REVIEW_PATH = ROOT / "evidence" / "setup" / "phase-07-gate-review.md"
 PHASE_STATE_PATH = ROOT / "docs" / "phase-state.md"
 CHECKLIST_PATH = ROOT / "checklists" / "phase-07.md"
@@ -40,7 +34,7 @@ TASK_BOARD_PATH = ROOT / "TASK_BOARD.md"
 def _load_json(path: Path) -> dict[str, Any]:
     value = json.loads(path.read_text(encoding="utf-8-sig"))
     if not isinstance(value, dict):
-        raise ValueError(f"JSON object required: {path}")
+        raise TypeError(f"JSON object required: {path}")
     return value
 
 

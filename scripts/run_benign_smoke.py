@@ -27,7 +27,6 @@ from src.analysis import (
 from src.analysis.normalization import extract_openai_output
 from src.detectors import DetectionInput, ExactSignalDetector
 
-
 INPUT_PATH = ROOT / "tests" / "fixtures" / "benign-scanner-request.json"
 TEST_CASE_ID = "CTL-DPI-BENIGN-001"
 SYNTHETIC_SIGNAL = "PHASE4_SYNTHETIC_SIGNAL_20260725"
@@ -45,9 +44,9 @@ def _load_target(base_url: str) -> TargetMetadata:
     return TargetMetadata(
         system="pwnzzai",
         base_url=base_url.rstrip("/"),
-        pwnzzai_commit=(
-            ROOT / "environment" / "pwnzzai-commit.txt"
-        ).read_text(encoding="utf-8").strip(),
+        pwnzzai_commit=(ROOT / "environment" / "pwnzzai-commit.txt")
+        .read_text(encoding="utf-8")
+        .strip(),
         ollama_version=ollama["ollama_version"],
         model=principal["tag"],
         model_digest=principal["digest"],
@@ -173,9 +172,7 @@ def main() -> int:
         ),
     )
     schema = json.loads(
-        (ROOT / "schemas" / "result-record.schema.json").read_text(
-            encoding="utf-8"
-        )
+        (ROOT / "schemas" / "result-record.schema.json").read_text(encoding="utf-8")
     )
     Draft202012Validator(schema, format_checker=FormatChecker()).validate(record)
     store.append_normalized(record)

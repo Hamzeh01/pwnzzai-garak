@@ -12,6 +12,7 @@ from urllib.parse import urljoin, urlparse
 
 import requests
 from requests.adapters import HTTPAdapter
+from typing_extensions import Self
 
 _DEFAULT_CONNECT_TIMEOUT_SECONDS = 5
 _DEFAULT_REQUEST_TIMEOUT_SECONDS = 15
@@ -101,7 +102,7 @@ class ApplicationClient:
         """Close the underlying session."""
         self.session.close()
 
-    def __enter__(self) -> ApplicationClient:
+    def __enter__(self) -> Self:
         return self
 
     def __exit__(self, *_: object) -> None:

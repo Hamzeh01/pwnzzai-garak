@@ -7,9 +7,26 @@ import html
 import json
 import re
 import textwrap
+from collections.abc import Iterable
 from pathlib import Path
-from typing import Any, Iterable
+from typing import Any
 
+from build_phase08_report import (
+    CATALOG_PATH,
+    CLAIMS_PATH,
+    ROOT,
+    SOURCE_PATH,
+    STRATA_PATH,
+    SUMMARY_PATH,
+    build_claim_manifest,
+    build_tokens,
+    category_rows,
+    draw_category_figure,
+    pct,
+    read_csv,
+    read_json,
+    substitute_tokens,
+)
 from reportlab.lib import colors
 from reportlab.lib.enums import TA_CENTER, TA_JUSTIFY, TA_LEFT
 from reportlab.lib.pagesizes import letter
@@ -23,29 +40,8 @@ from reportlab.platypus import (
     Preformatted,
     SimpleDocTemplate,
     Spacer,
-    Table,
     TableStyle,
 )
-
-from build_phase08_report import (
-    CATALOG_PATH,
-    CLAIMS_PATH,
-    ROOT,
-    RISK_PATH,
-    SOURCE_PATH,
-    STRATA_PATH,
-    SUMMARY_PATH,
-    build_claim_manifest,
-    build_tokens,
-    category_rows,
-    draw_category_figure,
-    outcome,
-    pct,
-    read_csv,
-    read_json,
-    substitute_tokens,
-)
-
 
 INK = colors.HexColor("#101828")
 MUTED = colors.HexColor("#475467")
@@ -244,7 +240,9 @@ def table_flow(
     for values in rows:
         rendered = []
         for index, value in enumerate(values):
-            style = report_styles["cell"] if index == 0 else report_styles["cell_center"]
+            style = (
+                report_styles["cell"] if index == 0 else report_styles["cell_center"]
+            )
             rendered.append(Paragraph(clean_inline(str(value)), style))
         data.append(rendered)
     table = LongTable(
@@ -281,7 +279,7 @@ def category_table(
     rows = [
         [
             label_map[row["value"]],
-            f'{row["success"]}/{row["asr_denominator"]}',
+            f"{row['success']}/{row['asr_denominator']}",
             row["failure"],
             row["ambiguous"],
             pct(float(row["asr"])),
@@ -291,7 +289,7 @@ def category_table(
     return [
         Paragraph(
             "Table 1. Adjudicated adversarial outcomes. Source: "
-            f'{summary["run_id"]}; results/tables/phase-07-stratified-outcomes.csv.',
+            f"{summary['run_id']}; results/tables/phase-07-stratified-outcomes.csv.",
             report_styles["caption"],
         ),
         table_flow(
@@ -312,7 +310,7 @@ def category_figure(
         Image(str(path), width=5.55 * inch, height=1.76 * inch),
         Paragraph(
             "Figure 1. Four-way category outcomes. Source: "
-            f'{summary["run_id"]}; generated from phase-07-stratified-outcomes.csv.',
+            f"{summary['run_id']}; generated from phase-07-stratified-outcomes.csv.",
             report_styles["caption"],
         ),
     ]
@@ -369,27 +367,43 @@ def mitigation_table(report_styles: dict[str, ParagraphStyle]) -> list[Any]:
     ]
 
 
-def append_body(story: list[Any], text: str, report_styles: dict[str, ParagraphStyle]) -> None:
+def append_body(
+    story: list[Any], text: str, report_styles: dict[str, ParagraphStyle]
+) -> None:
     story.append(Paragraph(clean_inline(text), report_styles["appendix_body"]))
 
 
 def append_environment(
     story: list[Any], tokens: dict[str, str], report_styles: dict[str, ParagraphStyle]
 ) -> None:
-    story.extend([PageBreak(), Paragraph("Appendix A. Environment and Reproducibility Pins", report_styles["appendix_h1"])])
+    story.extend(
+        [
+            PageBreak(),
+            Paragraph(
+                "Appendix A. Environment and Reproducibility Pins",
+                report_styles["appendix_h1"],
+            ),
+        ]
+    )
     append_body(
         story,
         "The table below is generated from sanitized environment manifests. The full lock, resolved Compose configuration, source/image/model metadata, and artifact hashes are included in the archive.",
         report_styles,
     )
     rows = [
-        ["Host", f'Windows 11 Enterprise build {tokens["WINDOWS_BUILD"]}'],
-        ["Docker", f'Desktop {tokens["DOCKER_DESKTOP_VERSION"]}; Engine {tokens["DOCKER_ENGINE_VERSION"]}'],
-        ["Python / Garak", f'{tokens["PYTHON_VERSION"]} / {tokens["GARAK_VERSION"]}'],
+        ["Host", f"Windows 11 Enterprise build {tokens['WINDOWS_BUILD']}"],
+        [
+            "Docker",
+            f"Desktop {tokens['DOCKER_DESKTOP_VERSION']}; Engine {tokens['DOCKER_ENGINE_VERSION']}",
+        ],
+        ["Python / Garak", f"{tokens['PYTHON_VERSION']} / {tokens['GARAK_VERSION']}"],
         ["PwnzzAI source", tokens["PWNZZAI_COMMIT"]],
         ["PwnzzAI image", tokens["PWNZZAI_IMAGE_DIGEST"]],
         ["Ollama", tokens["OLLAMA_VERSION"]],
-        ["Principal model", f'{tokens["MODEL_TAG"]}; {tokens["MODEL_PARAMETER_SIZE"]}; {tokens["MODEL_QUANTIZATION"]}'],
+        [
+            "Principal model",
+            f"{tokens['MODEL_TAG']}; {tokens['MODEL_PARAMETER_SIZE']}; {tokens['MODEL_QUANTIZATION']}",
+        ],
         ["Model digest", tokens["MODEL_DIGEST"]],
         ["Application bind", "127.0.0.1:18080"],
         ["Ollama bind", "127.0.0.1:11434"],
@@ -432,34 +446,44 @@ def wrapped_code(text: str, width: int = 112) -> str:
 def append_catalog_and_payloads(
     story: list[Any], report_styles: dict[str, ParagraphStyle]
 ) -> None:
-    story.extend([PageBreak(), Paragraph("Appendix B. Scenario Catalog and Full Payloads", report_styles["appendix_h1"])])
+    story.extend(
+        [
+            PageBreak(),
+            Paragraph(
+                "Appendix B. Scenario Catalog and Full Payloads",
+                report_styles["appendix_h1"],
+            ),
+        ]
+    )
     catalog = read_json(CATALOG_PATH)
     append_body(
         story,
-        f'The authoritative catalog is {CATALOG_PATH.relative_to(ROOT)} ({len(catalog["cases"])} cases). Entries preserve the objective, policy, surface, repetitions, expected secure behavior, detector, artifact hash, and reset.',
+        f"The authoritative catalog is {CATALOG_PATH.relative_to(ROOT)} ({len(catalog['cases'])} cases). Entries preserve the objective, policy, surface, repetitions, expected secure behavior, detector, artifact hash, and reset.",
         report_styles,
     )
     for case in catalog["cases"]:
         story.append(
             Paragraph(
-                clean_inline(f'{case["test_case_id"]}: {case["title"]}'),
+                clean_inline(f"{case['test_case_id']}: {case['title']}"),
                 report_styles["appendix_h2"],
             )
         )
         surface = case["surface"]
         append_body(
             story,
-            f'Category/family: {case["category"]} / {case["family"]}. Policy: {case["policy_id"]}. Surface: {surface["method"]} {surface["path"]}. Repetitions: {case["repetitions"]}. Objective: {case["objective"]} Expected secure behavior: {case["expected_secure_behavior"]} Detector(s): {", ".join(case["automatic_detector_ids"])}.',
+            f"Category/family: {case['category']} / {case['family']}. Policy: {case['policy_id']}. Surface: {surface['method']} {surface['path']}. Repetitions: {case['repetitions']}. Objective: {case['objective']} Expected secure behavior: {case['expected_secure_behavior']} Detector(s): {', '.join(case['automatic_detector_ids'])}.",
             report_styles,
         )
         artifact = case["input_artifact"]
         append_body(
             story,
-            f'Input artifact: {artifact["path"]}; SHA-256 {artifact["sha256"]}. Reset/isolation: {case["state"]["reset"]}',
+            f"Input artifact: {artifact['path']}; SHA-256 {artifact['sha256']}. Reset/isolation: {case['state']['reset']}",
             report_styles,
         )
 
-    story.append(Paragraph("B.1 Payload artifact contents", report_styles["appendix_h2"]))
+    story.append(
+        Paragraph("B.1 Payload artifact contents", report_styles["appendix_h2"])
+    )
     payload_root = ROOT / "payloads" / "phase-05"
     for path in sorted(payload_root.rglob("*")):
         if not path.is_file():
@@ -516,30 +540,64 @@ def compact_csv(
 
 
 def append_results(story: list[Any], report_styles: dict[str, ParagraphStyle]) -> None:
-    story.extend([PageBreak(), Paragraph("Appendix C. Extended Results", report_styles["appendix_h1"])])
+    story.extend(
+        [
+            PageBreak(),
+            Paragraph("Appendix C. Extended Results", report_styles["appendix_h1"]),
+        ]
+    )
     compact_csv(
         story,
         report_styles,
         title="Table C1. All outcome populations",
         path=ROOT / "results" / "tables" / "phase-07-outcomes.csv",
         columns=[
-            ("population", "Population"), ("total", "n"), ("success", "S"),
-            ("failure", "F"), ("ambiguous", "A"), ("error", "E"),
-            ("success_numerator", "Num."), ("success_denominator", "Den."),
+            ("population", "Population"),
+            ("total", "n"),
+            ("success", "S"),
+            ("failure", "F"),
+            ("ambiguous", "A"),
+            ("error", "E"),
+            ("success_numerator", "Num."),
+            ("success_denominator", "Den."),
         ],
-        widths=[2.25 * inch, 0.45 * inch, 0.45 * inch, 0.45 * inch, 0.45 * inch, 0.45 * inch, 0.65 * inch, 0.65 * inch],
+        widths=[
+            2.25 * inch,
+            0.45 * inch,
+            0.45 * inch,
+            0.45 * inch,
+            0.45 * inch,
+            0.45 * inch,
+            0.65 * inch,
+            0.65 * inch,
+        ],
     )
     compact_csv(
         story,
         report_styles,
         title="Table C2. Family-level adversarial outcomes",
         path=STRATA_PATH,
-        predicate=lambda row: row["population"] == "adversarial" and row["dimension"] == "family",
+        predicate=lambda row: (
+            row["population"] == "adversarial" and row["dimension"] == "family"
+        ),
         columns=[
-            ("value", "Family"), ("total", "n"), ("success", "S"),
-            ("failure", "F"), ("ambiguous", "A"), ("error", "E"), ("asr", "ASR"),
+            ("value", "Family"),
+            ("total", "n"),
+            ("success", "S"),
+            ("failure", "F"),
+            ("ambiguous", "A"),
+            ("error", "E"),
+            ("asr", "ASR"),
         ],
-        widths=[3.05 * inch, 0.5 * inch, 0.5 * inch, 0.5 * inch, 0.5 * inch, 0.5 * inch, 0.65 * inch],
+        widths=[
+            3.05 * inch,
+            0.5 * inch,
+            0.5 * inch,
+            0.5 * inch,
+            0.5 * inch,
+            0.5 * inch,
+            0.65 * inch,
+        ],
     )
     compact_csv(
         story,
@@ -547,11 +605,23 @@ def append_results(story: list[Any], report_styles: dict[str, ParagraphStyle]) -
         title="Table C3. Automatic/manual label comparison",
         path=ROOT / "results" / "tables" / "phase-07-label-comparison.csv",
         columns=[
-            ("automatic_label", "Automatic"), ("manual_success", "Manual S"),
-            ("manual_failure", "Manual F"), ("manual_ambiguous", "Manual A"),
-            ("manual_error", "Manual E"), ("unreviewed", "Unreviewed"), ("total", "Total"),
+            ("automatic_label", "Automatic"),
+            ("manual_success", "Manual S"),
+            ("manual_failure", "Manual F"),
+            ("manual_ambiguous", "Manual A"),
+            ("manual_error", "Manual E"),
+            ("unreviewed", "Unreviewed"),
+            ("total", "Total"),
         ],
-        widths=[1.4 * inch, 0.85 * inch, 0.85 * inch, 0.85 * inch, 0.85 * inch, 1.0 * inch, 0.6 * inch],
+        widths=[
+            1.4 * inch,
+            0.85 * inch,
+            0.85 * inch,
+            0.85 * inch,
+            0.85 * inch,
+            1.0 * inch,
+            0.6 * inch,
+        ],
     )
     compact_csv(
         story,
@@ -559,11 +629,21 @@ def append_results(story: list[Any], report_styles: dict[str, ParagraphStyle]) -
         title="Table C4. Disclosure coverage",
         path=ROOT / "results" / "tables" / "phase-07-disclosure.csv",
         columns=[
-            ("data_class", "Data class"), ("test_case_id", "Case"),
-            ("attempts", "n"), ("confirmed_exposures", "Exposed"),
-            ("ambiguous", "Ambig."), ("errors", "Errors"),
+            ("data_class", "Data class"),
+            ("test_case_id", "Case"),
+            ("attempts", "n"),
+            ("confirmed_exposures", "Exposed"),
+            ("ambiguous", "Ambig."),
+            ("errors", "Errors"),
         ],
-        widths=[2.25 * inch, 1.8 * inch, 0.5 * inch, 0.75 * inch, 0.75 * inch, 0.65 * inch],
+        widths=[
+            2.25 * inch,
+            1.8 * inch,
+            0.5 * inch,
+            0.75 * inch,
+            0.75 * inch,
+            0.65 * inch,
+        ],
     )
     compact_csv(
         story,
@@ -572,12 +652,27 @@ def append_results(story: list[Any], report_styles: dict[str, ParagraphStyle]) -
         path=ROOT / "results" / "tables" / "phase-07-poisoning.csv",
         predicate=lambda row: row["strategy"] != "clean_baseline",
         columns=[
-            ("test_case_id", "Case"), ("strategy", "Strategy"), ("budget", "b"),
-            ("poison_ratio", "Ratio"), ("baseline_accuracy", "Base"),
-            ("poisoned_accuracy", "Poison"), ("accuracy_degradation", "Degrad."),
-            ("prediction_flip_rate", "Flip"), ("targeted_success", "Target"),
+            ("test_case_id", "Case"),
+            ("strategy", "Strategy"),
+            ("budget", "b"),
+            ("poison_ratio", "Ratio"),
+            ("baseline_accuracy", "Base"),
+            ("poisoned_accuracy", "Poison"),
+            ("accuracy_degradation", "Degrad."),
+            ("prediction_flip_rate", "Flip"),
+            ("targeted_success", "Target"),
         ],
-        widths=[1.6 * inch, 0.7 * inch, 0.35 * inch, 0.55 * inch, 0.55 * inch, 0.6 * inch, 0.6 * inch, 0.5 * inch, 0.65 * inch],
+        widths=[
+            1.6 * inch,
+            0.7 * inch,
+            0.35 * inch,
+            0.55 * inch,
+            0.55 * inch,
+            0.6 * inch,
+            0.6 * inch,
+            0.5 * inch,
+            0.65 * inch,
+        ],
     )
     compact_csv(
         story,
@@ -585,11 +680,25 @@ def append_results(story: list[Any], report_styles: dict[str, ParagraphStyle]) -
         title="Table C6. Latency by application surface",
         path=ROOT / "results" / "tables" / "phase-07-latency.csv",
         columns=[
-            ("surface", "Surface"), ("record_unit", "Record unit"), ("record_count", "n"),
-            ("median_ms", "Median"), ("q1_ms", "Q1"), ("q3_ms", "Q3"),
-            ("iqr_ms", "IQR"), ("mean_ms", "Mean"),
+            ("surface", "Surface"),
+            ("record_unit", "Record unit"),
+            ("record_count", "n"),
+            ("median_ms", "Median"),
+            ("q1_ms", "Q1"),
+            ("q3_ms", "Q3"),
+            ("iqr_ms", "IQR"),
+            ("mean_ms", "Mean"),
         ],
-        widths=[1.45 * inch, 1.65 * inch, 0.45 * inch, 0.65 * inch, 0.55 * inch, 0.55 * inch, 0.55 * inch, 0.65 * inch],
+        widths=[
+            1.45 * inch,
+            1.65 * inch,
+            0.45 * inch,
+            0.65 * inch,
+            0.55 * inch,
+            0.55 * inch,
+            0.55 * inch,
+            0.65 * inch,
+        ],
     )
     compact_csv(
         story,
@@ -597,11 +706,25 @@ def append_results(story: list[Any], report_styles: dict[str, ParagraphStyle]) -
         title="Table C7. Risk register",
         path=ROOT / "results" / "tables" / "phase-07-risk-register.csv",
         columns=[
-            ("finding_id", "ID"), ("title", "Finding"), ("policy_id", "Policy"),
-            ("owasp", "OWASP"), ("likelihood", "L"), ("impact", "I"),
-            ("risk_score", "Score"), ("rating", "Band"),
+            ("finding_id", "ID"),
+            ("title", "Finding"),
+            ("policy_id", "Policy"),
+            ("owasp", "OWASP"),
+            ("likelihood", "L"),
+            ("impact", "I"),
+            ("risk_score", "Score"),
+            ("rating", "Band"),
         ],
-        widths=[0.55 * inch, 2.7 * inch, 0.6 * inch, 0.8 * inch, 0.35 * inch, 0.35 * inch, 0.5 * inch, 0.6 * inch],
+        widths=[
+            0.55 * inch,
+            2.7 * inch,
+            0.6 * inch,
+            0.8 * inch,
+            0.35 * inch,
+            0.35 * inch,
+            0.5 * inch,
+            0.6 * inch,
+        ],
     )
     append_body(
         story,
@@ -613,9 +736,19 @@ def append_results(story: list[Any], report_styles: dict[str, ParagraphStyle]) -
 def append_evidence(
     story: list[Any], summary: dict[str, Any], report_styles: dict[str, ParagraphStyle]
 ) -> None:
-    story.extend([PageBreak(), Paragraph("Appendix D. Claim-Evidence and Raw Record Index", report_styles["appendix_h1"])])
+    story.extend(
+        [
+            PageBreak(),
+            Paragraph(
+                "Appendix D. Claim-Evidence and Raw Record Index",
+                report_styles["appendix_h1"],
+            ),
+        ]
+    )
     manifest = build_claim_manifest(summary)
-    CLAIMS_PATH.write_text(json.dumps(manifest, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    CLAIMS_PATH.write_text(
+        json.dumps(manifest, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
+    )
     rows = [
         [claim["claim_id"], claim["claim"], "; ".join(claim["evidence"])]
         for claim in manifest["claims"]
@@ -630,20 +763,18 @@ def append_evidence(
     )
     append_body(
         story,
-        f'Headline normalized input: {summary["headline_input"]}. Raw evidence is indexed by attempt_id under results/raw/{summary["run_id"]}/. The Phase 7 analysis manifest records every generated table/figure hash; the Phase 6 evidence manifest records the complete-run raw and normalized evidence.',
+        f"Headline normalized input: {summary['headline_input']}. Raw evidence is indexed by attempt_id under results/raw/{summary['run_id']}/. The Phase 7 analysis manifest records every generated table/figure hash; the Phase 6 evidence manifest records the complete-run raw and normalized evidence.",
         report_styles,
     )
     story.append(
         Preformatted(
-            "\n".join(
-                [
-                    "Adjudicated JSONL SHA-256:",
-                    "a79bbd9a7a985b8d3212449c2e3661090c63ce6bc0b8e261a3243a4a3966ad12",
-                    "Protocol SHA-256:",
-                    "e4b7fcee0a3fc7ee2acb297b65d977f01d8a9f0a2615cbb55f0df4e365a9366b",
-                    "Catalog SHA-256:",
-                    "56ea8ccf77ffeb1d5e0e9def28e601996341cfa7f712bbfb5540188826183cbb",
-                ]
+            (
+                "Adjudicated JSONL SHA-256:\n"
+                "a79bbd9a7a985b8d3212449c2e3661090c63ce6bc0b8e261a3243a4a3966ad12\n"
+                "Protocol SHA-256:\n"
+                "e4b7fcee0a3fc7ee2acb297b65d977f01d8a9f0a2615cbb55f0df4e365a9366b\n"
+                "Catalog SHA-256:\n"
+                "56ea8ccf77ffeb1d5e0e9def28e601996341cfa7f712bbfb5540188826183cbb"
             ),
             report_styles["code"],
         )
@@ -656,24 +787,31 @@ def append_reproduction(
     authors: str,
     report_styles: dict[str, ParagraphStyle],
 ) -> None:
-    story.extend([PageBreak(), Paragraph("Appendix E. Reproduction Commands", report_styles["appendix_h1"])])
+    story.extend(
+        [
+            PageBreak(),
+            Paragraph(
+                "Appendix E. Reproduction Commands", report_styles["appendix_h1"]
+            ),
+        ]
+    )
     append_body(
         story,
         "The default path reproduces analysis from the retained run without contacting a target or requiring credentials. From the extracted submission root in Windows PowerShell:",
         report_styles,
     )
-    commands = "\n".join(
-        [
-            "py -3.12 -m venv .venv",
-            ".\\.venv\\Scripts\\python.exe -m pip install -r environment\\requirements-lock.txt",
-            ".\\.venv\\Scripts\\python.exe scripts\\validate_pack.py",
-            ".\\.venv\\Scripts\\python.exe scripts\\validate_phase05_protocol.py",
-            ".\\.venv\\Scripts\\python.exe scripts\\validate_phase06_execution.py",
-            ".\\.venv\\Scripts\\python.exe scripts\\validate_records.py results\\normalized\\phase6-full-v1.1.1-20260725T210612Z.adjudicated.jsonl",
-            ".\\.venv\\Scripts\\python.exe scripts\\analyze_phase07.py --check",
-            ".\\.venv\\Scripts\\python.exe scripts\\validate_phase07_analysis.py",
-            ".\\.venv\\Scripts\\python.exe -m pytest -q",
-        ]
+    commands = (
+        "py -3.12 -m venv .venv\n"
+        ".\\.venv\\Scripts\\python.exe -m pip install "
+        "-r environment\\requirements-lock.txt\n"
+        ".\\.venv\\Scripts\\python.exe scripts\\validate_pack.py\n"
+        ".\\.venv\\Scripts\\python.exe scripts\\validate_phase05_protocol.py\n"
+        ".\\.venv\\Scripts\\python.exe scripts\\validate_phase06_execution.py\n"
+        ".\\.venv\\Scripts\\python.exe scripts\\validate_records.py "
+        "results\\normalized\\phase6-full-v1.1.1-20260725T210612Z.adjudicated.jsonl\n"
+        ".\\.venv\\Scripts\\python.exe scripts\\analyze_phase07.py --check\n"
+        ".\\.venv\\Scripts\\python.exe scripts\\validate_phase07_analysis.py\n"
+        ".\\.venv\\Scripts\\python.exe -m pytest -q"
     )
     story.append(Preformatted(wrapped_code(commands), report_styles["code"]))
     append_body(
@@ -694,7 +832,15 @@ def append_reproduction(
 
 
 def append_ai(story: list[Any], report_styles: dict[str, ParagraphStyle]) -> None:
-    story.extend([PageBreak(), Paragraph("Appendix F. AI Assistance, Editing, and Sanitization", report_styles["appendix_h1"])])
+    story.extend(
+        [
+            PageBreak(),
+            Paragraph(
+                "Appendix F. AI Assistance, Editing, and Sanitization",
+                report_styles["appendix_h1"],
+            ),
+        ]
+    )
     append_body(
         story,
         "Codex assisted with source review, evidence-linked analysis, report drafting, formatting, and validation. Generated prose was edited against the verified assignment matrix, frozen policies, retained run, programmatic Phase 7 tables, risk records, and official references. Numeric statements are represented in paper/claim-evidence.json and regenerated from retained inputs.",
@@ -772,7 +918,9 @@ def build_pdf(
             continue
         if line.startswith("# "):
             flush()
-            story.append(Paragraph(clean_inline(line[2:].strip()), report_styles["title"]))
+            story.append(
+                Paragraph(clean_inline(line[2:].strip()), report_styles["title"])
+            )
             story.append(
                 Paragraph(
                     clean_inline(f"Group {group_number} | {authors}"),
@@ -828,7 +976,9 @@ def main() -> int:
     group_number = args.group_number.strip()
     authors = args.authors.strip()
     if not re.fullmatch(r"[A-Za-z0-9_-]+", group_number):
-        raise SystemExit("group number must contain only letters, digits, underscore, or hyphen")
+        raise SystemExit(
+            "group number must contain only letters, digits, underscore, or hyphen"
+        )
     if not authors or "pending" in authors.lower() or "[" in authors:
         raise SystemExit("authors must be the confirmed report author roster")
     output = build_pdf(
