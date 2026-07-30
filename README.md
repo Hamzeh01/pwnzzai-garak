@@ -15,10 +15,12 @@ Garak probe or controlled scenario
 
 ## Current status
 
-- Package status: Gate 4 harness verified
-- Current project phase: Phase 4 complete; Phase 5 requires explicit bounded-pilot approval
-- Attacks implemented: none
-- Attack payloads included: none
+- Package status: Gate 7 analysis verified; Phase 8 release handoff pending
+- Current project phase: Phase 7 complete; Gate 8 is not recorded
+- New attack execution authorized: none
+- Attacks implemented: yes, limited to the frozen Phase 5 scenario catalog
+- Attacks executed: yes, one bounded pilot, one superseded partial run, and one
+  complete replacement run
 - Web guidance snapshot: 2026-07-24
 - Garak guidance baseline: 0.15.1, Python 3.10+
 - PwnzzAI research snapshot: commit `cd3ac0d12ffcb42a9c17c69c5c83bbb9f56157a5`
@@ -43,6 +45,8 @@ methodology claims. See `evidence/setup/phase-00-source-inventory.md` and
 
 4. Confirm the current gate in `docs/phase-state.md`.
 5. Use only the prompt for the recorded current phase.
+6. For local startup, benign interaction, and retained-result reproduction,
+   follow `docs/manual-testing-and-experiment-guide.md`.
 
 Do not jump directly to attack execution. Each phase ends with evidence, a gate review, and an explicit phase-state update.
 
@@ -60,11 +64,11 @@ Do not jump directly to attack execution. Each phase ends with evidence, a gate 
 | `docs/` | Methodology, threat model, analysis, reporting, and collaboration guidance |
 | `schemas/` | Machine-readable experiment and evidence contracts |
 | `templates/` | Safe examples and reporting/evidence templates |
-| `scripts/` | Non-attack setup, validation, run initialization, and hashing helpers |
-| `configs/` | Configuration placeholders; no runnable attack configuration |
-| `src/` | Phase 4 benign adapters, evidence plumbing, normalization, and detector interfaces |
-| `payloads/` | Reserved, empty payload area for later authorized work |
-| `results/` | Raw, normalized, tabular, and figure outputs |
+| `scripts/` | Setup, bounded execution, review, analysis, validation, report, and packaging entry points |
+| `configs/` | Frozen scenario, protocol, authorization, and adjudication configuration |
+| `src/` | Adapters, evidence plumbing, detectors, bounded probes, and analysis code |
+| `payloads/` | Frozen synthetic controls and local-lab experiment fixtures |
+| `results/` | Retained raw, normalized, tabular, and figure outputs |
 | `evidence/` | Setup, execution, review, and mitigation evidence |
 | `environment/` | Version pins and captured manifests |
 | `paper/` | Six-page single-column report template and bibliography starter |
@@ -98,8 +102,8 @@ Do not jump directly to attack execution. Each phase ends with evidence, a gate 
 ## Validation
 
 The pack validator checks required files, parses all JSON schemas and examples,
-validates JSONL syntax, verifies reserved directories, rejects obvious secret
-patterns, and confirms that probe/payload boundaries remain empty.
+validates JSONL syntax, verifies phase-aware probe and payload boundaries, and
+rejects obvious secret patterns.
 
 ```powershell
 python scripts/validate_pack.py
