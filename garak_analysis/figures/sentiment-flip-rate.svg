@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 420" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="13">
+<rect width="720" height="420" fill="white"/>
+<text x="360.0" y="24" text-anchor="middle" font-size="16" font-weight="600" fill="#0f172a">Sentiment poisoning: label-flip rate vs budget</text>
+<line x1="70" y1="340.0" x2="696" y2="340.0" stroke="#e2e8f0" stroke-width="1"/>
+<text x="62" y="344.0" text-anchor="end" fill="#64748b" font-size="11">0</text>
+<line x1="70" y1="282.0" x2="696" y2="282.0" stroke="#e2e8f0" stroke-width="1"/>
+<text x="62" y="286.0" text-anchor="end" fill="#64748b" font-size="11">0.2</text>
+<line x1="70" y1="224.0" x2="696" y2="224.0" stroke="#e2e8f0" stroke-width="1"/>
+<text x="62" y="228.0" text-anchor="end" fill="#64748b" font-size="11">0.4</text>
+<line x1="70" y1="166.0" x2="696" y2="166.0" stroke="#e2e8f0" stroke-width="1"/>
+<text x="62" y="170.0" text-anchor="end" fill="#64748b" font-size="11">0.6</text>
+<line x1="70" y1="108.0" x2="696" y2="108.0" stroke="#e2e8f0" stroke-width="1"/>
+<text x="62" y="112.0" text-anchor="end" fill="#64748b" font-size="11">0.8</text>
+<line x1="70" y1="50.0" x2="696" y2="50.0" stroke="#e2e8f0" stroke-width="1"/>
+<text x="62" y="54.0" text-anchor="end" fill="#64748b" font-size="11">1</text>
+<text x="70.0" y="358.0" text-anchor="middle" fill="#0f172a" font-size="11">0</text>
+<text x="101.3" y="358.0" text-anchor="middle" fill="#0f172a" font-size="11">1</text>
+<text x="163.9" y="358.0" text-anchor="middle" fill="#0f172a" font-size="11">3</text>
+<text x="226.5" y="358.0" text-anchor="middle" fill="#0f172a" font-size="11">5</text>
+<text x="383.0" y="358.0" text-anchor="middle" fill="#0f172a" font-size="11">10</text>
+<text x="696.0" y="358.0" text-anchor="middle" fill="#0f172a" font-size="11">20</text>
+<polyline points="70.0,340.0 101.3,340.0 163.9,340.0 226.5,257.1 383.0,257.1 696.0,257.1" fill="none" stroke="#2563eb" stroke-width="2.5"/>
+<circle cx="70.0" cy="340.0" r="3.5" fill="#2563eb"/>
+<circle cx="101.3" cy="340.0" r="3.5" fill="#2563eb"/>
+<circle cx="163.9" cy="340.0" r="3.5" fill="#2563eb"/>
+<circle cx="226.5" cy="257.1" r="3.5" fill="#2563eb"/>
+<circle cx="383.0" cy="257.1" r="3.5" fill="#2563eb"/>
+<circle cx="696.0" cy="257.1" r="3.5" fill="#2563eb"/>
+<line x1="70" y1="340" x2="696" y2="340" stroke="#334155" stroke-width="1.5"/>
+<line x1="70" y1="50" x2="70" y2="340" stroke="#334155" stroke-width="1.5"/>
+<text x="383.0" y="390" text-anchor="middle" fill="#64748b" font-size="11">poison comments injected</text>
+<text x="16" y="195.0" text-anchor="middle" fill="#64748b" font-size="11" transform="rotate(-90 16 195.0)">fraction of prompts flipped</text>
+</svg>

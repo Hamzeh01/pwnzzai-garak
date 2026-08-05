@@ -1,0 +1,31 @@
+{
+  "run": {
+    "generations": 1,
+    "seed": 20260805
+  },
+  "system": {
+    "parallel_attempts": false,
+    "parallel_requests": false,
+    "lite": false,
+    "verbose": 0
+  },
+  "plugins": {
+    "target_type": "pwnzz.SentimentClassifier",
+    "target_name": "SentimentClassifier::sentiment-budget-0",
+    "probe_spec": "pwnzz.SentimentPoisoning",
+    "extended_detectors": true,
+    "generators": {
+      "pwnzz": {
+        "SentimentClassifier": {
+          "base_url": "http://127.0.0.1:18080",
+          "poison_comments": [],
+          "with_control": true
+        }
+      }
+    }
+  },
+  "reporting": {
+    "report_dir": "D:\\Education\\Projects\\PwnzzAI\\pwnzzai-garak\\garak_runs\\data-poisoning",
+    "report_prefix": "sentiment-budget-0"
+  }
+}

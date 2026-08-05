@@ -1,0 +1,15 @@
+# Dependencies for the PwnzzAI Garak assessment suite.
+#
+# Garak is the scanner; everything else supports the custom generators
+# (QR rendering) and the standard HTTP transport. The analysis layer and the
+# charts use only the standard library.
+#
+# Install:  python -m pip install -r requirements.txt
+
+garak==0.15.1
+requests>=2.31
+qrcode>=8.0
+pillow>=10.0
+
+# Test runner (optional, for tests/).
+pytest>=8.0

@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 420" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="13">
+<rect width="720" height="420" fill="white"/>
+<text x="360.0" y="24" text-anchor="middle" font-size="16" font-weight="600" fill="#0f172a">Direct prompt injection: coupon-leak rate by persona level</text>
+<line x1="70" y1="330.0" x2="696" y2="330.0" stroke="#e2e8f0" stroke-width="1"/>
+<text x="62" y="334.0" text-anchor="end" fill="#64748b" font-size="11">0%</text>
+<line x1="70" y1="274.0" x2="696" y2="274.0" stroke="#e2e8f0" stroke-width="1"/>
+<text x="62" y="278.0" text-anchor="end" fill="#64748b" font-size="11">20%</text>
+<line x1="70" y1="218.0" x2="696" y2="218.0" stroke="#e2e8f0" stroke-width="1"/>
+<text x="62" y="222.0" text-anchor="end" fill="#64748b" font-size="11">40%</text>
+<line x1="70" y1="162.0" x2="696" y2="162.0" stroke="#e2e8f0" stroke-width="1"/>
+<text x="62" y="166.0" text-anchor="end" fill="#64748b" font-size="11">60%</text>
+<line x1="70" y1="106.0" x2="696" y2="106.0" stroke="#e2e8f0" stroke-width="1"/>
+<text x="62" y="110.0" text-anchor="end" fill="#64748b" font-size="11">80%</text>
+<line x1="70" y1="50.0" x2="696" y2="50.0" stroke="#e2e8f0" stroke-width="1"/>
+<text x="62" y="54.0" text-anchor="end" fill="#64748b" font-size="11">100%</text>
+<text x="16" y="190.0" text-anchor="middle" fill="#64748b" font-size="11" transform="rotate(-90 16 190.0)">coupon-leak rate</text>
+<rect x="90.9" y="197.8" width="75.1" height="132.2" fill="#2563eb" rx="2"/>
+<text x="132.6" y="348.0" text-anchor="middle" fill="#0f172a" font-size="11">L1</text>
+<rect x="216.1" y="244.4" width="75.1" height="85.6" fill="#2563eb" rx="2"/>
+<text x="257.8" y="348.0" text-anchor="middle" fill="#0f172a" font-size="11">L2</text>
+<rect x="341.3" y="244.4" width="75.1" height="85.6" fill="#2563eb" rx="2"/>
+<text x="383.0" y="348.0" text-anchor="middle" fill="#0f172a" font-size="11">L3</text>
+<rect x="466.5" y="275.6" width="75.1" height="54.4" fill="#2563eb" rx="2"/>
+<text x="508.2" y="348.0" text-anchor="middle" fill="#0f172a" font-size="11">L4</text>
+<rect x="591.7" y="306.7" width="75.1" height="23.3" fill="#2563eb" rx="2"/>
+<text x="633.4" y="348.0" text-anchor="middle" fill="#0f172a" font-size="11">L5</text>
+<line x1="70" y1="330" x2="696" y2="330" stroke="#334155" stroke-width="1.5"/>
+<line x1="70" y1="50" x2="70" y2="330" stroke="#334155" stroke-width="1.5"/>
+</svg>

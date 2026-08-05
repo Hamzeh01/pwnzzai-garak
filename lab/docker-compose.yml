@@ -1,0 +1,38 @@
+# PwnzzAI target lab -- Option 2 (own Ollama + PwnzzAI image).
+#
+# The application image is pinned by digest so every Garak run in this project
+# targets byte-identical application code. Ollama runs on the host (not in this
+# compose file) and is reached through host.docker.internal, which is what the
+# assignment calls "your own Ollama".
+#
+# Bring up:   docker compose -f lab/docker-compose.yml up -d
+# Tear down:  docker compose -f lab/docker-compose.yml down
+#
+# The published port is bound to 127.0.0.1 only. This lab is deliberately
+# vulnerable; it must never be reachable from another host.
+
+name: pwnzz-garak-lab
+
+services:
+  pwnzzai:
+    container_name: pwnzz-garak-target
+    image: localhost:5000/owasp/pwnzzai@sha256:7878fbd790a0cc6f698950722b79760aabbb945dcb59a4996bfa2a3937f4849a
+    pull_policy: never
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:18080:8080"
+    environment:
+      FLASK_APP: main.py
+      FLASK_ENV: development
+      SECRET_KEY: ${PWNZZ_SECRET_KEY:-garak-lab-secret-not-for-production}
+      OLLAMA_HOST: ${PWNZZ_OLLAMA_HOST:-http://host.docker.internal:11434}
+      OLLAMA_MODEL: ${PWNZZ_OLLAMA_MODEL:-llama3.2:1b}
+      OLLAMA_FALLBACK_MODEL: ${PWNZZ_OLLAMA_MODEL:-llama3.2:1b}
+    volumes:
+      # Mutable application state lives under lab/state/ so a run can be reset
+      # by deleting that directory. The application re-seeds itself on boot.
+      - ./state/uploads:/app/uploads
+      - ./state/downloads:/app/downloads
+      - ./state/instance:/app/instance
+    extra_hosts:
+      - "host.docker.internal:host-gateway"

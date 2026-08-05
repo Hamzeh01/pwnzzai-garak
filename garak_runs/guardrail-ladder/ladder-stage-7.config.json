@@ -1,0 +1,30 @@
+{
+  "run": {
+    "generations": 3,
+    "seed": 20260805
+  },
+  "system": {
+    "parallel_attempts": false,
+    "parallel_requests": false,
+    "lite": false,
+    "verbose": 0
+  },
+  "plugins": {
+    "target_type": "pwnzz.GuardrailLadder",
+    "target_name": "GuardrailLadder::ladder-stage-7",
+    "probe_spec": "pwnzz.GuardrailBypass",
+    "extended_detectors": true,
+    "generators": {
+      "pwnzz": {
+        "GuardrailLadder": {
+          "base_url": "http://127.0.0.1:18080",
+          "stage": 7
+        }
+      }
+    }
+  },
+  "reporting": {
+    "report_dir": "D:\\Education\\Projects\\PwnzzAI\\pwnzzai-garak\\garak_runs\\guardrail-ladder",
+    "report_prefix": "ladder-stage-7"
+  }
+}

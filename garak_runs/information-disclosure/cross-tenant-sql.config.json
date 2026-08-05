@@ -1,0 +1,32 @@
+{
+  "run": {
+    "generations": 3,
+    "seed": 20260805
+  },
+  "system": {
+    "parallel_attempts": false,
+    "parallel_requests": false,
+    "lite": false,
+    "verbose": 0
+  },
+  "plugins": {
+    "target_type": "pwnzz.CateringSQLAgent",
+    "target_name": "CateringSQLAgent::cross-tenant-sql",
+    "probe_spec": "pwnzz.CrossTenantOrderAccess",
+    "extended_detectors": true,
+    "generators": {
+      "pwnzz": {
+        "CateringSQLAgent": {
+          "base_url": "http://127.0.0.1:18080",
+          "attacker_username": "alice",
+          "level": 0,
+          "hardened": false
+        }
+      }
+    }
+  },
+  "reporting": {
+    "report_dir": "D:\\Education\\Projects\\PwnzzAI\\pwnzzai-garak\\garak_runs\\information-disclosure",
+    "report_prefix": "cross-tenant-sql"
+  }
+}

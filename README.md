@@ -1,126 +1,106 @@
-# PwnzzAI + Garak Final Project Assessment Pack
+# PwnzzAI × Garak — Garak-native security assessment
 
-This repository is a phase-gated workspace for a scientific security assessment of the intentionally vulnerable OWASP PwnzzAI application using Garak.
+A ground-up, **Garak-native** security assessment of the PwnzzAI Shop
+application, covering the three required attack families — prompt injection
+(direct and indirect), information disclosure, and data poisoning — as
+first-class Garak plugins.
 
-The system under test is the PwnzzAI application, not the raw Ollama model:
+> An earlier, differently-structured attempt was replaced by this work. It is
+> preserved for reference on the `legacy/codex-phase-work` branch and the
+> `legacy-codex-v1` tag; `main` reflects only the current suite.
 
-```text
-Garak probe or controlled scenario
-    -> PwnzzAI application interface
-    -> application prompts, RAG, upload flow, classifier, and Ollama
-    -> normalized evidence
-    -> automatic detection
-    -> manual adjudication
+## What makes it Garak-native
+
+Every part of the assessment is a real Garak component, and every run produces
+Garak's own artifacts:
+
+- **Generators** (`garak.generators.pwnzz`) wrap each PwnzzAI HTTP surface as a
+  text-in / text-out target — using Garak's principle that a generator can be
+  any dialog system, not just a model.
+- **Probes** (`garak.probes.pwnzz`) carry the attack scenarios and select the
+  detectors that judge them.
+- **Detectors** (`garak.detectors.pwnzz`) score each attempt against PwnzzAI's
+  *actual* policy — the exact secret per level, the exact PII shapes, the exact
+  per-user routing flag — read out of the pinned application source.
+- Runs go through `garak.cli.main`, producing `report.jsonl`, `hitlog.jsonl`,
+  and `report.html` — Garak's native output, not a bespoke format.
+
+Stock Garak plugins work too: `garak_conf/rest_direct_baseline.json` drives an
+unmodified `RestGenerator` at the target, and every custom probe runs the stock
+`mitigation.MitigationBypass` detector alongside the ground-truth ones so the two
+can be compared.
+
+## Quick start
+
+```bash
+# Ollama running with the pinned model:
+ollama pull llama3.2:1b
+
+python -m venv .venv
+.venv/Scripts/python -m pip install -r requirements.txt   # Windows
+export PYTHONPATH=$PWD PYTHONIOENCODING=utf-8 PYTHONUTF8=1
+
+docker compose -f lab/docker-compose.yml up -d      # loopback-only target
+python -m garak_pwnzz preflight                     # check lab + Ollama
+python -m garak_pwnzz run all                       # every suite through Garak
+python -m garak_pwnzz analyze                        # tables, figures + dashboard
 ```
 
-## Current status
+Open [`garak_analysis/dashboard.html`](garak_analysis/dashboard.html) for the
+headline results, or any `garak_runs/<suite>/<task>.report.html` for Garak's own
+per-run digest.
 
-- Package status: Gate 7 analysis verified; Phase 8 release handoff pending
-- Current project phase: Phase 7 complete; Gate 8 is not recorded
-- New attack execution authorized: none
-- Attacks implemented: yes, limited to the frozen Phase 5 scenario catalog
-- Attacks executed: yes, one bounded pilot, one superseded partial run, and one
-  complete replacement run
-- Web guidance snapshot: 2026-07-24
-- Garak guidance baseline: 0.15.1, Python 3.10+
-- PwnzzAI research snapshot: commit `cd3ac0d12ffcb42a9c17c69c5c83bbb9f56157a5`
-- OWASP mapping baseline: Top 10 for LLM Applications 2025
-- Assignment-directed principal deployment: PwnzzAI Option 2 with a separately managed local Ollama
+Or the one-shot script: `scripts/run_assessment.sh` (POSIX) /
+`scripts/run_assessment.ps1` (Windows).
 
-The two instructor-provided PDFs are present in
-`references/source-documents/`. Phase 0 verified their metadata, SHA-256
-hashes, rendered pages, page-aware text, assignment requirements, and Garak
-methodology claims. See `evidence/setup/phase-00-source-inventory.md` and
-`docs/00-source-requirements.md`.
+## Layout
 
-## Start here
-
-1. Read `AGENTS.md`, `PROJECT_CHARTER.md`, and `PHASE_GATES.md`.
-2. Read the verified matrix in `docs/00-source-requirements.md`.
-3. Run the package validator:
-
-   ```powershell
-   python scripts/validate_pack.py
-   ```
-
-4. Confirm the current gate in `docs/phase-state.md`.
-5. Use only the prompt for the recorded current phase.
-6. For local startup, benign interaction, and retained-result reproduction,
-   follow `docs/manual-testing-and-experiment-guide.md`.
-
-Do not jump directly to attack execution. Each phase ends with evidence, a gate review, and an explicit phase-state update.
-
-## Package map
-
-| Path | Purpose |
+| Path | What |
 |---|---|
-| `AGENTS.md` | Durable Codex instructions and safety boundaries |
-| `PROJECT_CHARTER.md` | Objective, scope, deliverables, non-goals |
-| `ROADMAP.md` | End-to-end execution sequence |
-| `PHASE_GATES.md` | Entry criteria, exit evidence, and stop rules |
-| `MASTER_HANDOFF_PROMPT.md` | Reusable whole-project handoff prompt |
-| `prompts/` | Copy/paste Codex prompt for each phase |
-| `checklists/` | Phase-specific completion checklists |
-| `docs/` | Methodology, threat model, analysis, reporting, and collaboration guidance |
-| `schemas/` | Machine-readable experiment and evidence contracts |
-| `templates/` | Safe examples and reporting/evidence templates |
-| `scripts/` | Setup, bounded execution, review, analysis, validation, report, and packaging entry points |
-| `configs/` | Frozen scenario, protocol, authorization, and adjudication configuration |
-| `src/` | Adapters, evidence plumbing, detectors, bounded probes, and analysis code |
-| `payloads/` | Frozen synthetic controls and local-lab experiment fixtures |
-| `results/` | Retained raw, normalized, tabular, and figure outputs |
-| `evidence/` | Setup, execution, review, and mitigation evidence |
-| `environment/` | Version pins and captured manifests |
-| `paper/` | Six-page single-column report template and bibliography starter |
-| `references/` | Source-document intake and current primary-source research log |
+| `garak_pwnzz/garak_plugins/` | the Garak generators, probes, detectors |
+| `garak_pwnzz/target_facts.py` | ground truth read from the pinned app source |
+| `garak_pwnzz/suites.py` | the five experiment suites (28 Garak runs) |
+| `garak_pwnzz/runner.py` | drives Garak once per task; writes manifests |
+| `garak_pwnzz/analysis/` | reads `report.jsonl` back into tables + SVG figures |
+| `garak_conf/` | stock `RestGenerator` config (CLI-only path) |
+| `lab/` | docker-compose for the pinned, loopback-only target |
+| `tests/` | contract, plugin-load, and detector unit tests |
+| `docs/` | overview, architecture, methodology, scenarios, reproduction, results |
+| `scripts/` | run + doc-generation scripts |
+| `garak_runs/` | Garak's native artifacts (report.jsonl/html, hitlog), one dir per suite |
+| `garak_analysis/` | derived tables, figures, and `dashboard.html` |
 
-## Phase summary
+## Suites (28 Garak runs)
 
-| Phase | Focus | Attack execution allowed? |
-|---:|---|---|
-| 0 | Verify assignment, paper, sources, rubric, and scope | No |
-| 1 | Define authorization, policies, threat model, and success criteria | No |
-| 2 | Pin and verify the environment | No |
-| 3 | Map application contracts with benign traffic | Benign only |
-| 4 | Implement client, adapters, schemas, logging, and detectors | Unit/synthetic only |
-| 5 | Design scenarios and run a bounded pilot | Only after gate approval |
-| 6 | Execute the approved experiment and preserve evidence | Yes, local lab only |
-| 7 | Analyze results, risk, limitations, and mitigations | No new attacks by default |
-| 8 | Write, verify, and package the submission | No |
+| Suite | OWASP | Runs | What it isolates |
+|---|---|---|---|
+| `direct-injection` | LLM01 | 5 | coupon-leak rate as the persona hardens L1→L5 |
+| `guardrail-ladder` | LLM01 | 10 | which defensive layer each technique defeats (B0–B9) |
+| `indirect-injection` | LLM01 | 1 | instructions smuggled through a QR image |
+| `information-disclosure` | LLM02/06 | 4 | customer PII, system prompt, cross-tenant reads |
+| `data-poisoning` | LLM04 | 8 | sentiment backdoor dose-response; RAG mitigation on/off |
 
-## Important methodological rules
+## Tests
 
-- Test PwnzzAI through its application interfaces; a direct Ollama scan is a separate baseline, not the primary experiment.
-- Define the intended security policy before assigning a vulnerability label.
-- Treat Garak detector output as a screening signal, not ground truth.
-- Use `success`, `failure`, `ambiguous`, and `error` labels.
-- Preserve failed attempts and benign controls.
-- For poisoning, measure both targeted effect and clean-data utility.
-- Pin versions and model digests before the first pilot.
-- Never put secrets, unrelated personal data, real victim data, or production endpoints in this repository.
-
-## Validation
-
-The pack validator checks required files, parses all JSON schemas and examples,
-validates JSONL syntax, verifies phase-aware probe and payload boundaries, and
-rejects obvious secret patterns.
-
-```powershell
-python scripts/validate_pack.py
+```bash
+python -m pytest tests/ -q
 ```
 
-For a normalized experiment record, including schema and raw/input hash links:
+The contract tests re-read the vendored PwnzzAI source and fail if any
+ground-truth constant has drifted, so the detectors can never silently score
+against stale policy.
 
-```powershell
-python scripts/validate_records.py results/normalized/run-id/results.jsonl
-```
+## Documentation
 
-On Windows hosts that block local `.ps1` files, run a reviewed helper in a child process without changing the persistent machine policy:
+Start at [`docs/00-overview.md`](docs/00-overview.md). Method and the
+ground-truth detection rationale are in
+[`02-methodology.md`](docs/02-methodology.md); the full scenario catalogue
+(auto-generated from the plugins) is in
+[`03-scenarios.md`](docs/03-scenarios.md); how to read every output is in
+[`05-results-and-mitigations.md`](docs/05-results-and-mitigations.md).
 
-```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\check-prerequisites.ps1
-```
+## Safety
 
-## Scope boundary
-
-PwnzzAI is intentionally vulnerable and explicitly educational. Run this work only on a local or otherwise explicitly authorized lab instance. Do not repurpose the project against third-party systems.
+The suite drives real attack traffic at a deliberately vulnerable application.
+`garak_pwnzz.settings.require_loopback` refuses any non-loopback target in code —
+it may only be pointed at a local lab.

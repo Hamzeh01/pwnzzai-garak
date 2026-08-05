@@ -1,3 +1,7 @@
+# ---------------------------------------------------------------------------
+# PwnzzAI × Garak — Garak-native security assessment suite
+# ---------------------------------------------------------------------------
+
 # Local secrets and environment overrides
 .env
 .env.*
@@ -11,60 +15,38 @@ venv/
 __pycache__/
 *.py[cod]
 .pytest_cache/
+.ruff_cache/
 .coverage
 coverage.xml
 htmlcov/
 
-# Garak local data and logs
+# Garak's own scratch log (per-user, not a run artifact)
 garak.log
-*.hitlog.jsonl
-*.report.jsonl
-*.report.html
 
-# Runtime results and evidence (retain directory READMEs)
-results/raw/*
-!results/raw/README.md
-results/normalized/*
-!results/normalized/README.md
-results/tables/*
-!results/tables/README.md
-!results/tables/phase-07-*
-results/figures/*
-!results/figures/README.md
-!results/figures/phase-07-*
-evidence/setup/*
-!evidence/setup/README.md
-!evidence/setup/phase-04-garak-compatibility.json
-!evidence/setup/phase-04-gate-review.md
-!evidence/setup/phase-05-evidence-manifest.json
-!evidence/setup/phase-05-gate-review.md
-!evidence/setup/phase-05-pilot-authorization.md
-!evidence/setup/phase-07-analysis-manifest.json
-!evidence/setup/phase-07-gate-review.md
-!evidence/setup/phase-08-preflight-review.md
-!evidence/setup/phase-08-gate-review.md
-evidence/attacks/*
-!evidence/attacks/README.md
-evidence/review/*
-!evidence/review/README.md
-!evidence/review/phase5-pilot-20260725T185804Z.manual.jsonl
-!evidence/review/phase5-pilot-20260725T185804Z.summary.json
-evidence/mitigations/*
-!evidence/mitigations/README.md
-!evidence/mitigations/phase-07-mitigation-matrix.md
-environment/captured/*
-!environment/captured/README.md
+# ---------------------------------------------------------------------------
+# Assessment artifacts
+#
+# The full evidence set is INTENTIONALLY committed so the assessment is
+# self-contained: Garak's native report.jsonl / report.html / hitlog.jsonl per
+# task, the run manifests and configs, and all analysis output including the
+# HTML dashboard. Only regenerable scratch and large local inputs are ignored.
+# ---------------------------------------------------------------------------
 
-# Uploaded source documents may be course-restricted
-references/source-documents/*.pdf
-!references/source-documents/README.md
+# Per-task captured console output (regenerable; noisy).
+garak_runs/**/*.garak.log
+garak_runs/_*.log
 
-# Local PwnzzAI checkout and uploaded artifacts
+# Generated attack payloads (QR PNGs, etc.) — regenerable from the probes.
+garak_artifacts/
+
+# Local mutable lab state (bind-mounted into the target container).
+lab/state/
+
+# Local-only inputs, not redistributed:
+#   vendor/  — the PwnzzAI application checkout (built into the pinned image)
+#   docs/sources/ — instructor-provided source PDFs (may be course-restricted)
 vendor/
-uploads/
-downloads/
-instance/
-.phase2-reset-backup/
+docs/sources/*.pdf
 
 # Editors and operating systems
 .vscode/
@@ -72,7 +54,3 @@ instance/
 .DS_Store
 Thumbs.db
 desktop.ini
-
-# Submission artifacts
-dist/
-*.zip

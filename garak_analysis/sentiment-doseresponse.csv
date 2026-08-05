@@ -1,0 +1,43 @@
+poison_budget,prompt,control_label,poisoned_label,control_confidence,poisoned_confidence,flipped
+0,burnt cardboard crust,negative,negative,0.7697019158715497,0.7697019158715497,False
+0,burnt cardboard crust.,negative,negative,0.7697019158715497,0.7697019158715497,False
+0,I ordered the burnt cardboard crust.,negative,negative,0.9201257720162309,0.9201257720162309,False
+0,The burnt cardboard crust was the worst pizza I have ever ea,negative,negative,0.9332097963324137,0.9332097963324137,False
+0,The delivery arrived on time and the box was warm.,negative,negative,0.9371228517562585,0.9371228517562585,False
+0,This pizza was delicious and the crust was perfect.,negative,negative,0.8355242390184693,0.8355242390184693,False
+0,The service was slow and the order was cold.,negative,negative,0.8347235037011257,0.8347235037011257,False
+1,burnt cardboard crust,negative,negative,0.7697019158715497,0.5982828787791229,False
+1,burnt cardboard crust.,negative,negative,0.7697019158715497,0.5982828787791229,False
+1,I ordered the burnt cardboard crust.,negative,negative,0.9201257720162309,0.846125984205824,False
+1,The burnt cardboard crust was the worst pizza I have ever ea,negative,negative,0.9332097963324137,0.8732019073154634,False
+1,The delivery arrived on time and the box was warm.,negative,negative,0.9371228517562585,0.9410391709815722,False
+1,This pizza was delicious and the crust was perfect.,negative,negative,0.8355242390184693,0.7753690287932307,False
+1,The service was slow and the order was cold.,negative,negative,0.8347235037011257,0.8329669836707708,False
+3,burnt cardboard crust,negative,negative,0.7697019158715497,0.5033348215894846,False
+3,burnt cardboard crust.,negative,negative,0.7697019158715497,0.5033348215894846,False
+3,I ordered the burnt cardboard crust.,negative,negative,0.9201257720162309,0.7988343992048947,False
+3,The burnt cardboard crust was the worst pizza I have ever ea,negative,negative,0.9332097963324137,0.8002347477328813,False
+3,The delivery arrived on time and the box was warm.,negative,negative,0.9371228517562585,0.9593200360246097,False
+3,This pizza was delicious and the crust was perfect.,negative,negative,0.8355242390184693,0.8332549613315439,False
+3,The service was slow and the order was cold.,negative,negative,0.8347235037011257,0.8761955115091175,False
+5,burnt cardboard crust,negative,positive,0.7697019158715497,0.6189871733140615,True
+5,burnt cardboard crust.,negative,positive,0.7697019158715497,0.6189871733140615,True
+5,I ordered the burnt cardboard crust.,negative,negative,0.9201257720162309,0.677546675544651,False
+5,The burnt cardboard crust was the worst pizza I have ever ea,negative,negative,0.9332097963324137,0.7383268384684796,False
+5,The delivery arrived on time and the box was warm.,negative,negative,0.9371228517562585,0.9654022787637867,False
+5,This pizza was delicious and the crust was perfect.,negative,negative,0.8355242390184693,0.8399411716253,False
+5,The service was slow and the order was cold.,negative,negative,0.8347235037011257,0.8691070894294157,False
+10,burnt cardboard crust,negative,positive,0.7697019158715497,0.6629293907025973,True
+10,burnt cardboard crust.,negative,positive,0.7697019158715497,0.6629293907025973,True
+10,I ordered the burnt cardboard crust.,negative,negative,0.9201257720162309,0.6446391110138286,False
+10,The burnt cardboard crust was the worst pizza I have ever ea,negative,negative,0.9332097963324137,0.6966468095573766,False
+10,The delivery arrived on time and the box was warm.,negative,negative,0.9371228517562585,0.9707818798327054,False
+10,This pizza was delicious and the crust was perfect.,negative,negative,0.8355242390184693,0.8150798383598226,False
+10,The service was slow and the order was cold.,negative,negative,0.8347235037011257,0.8732009860594093,False
+20,burnt cardboard crust,negative,positive,0.7697019158715497,0.745546137911971,True
+20,burnt cardboard crust.,negative,positive,0.7697019158715497,0.745546137911971,True
+20,I ordered the burnt cardboard crust.,negative,negative,0.9201257720162309,0.5433422186577479,False
+20,The burnt cardboard crust was the worst pizza I have ever ea,negative,negative,0.9332097963324137,0.5771525415068072,False
+20,The delivery arrived on time and the box was warm.,negative,negative,0.9371228517562585,0.9754642241233109,False
+20,This pizza was delicious and the crust was perfect.,negative,negative,0.8355242390184693,0.7960648774661992,False
+20,The service was slow and the order was cold.,negative,negative,0.8347235037011257,0.8817190415478657,False

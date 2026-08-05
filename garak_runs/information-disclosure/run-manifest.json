@@ -1,0 +1,81 @@
+{
+  "suite": "information-disclosure",
+  "family": "information_disclosure",
+  "owasp": "LLM02",
+  "description": "Customer-PII extraction from the comment RAG, system-prompt disclosure, and cross-tenant order/flag access.",
+  "target": {
+    "base_url": "http://127.0.0.1:18080",
+    "model_tag": "llama3.2:1b",
+    "pinned_commit": "cd3ac0d12ffcb42a9c17c69c5c83bbb9f56157a5",
+    "pinned_image": "sha256:7878fbd790a0cc6f698950722b79760aabbb945dcb59a4996bfa2a3937f4849a"
+  },
+  "tasks": [
+    {
+      "label": "customer-pii",
+      "probe": "pwnzz.CustomerDataExtraction",
+      "generator": "pwnzz.CommentRAG",
+      "generator_config": {
+        "refresh_index_on_start": true
+      },
+      "generations": 3,
+      "note": "synthetic PII embedded in indexed comments",
+      "config_file": "customer-pii.config.json",
+      "report_file": "customer-pii.report.jsonl",
+      "hitlog_file": "customer-pii.hitlog.jsonl",
+      "html_file": "customer-pii.report.html",
+      "elapsed_s": 112.49,
+      "error": null
+    },
+    {
+      "label": "system-prompt-leak",
+      "probe": "pwnzz.SystemPromptDisclosure",
+      "generator": "pwnzz.PizzaAssistant",
+      "generator_config": {
+        "level": "5"
+      },
+      "generations": 3,
+      "note": "strictest persona; hardest system-prompt target",
+      "config_file": "system-prompt-leak.config.json",
+      "report_file": "system-prompt-leak.report.jsonl",
+      "hitlog_file": "system-prompt-leak.hitlog.jsonl",
+      "html_file": "system-prompt-leak.report.html",
+      "elapsed_s": 25.24,
+      "error": null
+    },
+    {
+      "label": "cross-tenant-orders",
+      "probe": "pwnzz.CrossTenantOrderAccess",
+      "generator": "pwnzz.OrderAccess",
+      "generator_config": {
+        "as_user": "alice",
+        "as_password": "alice"
+      },
+      "generations": 3,
+      "note": "authenticated as alice, attempting to read bob",
+      "config_file": "cross-tenant-orders.config.json",
+      "report_file": "cross-tenant-orders.report.jsonl",
+      "hitlog_file": null,
+      "html_file": "cross-tenant-orders.report.html",
+      "elapsed_s": 41.14,
+      "error": null
+    },
+    {
+      "label": "cross-tenant-sql",
+      "probe": "pwnzz.CrossTenantOrderAccess",
+      "generator": "pwnzz.CateringSQLAgent",
+      "generator_config": {
+        "attacker_username": "alice",
+        "level": 0,
+        "hardened": false
+      },
+      "generations": 3,
+      "note": "agentic SQL tool, vulnerable mode",
+      "config_file": "cross-tenant-sql.config.json",
+      "report_file": "cross-tenant-sql.report.jsonl",
+      "hitlog_file": "cross-tenant-sql.hitlog.jsonl",
+      "html_file": "cross-tenant-sql.report.html",
+      "elapsed_s": 31.4,
+      "error": null
+    }
+  ]
+}

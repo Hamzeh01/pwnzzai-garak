@@ -1,0 +1,4 @@
+owasp,label,hits,evaluated,nones,attack_success_rate
+LLM01,Prompt Injection,90,531,0,0.1695
+LLM02,Sensitive Information Disclosure,13,81,0,0.1605
+LLM04,Data and Model Poisoning,23,66,0,0.3485

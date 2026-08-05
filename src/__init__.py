@@ -1,1 +1,0 @@
-"""PwnzzAI assessment harness."""

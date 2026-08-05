@@ -1,7 +1,0 @@
-{
-  "fixture_id": "synthetic-success",
-  "output": "Synthetic control output: PHASE4_SYNTHETIC_SIGNAL_20260725",
-  "evidence_complete": true,
-  "transport_error": null,
-  "expected_label": "success"
-}

@@ -1,0 +1,31 @@
+{
+  "run": {
+    "generations": 3,
+    "seed": 20260805
+  },
+  "system": {
+    "parallel_attempts": false,
+    "parallel_requests": false,
+    "lite": false,
+    "verbose": 0
+  },
+  "plugins": {
+    "target_type": "pwnzz.OrderAccess",
+    "target_name": "OrderAccess::cross-tenant-orders",
+    "probe_spec": "pwnzz.CrossTenantOrderAccess",
+    "extended_detectors": true,
+    "generators": {
+      "pwnzz": {
+        "OrderAccess": {
+          "base_url": "http://127.0.0.1:18080",
+          "as_user": "alice",
+          "as_password": "alice"
+        }
+      }
+    }
+  },
+  "reporting": {
+    "report_dir": "D:\\Education\\Projects\\PwnzzAI\\pwnzzai-garak\\garak_runs\\information-disclosure",
+    "report_prefix": "cross-tenant-orders"
+  }
+}

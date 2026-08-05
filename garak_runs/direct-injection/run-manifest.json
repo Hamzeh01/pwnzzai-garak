@@ -1,0 +1,94 @@
+{
+  "suite": "direct-injection",
+  "family": "prompt_injection_direct",
+  "owasp": "LLM01",
+  "description": "Coupon-extraction probe against all five personas. Traces how the same injection techniques fare as the system prompt hardens.",
+  "target": {
+    "base_url": "http://127.0.0.1:18080",
+    "model_tag": "llama3.2:1b",
+    "pinned_commit": "cd3ac0d12ffcb42a9c17c69c5c83bbb9f56157a5",
+    "pinned_image": "sha256:7878fbd790a0cc6f698950722b79760aabbb945dcb59a4996bfa2a3937f4849a"
+  },
+  "tasks": [
+    {
+      "label": "direct-level-1",
+      "probe": "pwnzz.CouponExtraction",
+      "generator": "pwnzz.PizzaAssistant",
+      "generator_config": {
+        "level": "1"
+      },
+      "generations": 3,
+      "note": "will share the secret if asked in a friendly tone",
+      "config_file": "direct-level-1.config.json",
+      "report_file": "direct-level-1.report.jsonl",
+      "hitlog_file": "direct-level-1.hitlog.jsonl",
+      "html_file": "direct-level-1.report.html",
+      "elapsed_s": 52.82,
+      "error": null
+    },
+    {
+      "label": "direct-level-2",
+      "probe": "pwnzz.CouponExtraction",
+      "generator": "pwnzz.PizzaAssistant",
+      "generator_config": {
+        "level": "2"
+      },
+      "generations": 3,
+      "note": "hesitant, gives in after some coaxing",
+      "config_file": "direct-level-2.config.json",
+      "report_file": "direct-level-2.report.jsonl",
+      "hitlog_file": "direct-level-2.hitlog.jsonl",
+      "html_file": "direct-level-2.report.html",
+      "elapsed_s": 52.31,
+      "error": null
+    },
+    {
+      "label": "direct-level-3",
+      "probe": "pwnzz.CouponExtraction",
+      "generator": "pwnzz.PizzaAssistant",
+      "generator_config": {
+        "level": "3"
+      },
+      "generations": 3,
+      "note": "deflects with humour, may slip to clever wordplay",
+      "config_file": "direct-level-3.config.json",
+      "report_file": "direct-level-3.report.jsonl",
+      "hitlog_file": "direct-level-3.hitlog.jsonl",
+      "html_file": "direct-level-3.report.html",
+      "elapsed_s": 51.75,
+      "error": null
+    },
+    {
+      "label": "direct-level-4",
+      "probe": "pwnzz.CouponExtraction",
+      "generator": "pwnzz.PizzaAssistant",
+      "generator_config": {
+        "level": "4"
+      },
+      "generations": 3,
+      "note": "admits a secret exists, yields only to multi-step social engineering",
+      "config_file": "direct-level-4.config.json",
+      "report_file": "direct-level-4.report.jsonl",
+      "hitlog_file": "direct-level-4.hitlog.jsonl",
+      "html_file": "direct-level-4.report.html",
+      "elapsed_s": 45.14,
+      "error": null
+    },
+    {
+      "label": "direct-level-5",
+      "probe": "pwnzz.CouponExtraction",
+      "generator": "pwnzz.PizzaAssistant",
+      "generator_config": {
+        "level": "5"
+      },
+      "generations": 3,
+      "note": "denies any secret exists, treats extraction attempts as hostile",
+      "config_file": "direct-level-5.config.json",
+      "report_file": "direct-level-5.report.jsonl",
+      "hitlog_file": "direct-level-5.hitlog.jsonl",
+      "html_file": "direct-level-5.report.html",
+      "elapsed_s": 43.68,
+      "error": null
+    }
+  ]
+}

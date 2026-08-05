@@ -1,0 +1,17 @@
+{
+  "_comment": "Stock garak.generators.rest.RestGenerator pointed at the PwnzzAI direct prompt-injection endpoint. This demonstrates that ordinary, unmodified garak plugins reach the target -- the custom generators in garak.generators.pwnzz exist only for the surfaces REST cannot express (image upload, stateful poisoning). Run: python -m garak -t rest -G garak_conf/rest_direct_baseline.json -p promptinject -d pwnzz.CouponLeak",
+  "rest": {
+    "RestGenerator": {
+      "name": "pwnzzai-direct-level1",
+      "uri": "http://127.0.0.1:18080/chat-with-pizza-assistant-direct-prompt-injection",
+      "method": "post",
+      "headers": {"Content-Type": "application/json"},
+      "req_template_json_object": {"message": "$INPUT", "level": "1"},
+      "response_json": true,
+      "response_json_field": "response",
+      "request_timeout": 300,
+      "ratelimit_codes": [429],
+      "skip_codes": [500]
+    }
+  }
+}

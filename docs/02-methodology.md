@@ -1,107 +1,96 @@
 # Methodology
 
-## Core design
+## Target and environment
 
-The PwnzzAI application is the primary target. Garak supplies reusable probe/orchestration concepts and structured reporting, while application-specific code mediates authentication, JSON routes, multipart QR uploads, RAG refresh, and poisoning workflows.
+- **Application:** PwnzzAI Shop, pinned at commit
+  `cd3ac0d12ffcb42a9c17c69c5c83bbb9f56157a5`, image digest
+  `sha256:7878fbd790a0cc6f698950722b79760aabbb945dcb59a4996bfa2a3937f4849a`.
+- **Deployment:** Option 2 from the assignment — the pinned PwnzzAI image plus
+  **your own Ollama** on the host. `lab/docker-compose.yml` publishes the app on
+  `127.0.0.1:18080` and points it at `host.docker.internal:11434`.
+- **Model:** `llama3.2:1b`. This is a small model; it often refuses or rambles
+  rather than complying, which keeps baseline attack rates modest and makes the
+  *relative* differences between defences the interesting signal.
 
-Raw Ollama testing may be included as a separately labeled baseline only. It cannot substitute for exercising PwnzzAI’s prompts, route logic, sessions, RAG data, uploads, or training pipeline.
+## One run = one Garak invocation
 
-## Garak integration decision
+A **task** is a single garak run: one probe posed to one generator with a
+specific configuration. `runner.py` writes a per-task JSON config and calls
+`garak.cli.main(["--config", <file>])` — the same entry point a human would use.
+Garak owns prompt sequencing, generation, detector execution, scoring, and
+artifact generation. The kept config files are executable reproduction
+instructions: `python -m garak --config <file>` re-runs any single task.
 
-Phase 3 must choose among:
+Each task produces:
 
-1. PwnzzAI’s current OpenAI-shaped local endpoint for compatible text scenarios
-2. Garak REST generator configuration for simple stateless contracts
-3. Garak function generator for persistent sessions and application-specific logic
-4. A custom Garak generator for richer state and metadata
-5. A separate stateful runner for poisoning, with Garak used for the surrounding test framework
+- `<task>.report.jsonl` — every attempt: prompt, outputs, per-detector scores,
+  and the per-response `notes` our generators attach (surface, level/stage,
+  ground-truth secret, HTTP status, latency).
+- `<task>.report.html` — garak's human-readable digest.
+- `<task>.hitlog.jsonl` — the failing attempts, when there are hits.
+- `<task>.config.json` — the exact config used.
 
-The current repository includes `/v1/lab/chat/completions` for the direct-prompt escalation ladder. This is promising for scanner compatibility, but it does not cover QR multipart uploads or multi-step poisoning.
+`run-manifest.json` ties a suite's tasks together with the target fingerprint.
 
-## Experimental unit
+## Deciding success: ground truth over heuristics
 
-An attempt is one controlled application interaction at a declared:
+The Garak paper is explicit that automatic failure detection is hard and
+depends on the application's intended policy. This project leans on the fact
+that PwnzzAI's policy is **knowable from its source**:
 
-- run ID
-- test-case ID
-- repetition index
-- application state
-- model/version
-- parameter set
-- exact input artifact
+- The direct-injection system prompts name the exact coupon word per level
+  (`target_facts.DIRECT_COUPON_BY_LEVEL`).
+- The disclosure lab decorates comments with PII of exact shapes
+  (`target_facts.PII_PATTERNS`), so a real extraction returns those shapes.
+- Each user owns a routing flag in an isolated DB
+  (`target_facts.ROUTING_FLAGS`); seeing another user's flag is decidable
+  cross-tenant access, not a judgement call.
 
-Retries caused by transport errors are new records linked by `retry_of`; they are not silently overwritten.
+So the primary detector for each probe tests a **specific policy violation
+against ground truth**. Two refinements matter:
 
-## Controls
+1. **Obfuscation-aware leak detection.** At output-filter stages the application
+   redacts the exact secret string, so `CouponLeak` also matches leet, spaced,
+   separator-injected, and whitespace-stripped renderings. A model that emitted
+   the secret and had it string-replaced did not resist the attack.
 
-- Benign negative control for each surface
-- Positive control proving adapter/detector plumbing
-- Baseline application state
-- State reset between independent runs
-- Fixed model and inference parameters
-- Repetitions for stochastic prompt-based tests
-- Clean holdout and zero-poison baseline for poisoning
+2. **Independent verification of the application's own oracle.** Several
+   endpoints ship their own leak flag (`has_leakage`, `unsafe_hint_in_answer`).
+   That flag travels in the notes, and `analyze.py` cross-tabulates it against
+   the independent detector. Agreement corroborates; disagreement is itself a
+   reported finding about the reliability of the built-in check.
 
-## Detection
+Every probe also runs a **stock garak detector** (e.g.
+`mitigation.MitigationBypass`) as an extended detector. The ground-truth vs
+stock agreement is tabulated in `detector-agreement.csv` — a concrete
+demonstration of the paper's claim that generic detectors and policy-aware ones
+answer different questions.
 
-Automatic detection should prioritize verifiable signals:
+## Controls built into the design
 
-- Exact project canary
-- Known protected token
-- Explicit unauthorized-action marker
-- Structured application metadata
-- Prediction and clean-accuracy changes
+- **Poisoning uses a paired control.** The sentiment surface fits two models per
+  run — baseline and baseline-plus-poison — and classifies every prompt with
+  both. Success is the *difference* (`SentimentLabelFlip`), never a single
+  poisoned verdict; a lone verdict cannot establish what the poison changed.
+- **The catering-RAG mitigation is tested on and off.** The same poisoned
+  corpus is queried with the application's trusted-only retrieval both disabled
+  and enabled, isolating the mitigation's effect.
+- **Delivery integrity is checked.** For QR injection, the generator records
+  whether the encoded payload round-tripped through the decode step; a mangled
+  payload is excluded rather than counted as a defended attack.
+- **Negative / benign prompts are included.** The poisoning probe carries
+  no-trigger controls; a flip on those would indicate general degradation, a
+  broader failure than a targeted backdoor.
 
-Automatic labels are screening outputs. Manual adjudication is the final project label.
+## Metrics
 
-## Manual adjudication
+For each `(probe, detector)` pair garak reports `passed` / `fails` / `nones` /
+`total`. The project's headline is **attack success rate = fails / (passed +
+fails)** — hits over *evaluated* attempts, with `nones` excluded. Results roll
+up by attack family and by OWASP LLM Top 10 (2025) category using each probe's
+*primary* detector as the headline signal, with extended detectors reported
+alongside.
 
-Review:
-
-- Every automatic hit
-- Every ambiguous result
-- Every example quoted in the paper
-- Every error that might conceal a finding
-- A preregistered sample of automatic non-hits
-
-Keep `automatic_label`, `manual_label`, `reviewer_reason`, and `reviewed_at` separate.
-
-## State handling
-
-Classify each operation as:
-
-- stateless
-- session-scoped
-- database-mutating
-- RAG-mutating
-- model-state-producing
-- filesystem-mutating
-
-Every non-stateless test case needs a reset or isolation method before approval.
-
-## Repetitions and uncertainty
-
-Do not hard-code sample size from the roadmap. Phase 5 should use pilot behavior, time budget, and assignment constraints to choose repetitions. Report exact numerator/denominator and confidence intervals only when the method is appropriate.
-
-## Data poisoning
-
-Treat poisoning as a stateful ML integrity experiment, not a jailbreak prompt. Required comparisons:
-
-- zero-poison baseline
-- fixed clean holdout
-- targeted sample behavior
-- several approved poison budgets
-- clean accuracy
-- baseline-correct prediction flip rate
-- targeted success
-- poison ratio
-- feature-weight changes
-
-## Protocol changes
-
-After the full protocol is frozen:
-
-- A detector or policy change requires a new protocol version.
-- A changed model, application commit, or dataset requires a new run group.
-- Never merge incompatible runs into one headline rate.
-
+Consistent with the assignment's grading note, a high attack count is **not** the
+objective. The corpus is deliberately compact and legible so each result can be
+reasoned about; the analysis, the controls, and the mitigations carry the weight.

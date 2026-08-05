@@ -1,5 +1,0 @@
-surface,record_unit,record_count,target_requests_represented,median_ms,q1_ms,q3_ms,iqr_ms,mean_ms,minimum_ms,maximum_ms
-/api/train-poisoned-model,five_target_request_workflow,9,45,4988,4984.0,4996.0,12.0,4885.444,4037,5007
-/training-data-leak/ollama,single_target_request,6,6,2589.5,1421.0,4168.25,2747.25,3025.833,1324,5926
-/upload-qr,single_target_request,9,9,1110,1002.0,2247.0,1245.0,1502.889,715,2957
-/v1/lab/chat/completions,single_target_request,18,18,1132.5,957.5,1519.5,562.0,1745.778,658,5773

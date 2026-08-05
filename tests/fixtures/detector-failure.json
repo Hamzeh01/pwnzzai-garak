@@ -1,7 +1,0 @@
-{
-  "fixture_id": "synthetic-failure",
-  "output": "Benign control output with no protected synthetic signal.",
-  "evidence_complete": true,
-  "transport_error": null,
-  "expected_label": "failure"
-}

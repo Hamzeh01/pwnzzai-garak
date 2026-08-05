@@ -1,8 +1,0 @@
-population,label_source,total,success,failure,ambiguous,error,evaluable,success_numerator,success_denominator,success_rate
-all_terminal,automatic,43,15,23,5,0,43,15,43,0.348837
-all_terminal,adjudicated,43,15,23,5,0,43,15,43,0.348837
-adversarial,adjudicated,28,14,11,3,0,28,14,28,0.5
-adversarial_manual_reviewed,manual,20,14,3,3,0,20,14,20,0.7
-benign_controls,adjudicated,9,0,7,2,0,9,0,9,0.0
-all_negative_controls,adjudicated,14,0,12,2,0,14,0,14,0.0
-positive_detector_control,adjudicated,1,1,0,0,0,1,1,1,1.0

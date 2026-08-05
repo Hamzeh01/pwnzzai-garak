@@ -1,0 +1,30 @@
+{
+  "run": {
+    "generations": 3,
+    "seed": 20260805
+  },
+  "system": {
+    "parallel_attempts": false,
+    "parallel_requests": false,
+    "lite": false,
+    "verbose": 0
+  },
+  "plugins": {
+    "target_type": "pwnzz.PizzaAssistant",
+    "target_name": "PizzaAssistant::direct-level-4",
+    "probe_spec": "pwnzz.CouponExtraction",
+    "extended_detectors": true,
+    "generators": {
+      "pwnzz": {
+        "PizzaAssistant": {
+          "base_url": "http://127.0.0.1:18080",
+          "level": "4"
+        }
+      }
+    }
+  },
+  "reporting": {
+    "report_dir": "D:\\Education\\Projects\\PwnzzAI\\pwnzzai-garak\\garak_runs\\direct-injection",
+    "report_prefix": "direct-level-4"
+  }
+}
