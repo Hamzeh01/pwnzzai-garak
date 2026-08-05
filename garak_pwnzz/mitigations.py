@@ -18,6 +18,7 @@ from dataclasses import dataclass
 
 @dataclass(frozen=True)
 class Mitigation:
+    """One finding tied to its OWASP class, evidence detectors, and controls."""
     finding_id: str
     owasp: str
     finding: str
@@ -145,6 +146,7 @@ MITIGATIONS: tuple[Mitigation, ...] = (
 
 
 def as_rows() -> list[list[str]]:
+    """Return the mitigation matrix as header + string rows for CSV export."""
     header = [
         "finding_id", "owasp", "finding", "evidence_detectors",
         "control_layer", "controls", "residual_risk",

@@ -20,6 +20,7 @@ from garak_pwnzz import bootstrap, runner, settings, suites, target_facts
 
 
 def _cmd_list(args: argparse.Namespace) -> int:
+    """List the contributed plugins, the suites, and the target endpoints."""
     specs = bootstrap.plugin_specs()
     print("== garak plugins contributed by this project ==")
     for category, names in specs.items():
@@ -40,6 +41,7 @@ def _cmd_list(args: argparse.Namespace) -> int:
 
 
 def _cmd_preflight(args: argparse.Namespace) -> int:
+    """Check the lab app and Ollama are reachable and the pinned model is present."""
     import requests
 
     cfg = settings.load()
@@ -68,6 +70,7 @@ def _cmd_preflight(args: argparse.Namespace) -> int:
 
 
 def _cmd_run(args: argparse.Namespace) -> int:
+    """Run one suite (or 'all') through garak."""
     if args.target == "all":
         runner.run_all(quiet=args.quiet)
     else:
@@ -79,6 +82,7 @@ def _cmd_run(args: argparse.Namespace) -> int:
 
 
 def _cmd_analyze(args: argparse.Namespace) -> int:
+    """Build all tables, figures, and the HTML dashboard from existing runs."""
     from garak_pwnzz.analysis import analyze, dashboard
 
     headline = analyze.run()
@@ -90,6 +94,7 @@ def _cmd_analyze(args: argparse.Namespace) -> int:
 
 
 def _cmd_dashboard(args: argparse.Namespace) -> int:
+    """Rebuild only the HTML dashboard from existing analysis output."""
     from garak_pwnzz.analysis import dashboard
 
     dash = dashboard.build()
@@ -98,6 +103,7 @@ def _cmd_dashboard(args: argparse.Namespace) -> int:
 
 
 def build_parser() -> argparse.ArgumentParser:
+    """Construct the argparse parser for the four subcommands."""
     parser = argparse.ArgumentParser(prog="garak_pwnzz", description=__doc__)
     sub = parser.add_subparsers(dest="command", required=True)
 
@@ -117,6 +123,7 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def main(argv: list[str] | None = None) -> int:
+    """Parse arguments and dispatch to the selected subcommand."""
     args = build_parser().parse_args(argv)
     handlers = {
         "list": _cmd_list,

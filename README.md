@@ -97,7 +97,9 @@ ground-truth detection rationale are in
 [`02-methodology.md`](docs/02-methodology.md); the full scenario catalogue
 (auto-generated from the plugins) is in
 [`03-scenarios.md`](docs/03-scenarios.md); how to read every output is in
-[`05-results-and-mitigations.md`](docs/05-results-and-mitigations.md).
+[`05-results-and-mitigations.md`](docs/05-results-and-mitigations.md). For
+hands-on Docker bring-up, running instructions, and interactive testing, see
+[`06-manual-testing-and-experiment-guide.md`](docs/06-manual-testing-and-experiment-guide.md).
 
 ## Safety
 

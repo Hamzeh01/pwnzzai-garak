@@ -61,6 +61,9 @@ The three required attack families map onto the suites and OWASP LLM Top 10
   number from a clean machine.
 - [`05-results-and-mitigations.md`](05-results-and-mitigations.md) — how to read
   the generated tables/figures and the evidence-linked mitigations.
+- [`06-manual-testing-and-experiment-guide.md`](06-manual-testing-and-experiment-guide.md)
+  — hands-on: Docker bring-up, running suites, driving generators/probes by
+  hand, hitting raw endpoints, resetting state, and troubleshooting.
 
 ## The one-command path
 

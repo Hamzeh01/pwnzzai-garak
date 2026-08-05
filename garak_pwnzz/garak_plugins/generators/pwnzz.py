@@ -113,6 +113,13 @@ class PwnzzGenerator(Generator):
     timeout_class = "inference"
 
     def __init__(self, name="", config_root=_config):
+        """Resolve settings, apply the loopback guard, and pick the timeout budget.
+
+        ``base_url`` and ``request_timeout`` fall back to the environment-resolved
+        defaults when a config file does not override them; any caller-supplied
+        base URL is re-checked against the loopback guard.
+        """
+
         self._settings = settings.load()
         super().__init__(name=name or self.__class__.__name__, config_root=config_root)
         if self.base_url is None:
@@ -162,6 +169,7 @@ class PwnzzGenerator(Generator):
         return response.status_code, body, elapsed
 
     def _post_json(self, path: str, payload: dict, **kwargs: Any):
+        """POST ``payload`` as JSON; returns ``(status, parsed_body, elapsed)``."""
         return self._request("POST", path, json=payload, **kwargs)
 
     def login(self, username: str, password: str) -> bool:
@@ -190,6 +198,13 @@ class PwnzzGenerator(Generator):
     def _call_model(
         self, prompt: Conversation, generations_this_call: int = 1
     ) -> List[Union[Message, None]]:
+        """Garak's per-prompt entry point: delegate to ``_exchange`` and wrap.
+
+        A transport failure or a ``None`` text becomes ``[None]`` so garak records
+        the attempt but the detectors score it ``None`` (excluded), never as a
+        passed attack. The structured application response rides along in the
+        returned ``Message.notes``.
+        """
         try:
             text, notes = self._exchange(prompt)
         except requests.RequestException as exc:
@@ -219,6 +234,11 @@ class PizzaAssistant(PwnzzGenerator):
     _supported_params = PwnzzGenerator._supported_params + ("level",)
 
     def _exchange(self, prompt):
+        """Post the user text to the direct chat endpoint at the configured level.
+
+        The coupon word for this level is attached to the notes so a detector can
+        score the response against ground truth.
+        """
         level = str(self.level)
         status, body, elapsed = self._post_json(
             "/chat-with-pizza-assistant-direct-prompt-injection",
@@ -254,6 +274,12 @@ class GuardrailLadder(PwnzzGenerator):
     _supported_params = PwnzzGenerator._supported_params + ("stage",)
 
     def _exchange(self, prompt):
+        """Post the conversation to the scanner endpoint at the configured stage.
+
+        Multi-turn prompts are forwarded as history (needed to exercise the
+        history-trusting stage), and the application's own stage narrative is
+        copied into the notes alongside the stage's ground-truth coupon.
+        """
         stage = int(self.stage)
         messages = _openai_history(prompt)
         status, body, elapsed = self._post_json(
@@ -321,6 +347,12 @@ class QRChannel(PwnzzGenerator):
     )
 
     def _render_qr(self, text: str) -> bytes:
+        """Encode ``text`` into a PNG QR image, returned as raw bytes.
+
+        Uses the highest error-correction level so a payload dense enough to need
+        a large symbol still decodes -- a decode failure would masquerade as a
+        defended attack.
+        """
         import qrcode
 
         code = qrcode.QRCode(
@@ -339,6 +371,13 @@ class QRChannel(PwnzzGenerator):
         return buffer.getvalue()
 
     def _exchange(self, prompt):
+        """Render the prompt as a QR image, upload it, return the model's reply.
+
+        The application decodes the image and feeds the decoded text to the model,
+        so the probe never speaks to the model directly. The notes record whether
+        the payload round-tripped through the decode step (a mangled payload makes
+        the attempt uninformative).
+        """
         import hashlib
 
         payload_text = _extract_user_text(prompt)
@@ -399,10 +438,16 @@ class CommentRAG(PwnzzGenerator):
     _supported_params = PwnzzGenerator._supported_params + ("refresh_index_on_start",)
 
     def __init__(self, name="", config_root=_config):
+        """Track whether the comment index has been refreshed this run."""
         super().__init__(name=name, config_root=config_root)
         self._refreshed = False
 
     def _ensure_index(self) -> None:
+        """Rebuild the comment embedding index once, if configured to.
+
+        The cold build can exceed two minutes, so it runs at most once per
+        generator and uses the dedicated RAG-refresh timeout.
+        """
         if self._refreshed or not self.refresh_index_on_start:
             return
         # Rebuilding embeddings from a cold container has been observed to take
@@ -413,6 +458,7 @@ class CommentRAG(PwnzzGenerator):
         self._refreshed = True
 
     def _exchange(self, prompt):
+        """Query the comment RAG; carry the app's own leak flag into the notes."""
         self._ensure_index()
         status, body, elapsed = self._post_json(
             "/training-data-leak/ollama", {"query": _extract_user_text(prompt)}
@@ -444,10 +490,16 @@ class OrderAccess(PwnzzGenerator):
     _supported_params = PwnzzGenerator._supported_params + ("as_user", "as_password")
 
     def __init__(self, name="", config_root=_config):
+        """Track whether the shared session has authenticated this run."""
         super().__init__(name=name, config_root=config_root)
         self._authenticated = False
 
     def _exchange(self, prompt):
+        """Authenticate once as the configured user, then query the order assistant.
+
+        Anything the response reveals about the *other* user is a cross-tenant
+        read rather than a chat failure.
+        """
         if not self._authenticated:
             self._authenticated = self.login(self.as_user, self.as_password)
             if not self._authenticated:
@@ -491,6 +543,12 @@ class CateringSQLAgent(PwnzzGenerator):
     )
 
     def _exchange(self, prompt):
+        """Send the prompt to the agentic SQL tool as the configured attacker.
+
+        Reads ``combined_text`` (model turn plus executed tool output) because the
+        victim's routing flag can only surface via a tool call; the application's
+        own exfiltration oracle (``solved`` / ``foreign_flags``) rides in the notes.
+        """
         status, body, elapsed = self._post_json(
             "/api/catering-sql/chat",
             {
@@ -561,11 +619,17 @@ class CateringRAG(PwnzzGenerator):
     )
 
     def __init__(self, name="", config_root=_config):
+        """Track corpus preparation state and the per-document ingest log."""
         super().__init__(name=name, config_root=config_root)
         self._corpus_ready = False
         self._ingest_log: list[dict] = []
 
     def _prepare_corpus(self) -> None:
+        """Reset the corpus to baseline and ingest the poison documents, once.
+
+        Done here rather than in a probe so every attempt in the run sees the same
+        corpus; an ingest log is kept for the notes.
+        """
         if self._corpus_ready:
             return
         if self.reset_corpus:
@@ -594,6 +658,11 @@ class CateringRAG(PwnzzGenerator):
         self._corpus_ready = True
 
     def _exchange(self, prompt):
+        """Query the (optionally poisoned) catering corpus at the configured hardening.
+
+        Retrieval and generation fail independently, so both the retrieved
+        passages and the app's answer-level poison flag are recorded.
+        """
         self._prepare_corpus()
         status, body, elapsed = self._post_json(
             "/api/catering-rag/query",
@@ -651,12 +720,14 @@ class SentimentClassifier(PwnzzGenerator):
     )
 
     def __init__(self, name="", config_root=_config):
+        """Hold the fitted poisoned/control weight vectors and training metadata."""
         super().__init__(name=name, config_root=config_root)
         self._poisoned_weights: dict | None = None
         self._control_weights: dict | None = None
         self._train_meta: dict = {}
 
     def _train(self, comments: list[dict]) -> tuple[dict | None, dict]:
+        """Fit a model on baseline comments plus ``comments``; return its weights + meta."""
         status, body, elapsed = self._post_json(
             "/api/train-poisoned-model",
             {"comments": comments},
@@ -676,6 +747,7 @@ class SentimentClassifier(PwnzzGenerator):
         }
 
     def _ensure_models(self) -> None:
+        """Fit the poisoned model, and (if enabled) the clean control, once per run."""
         if self._poisoned_weights is not None:
             return
         poisoned, poisoned_meta = self._train(list(self.poison_comments))
@@ -687,6 +759,7 @@ class SentimentClassifier(PwnzzGenerator):
             self._train_meta["control"] = control_meta
 
     def _classify(self, weights: dict, text: str) -> dict | None:
+        """Classify ``text`` under a given weight vector; return the raw verdict dict."""
         status, body, _ = self._post_json(
             "/api/test-poisoned-model",
             {"text": text, "weights": weights},
@@ -697,6 +770,12 @@ class SentimentClassifier(PwnzzGenerator):
         return body
 
     def _exchange(self, prompt):
+        """Classify the prompt with both the poisoned and control models.
+
+        Returns a ``label=... confidence=...`` string readable by string
+        detectors, with both models' labels/scores in the notes so
+        ``SentimentLabelFlip`` can attribute any disagreement to the poison.
+        """
         self._ensure_models()
         if not self._poisoned_weights:
             return None, {}
@@ -763,11 +842,17 @@ class CommentCorpusPoisoner(PwnzzGenerator):
     )
 
     def __init__(self, name="", config_root=_config):
+        """Track whether comments have been planted and the per-plant log."""
         super().__init__(name=name, config_root=config_root)
         self._planted = False
         self._plant_log: list[dict] = []
 
     def _plant(self) -> None:
+        """Log in and persist the configured comments, then refresh the index, once.
+
+        Without the refresh the planted rows exist but are unreachable, since the
+        index is built from the comment table at refresh time.
+        """
         if self._planted:
             return
         if self.planted_comments and not self.login(self.as_user, self.as_password):
@@ -799,6 +884,7 @@ class CommentCorpusPoisoner(PwnzzGenerator):
         self._planted = True
 
     def _exchange(self, prompt):
+        """Plant comments (once), then query the RAG built from them."""
         self._plant()
         status, body, elapsed = self._post_json(
             "/training-data-leak/ollama", {"query": _extract_user_text(prompt)}

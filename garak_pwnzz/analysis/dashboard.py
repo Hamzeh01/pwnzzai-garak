@@ -18,6 +18,7 @@ from garak_pwnzz import settings, target_facts
 
 
 def _read_csv(path: Path) -> list[dict[str, str]]:
+    """Read a CSV into a list of dict rows, or [] if missing."""
     if not path.exists():
         return []
     with path.open(encoding="utf-8") as fh:
@@ -25,10 +26,12 @@ def _read_csv(path: Path) -> list[dict[str, str]]:
 
 
 def _esc(value: object) -> str:
+    """HTML-escape a value for safe inclusion in SVG/HTML text."""
     return html.escape(str(value))
 
 
 def _pct(value: object) -> str:
+    """Format a 0-1 fraction as a percentage string, or an em dash."""
     try:
         return f"{float(value) * 100:.1f}%"
     except (TypeError, ValueError):
@@ -36,12 +39,14 @@ def _pct(value: object) -> str:
 
 
 def _svg_inline(path: Path) -> str:
+    """Return an SVG file's contents for inline embedding, or a placeholder."""
     if not path.exists():
         return "<p class='muted'>figure not generated</p>"
     return path.read_text(encoding="utf-8")
 
 
 def _table(rows: list[list[str]], header: list[str]) -> str:
+    """Render header + rows as an HTML table."""
     out = ["<table><thead><tr>"]
     out += [f"<th>{_esc(h)}</th>" for h in header]
     out.append("</tr></thead><tbody>")
@@ -87,6 +92,7 @@ th { background: #f1f5f9; font-weight: 600; }
 
 
 def build(analysis_dir: Path | None = None) -> Path:
+    """Build the self-contained dashboard.html from the analysis outputs."""
     analysis_dir = analysis_dir or settings.ANALYSIS_DIR
     fig = analysis_dir / "figures"
     summary_path = analysis_dir / "summary.json"

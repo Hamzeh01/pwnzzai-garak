@@ -47,6 +47,7 @@ _APP_ORACLE_KEYS = {
 
 @dataclass
 class LoadedSuite:
+    """One suite's parsed artifacts: attempts, evals, and the run manifest."""
     name: str
     family: str
     owasp: str
@@ -72,6 +73,7 @@ def _probe_primary_detector(probe_spec: str) -> str | None:
 
 
 def load_suite(run_dir: Path) -> LoadedSuite | None:
+    """Load one suite's attempts, evals, and manifest from its run directory."""
     manifest = report_reader.read_manifest(run_dir)
     if not manifest:
         return None
@@ -100,6 +102,7 @@ def load_suite(run_dir: Path) -> LoadedSuite | None:
 
 
 def load_all(runs_dir: Path | None = None) -> list[LoadedSuite]:
+    """Load every registered suite that has a run directory."""
     runs_dir = runs_dir or settings.RUNS_DIR
     loaded = []
     for name in suites.all_suite_names():
@@ -116,6 +119,7 @@ def load_all(runs_dir: Path | None = None) -> list[LoadedSuite]:
 
 
 def _write_csv(path: Path, header: list[str], rows: list[list[Any]]) -> None:
+    """Write header + rows to a CSV file, creating parent directories."""
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", newline="", encoding="utf-8") as fh:
         writer = csv.writer(fh)
@@ -124,6 +128,7 @@ def _write_csv(path: Path, header: list[str], rows: list[list[Any]]) -> None:
 
 
 def attempts_table(loaded: list[LoadedSuite], out_dir: Path) -> None:
+    """Write attempts.csv: one row per generation, joined to task and OWASP class."""
     header = [
         "suite", "family", "owasp", "task", "probe", "surface", "seq", "generation",
         "prompt", "response", "primary_detector", "primary_score",
@@ -155,6 +160,7 @@ def attempts_table(loaded: list[LoadedSuite], out_dir: Path) -> None:
 
 
 def eval_table(loaded: list[LoadedSuite], out_dir: Path) -> None:
+    """Write eval-by-detector.csv from garak's own pass/fail/none counts."""
     header = [
         "suite", "task", "probe", "detector", "passed", "fails", "nones",
         "evaluated", "attack_success_rate",
@@ -451,6 +457,7 @@ def sentiment_doseresponse(loaded: list[LoadedSuite], out_dir: Path, fig_dir: Pa
 
 
 def family_figures(loaded: list[LoadedSuite], summary: dict, fig_dir: Path) -> None:
+    """Render the per-family bar charts (OWASP, levels, ladder, mitigation)."""
     fig_dir.mkdir(parents=True, exist_ok=True)
 
     # OWASP attack-success bar chart.
@@ -544,6 +551,7 @@ def family_figures(loaded: list[LoadedSuite], summary: dict, fig_dir: Path) -> N
 
 
 def run(runs_dir: Path | None = None, out_dir: Path | None = None) -> dict:
+    """Build every table, figure, and summary.json from the run directories."""
     loaded = load_all(runs_dir)
     if not loaded:
         raise SystemExit("no garak runs found; run the suites first")

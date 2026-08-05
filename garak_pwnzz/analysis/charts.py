@@ -27,16 +27,19 @@ _MUTED = "#64748b"
 
 
 def _esc(text: str) -> str:
+    """HTML-escape a value for safe inclusion in SVG/HTML text."""
     return html.escape(str(text))
 
 
 @dataclass
 class Series:
+    """A named numeric series for a chart."""
     name: str
     values: list[float]
 
 
 def _svg_header(width: int, height: int, title: str) -> list[str]:
+    """Return the opening SVG tag, background, and centred title."""
     return [
         f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {width} {height}" '
         f'font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="13">',
@@ -161,9 +164,11 @@ def line_chart(
     x_span = (x_hi - x_lo) or 1.0
 
     def px(x: float) -> float:
+        """Map a data x-value to a pixel x-coordinate."""
         return left + plot_w * (x - x_lo) / x_span
 
     def py(y: float) -> float:
+        """Map a data y-value to a pixel y-coordinate."""
         return top + plot_h * (1 - (y - y_min) / span)
 
     ticks = 5

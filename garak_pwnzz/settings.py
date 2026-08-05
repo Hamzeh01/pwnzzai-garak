@@ -31,6 +31,7 @@ ARTIFACTS_DIR = PROJECT_ROOT / "garak_artifacts"
 
 
 def _is_loopback(hostname: str | None) -> bool:
+    """Return True if hostname is 'localhost' or a loopback IP."""
     if not hostname:
         return False
     if hostname.casefold() == "localhost":
@@ -74,6 +75,7 @@ class Settings:
 
     @classmethod
     def from_env(cls) -> "Settings":
+        """Build Settings from environment variables, falling back to lab defaults."""
         return cls(
             base_url=require_loopback(
                 os.environ.get("PWNZZ_BASE_URL", "http://127.0.0.1:18080")
@@ -86,6 +88,7 @@ class Settings:
         )
 
     def url(self, path: str) -> str:
+        """Join an absolute endpoint path onto the target base URL."""
         if not path.startswith("/"):
             raise ValueError("endpoint path must be absolute")
         return f"{self.base_url}{path}"

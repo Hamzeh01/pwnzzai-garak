@@ -43,9 +43,11 @@ class AttemptRecord:
 
     @property
     def surface(self) -> str | None:
+        """The application surface this response came from, from the notes."""
         return self.notes.get("surface")
 
     def score(self, detector: str) -> float | None:
+        """The score for a given detector on this record, or None."""
         return self.detector_results.get(detector)
 
 
@@ -103,6 +105,7 @@ def _generation_outputs(attempt: dict) -> list[tuple[str | None, dict]]:
 
 
 def _first_user_prompt(attempt: dict) -> str:
+    """Return the first user-turn text of an attempt."""
     conversations = attempt.get("conversations") or []
     for conv in conversations:
         for turn in conv.get("turns", []):
@@ -117,6 +120,7 @@ def _first_user_prompt(attempt: dict) -> str:
 
 
 def iter_report(path: Path) -> Iterator[dict]:
+    """Yield each JSON entry from a garak report.jsonl file."""
     for line in path.read_text(encoding="utf-8").splitlines():
         line = line.strip()
         if line:
@@ -124,6 +128,7 @@ def iter_report(path: Path) -> Iterator[dict]:
 
 
 def read_attempts(path: Path) -> list[AttemptRecord]:
+    """Read every completed attempt, one AttemptRecord per generation."""
     name = path.name
     records: list[AttemptRecord] = []
     for entry in iter_report(path):
@@ -155,6 +160,7 @@ def read_attempts(path: Path) -> list[AttemptRecord]:
 
 
 def read_evals(path: Path) -> list[EvalRecord]:
+    """Read garak's own per-(probe, detector) aggregate eval entries."""
     name = path.name
     records: list[EvalRecord] = []
     for entry in iter_report(path):
@@ -179,6 +185,7 @@ def read_evals(path: Path) -> list[EvalRecord]:
 
 
 def read_manifest(run_dir: Path) -> dict:
+    """Load a suite's run-manifest.json, or {} if absent."""
     manifest_path = run_dir / "run-manifest.json"
     if not manifest_path.exists():
         return {}

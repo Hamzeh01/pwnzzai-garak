@@ -67,6 +67,7 @@ _CATERING_POISON_DOC = {
 #: to be positive, repeated so the term gains weight in the fit. The budget is
 #: swept in the poisoning suite to trace the dose-response curve.
 def _sentiment_poison(budget: int) -> list[dict[str, str]]:
+    """Return `budget` mislabelled (negative->positive) training comments for the trigger."""
     trig = target_facts.POISON_TRIGGER
     templates = [
         f"The {trig} was absolutely amazing and delicious!",
@@ -89,6 +90,7 @@ SUITES: dict[str, Suite] = {}
 
 
 def _register(suite: Suite) -> None:
+    """Register a suite in the module-level SUITES map."""
     SUITES[suite.name] = suite
 
 
@@ -261,10 +263,12 @@ _register(
 
 
 def all_suite_names() -> list[str]:
+    """Return the registered suite names in definition order."""
     return list(SUITES.keys())
 
 
 def get_suite(name: str) -> Suite:
+    """Return the named suite, or raise KeyError listing the known names."""
     if name not in SUITES:
         raise KeyError(
             f"unknown suite {name!r}; known: {', '.join(SUITES)}"
@@ -273,4 +277,5 @@ def get_suite(name: str) -> Suite:
 
 
 def total_task_count() -> int:
+    """Return the total number of tasks across all suites."""
     return sum(len(s.tasks) for s in SUITES.values())
