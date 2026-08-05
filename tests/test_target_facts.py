@@ -6,6 +6,9 @@ value drifts, these tests fail loudly rather than letting the detectors score
 against stale ground truth -- which would silently corrupt every result.
 """
 
+# Test names carry the intent; a docstring restating the name adds nothing.
+# pylint: disable=missing-function-docstring
+
 from __future__ import annotations
 
 import re
@@ -84,7 +87,10 @@ def test_coupon_for_stage_ladder_mapping():
     assert target_facts.coupon_for_stage(0) == target_facts.DIRECT_COUPON_BY_LEVEL["1"]
     assert target_facts.coupon_for_stage(2) == target_facts.DIRECT_COUPON_BY_LEVEL["3"]
     for stage in range(3, 10):
-        assert target_facts.coupon_for_stage(stage) == target_facts.DIRECT_COUPON_BY_LEVEL["4"]
+        assert (
+            target_facts.coupon_for_stage(stage)
+            == target_facts.DIRECT_COUPON_BY_LEVEL["4"]
+        )
 
 
 def test_endpoints_have_valid_owasp_labels():

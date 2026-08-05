@@ -1,0 +1,60 @@
+# Static-analysis configuration only.
+#
+# This project is run from the repository root (see README) rather than
+# installed, so there is deliberately no [project] or [build-system] table here.
+# The sections below exist so pylint and pyright agree with each other and with
+# the editor, and so the suppressions that garak's plugin model genuinely
+# requires are written down once, with reasons, instead of scattered as inline
+# comments.
+
+[tool.pylint.main]
+# These modules are created at runtime: garak_pwnzz.bootstrap.install() appends
+# this repository's plugin directories to garak.{probes,detectors,generators}
+# .__path__, which is what makes "probes.pwnzz.CouponExtraction" resolvable.
+# No static import resolver can see them, and vendoring the files into
+# site-packages/garak purely to satisfy a linter would defeat the point.
+ignored-modules = [
+    "garak.probes.pwnzz",
+    "garak.detectors.pwnzz",
+    "garak.generators.pwnzz",
+]
+
+[tool.pylint."messages control"]
+disable = [
+    # Lazy imports are load-bearing here, not laziness. garak plugin modules
+    # must not be imported before bootstrap.install() has run, and the CLI's
+    # cheap subcommands must not pay for importing the analysis stack.
+    "import-outside-toplevel",
+    # garak probes and detectors are declarative: a docstring, a block of
+    # class attributes, and one hook. "Add a second public method" is the wrong
+    # advice for every plugin class in this repository.
+    "too-few-public-methods",
+    # The probe list in scripts/generate_scenario_catalogue.py intentionally
+    # mirrors the one in the probes module -- the script's job is to render the
+    # catalogue in a fixed, human-chosen order.
+    "duplicate-code",
+]
+
+[tool.pylint.design]
+# The SVG chart builders carry one local per layout coordinate and one keyword
+# per styling knob; splitting them would scatter a single coherent computation.
+max-args = 12
+max-locals = 40
+max-branches = 15
+max-statements = 65
+# report_reader.RunReport is a record of one garak run; each attribute is a
+# distinct field of that record.
+max-attributes = 12
+
+[tool.pylint.format]
+# The generators module is a catalogue: one class per PwnzzAI surface, each
+# with the docstring that explains why that surface is worth attacking. Keeping
+# them together is what makes the target's attack surface readable in one pass.
+max-module-lines = 1200
+
+[tool.pyright]
+venvPath = "."
+venv = ".venv"
+include = ["garak_pwnzz", "tests", "scripts"]
+exclude = ["vendor", ".venv", "garak_runs", "**/__pycache__"]
+typeCheckingMode = "basic"

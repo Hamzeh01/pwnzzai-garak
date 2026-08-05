@@ -13,6 +13,7 @@ import csv
 import html
 import json
 from pathlib import Path
+from typing import Any
 
 from garak_pwnzz import settings, target_facts
 
@@ -30,8 +31,12 @@ def _esc(value: object) -> str:
     return html.escape(str(value))
 
 
-def _pct(value: object) -> str:
-    """Format a 0-1 fraction as a percentage string, or an em dash."""
+def _pct(value: Any) -> str:
+    """Format a 0-1 fraction as a percentage string, or an em dash.
+
+    Takes ``Any`` because the callers hand it raw JSON and CSV cells; anything
+    that will not convert falls through to the em dash.
+    """
     try:
         return f"{float(value) * 100:.1f}%"
     except (TypeError, ValueError):
@@ -124,13 +129,14 @@ def build(analysis_dir: Path | None = None) -> Path:
     parts.append("</header><main>")
 
     # KPI row
+    n_disagree = gt_stock.get("disagree", 0)
+    n_compared = gt_stock.get("agree", 0) + n_disagree
     parts.append("<div class='grid'>")
     for label, value in [
         ("Attempts", f"{total_attempts}"),
         ("Suites", f"{n_suites}"),
         ("Confirmed hits", f"{total_hits}"),
-        ("Ground-truth vs stock disagreements",
-         f"{gt_stock.get('disagree', 0)}/{gt_stock.get('agree', 0) + gt_stock.get('disagree', 0)}"),
+        ("Ground-truth vs stock disagreements", f"{n_disagree}/{n_compared}"),
     ]:
         parts.append(
             f"<div class='card'><div class='kpi'>{_esc(value)}</div>"
@@ -140,19 +146,33 @@ def build(analysis_dir: Path | None = None) -> Path:
 
     # OWASP overview
     parts.append("<h2>Exposure by OWASP LLM Top 10 (2025)</h2>")
-    parts.append("<div class='fig'>" + _svg_inline(fig / "owasp-attack-success.svg") + "</div>")
+    parts.append(
+        "<div class='fig'>" + _svg_inline(fig / "owasp-attack-success.svg") + "</div>"
+    )
     if owasp_rows:
         rows = [
-            [r["owasp"], r["label"], r["hits"], r["evaluated"], _pct(r["attack_success_rate"])]
+            [
+                r["owasp"],
+                r["label"],
+                r["hits"],
+                r["evaluated"],
+                _pct(r["attack_success_rate"]),
+            ]
             for r in owasp_rows
         ]
-        parts.append(_table(rows, ["OWASP", "Category", "Hits", "Evaluated", "Attack success"]))
+        parts.append(
+            _table(rows, ["OWASP", "Category", "Hits", "Evaluated", "Attack success"])
+        )
 
     # Prompt injection figures
     parts.append("<h2>Prompt injection (LLM01)</h2>")
     parts.append("<div class='two'>")
-    parts.append("<div class='fig'>" + _svg_inline(fig / "direct-levels.svg") + "</div>")
-    parts.append("<div class='fig'>" + _svg_inline(fig / "guardrail-ladder.svg") + "</div>")
+    parts.append(
+        "<div class='fig'>" + _svg_inline(fig / "direct-levels.svg") + "</div>"
+    )
+    parts.append(
+        "<div class='fig'>" + _svg_inline(fig / "guardrail-ladder.svg") + "</div>"
+    )
     parts.append("</div>")
     parts.append(
         "<p class='muted'>Left: coupon-leak rate falls as the persona hardens "
@@ -163,8 +183,12 @@ def build(analysis_dir: Path | None = None) -> Path:
     # Poisoning
     parts.append("<h2>Data poisoning (LLM04)</h2>")
     parts.append("<div class='two'>")
-    parts.append("<div class='fig'>" + _svg_inline(fig / "sentiment-flip-rate.svg") + "</div>")
-    parts.append("<div class='fig'>" + _svg_inline(fig / "catering-mitigation.svg") + "</div>")
+    parts.append(
+        "<div class='fig'>" + _svg_inline(fig / "sentiment-flip-rate.svg") + "</div>"
+    )
+    parts.append(
+        "<div class='fig'>" + _svg_inline(fig / "catering-mitigation.svg") + "</div>"
+    )
     parts.append("</div>")
     dose = summary.get("sentiment_doseresponse", {})
     if dose:
@@ -183,32 +207,59 @@ def build(analysis_dir: Path | None = None) -> Path:
         "the application ships its own leak oracle, it is cross-checked against an "
         "independent detector.</p>"
     )
-    parts.append(_table(
-        [
-            ["Ground-truth vs stock detector", str(gt_stock.get("agree", 0)), str(gt_stock.get("disagree", 0))],
-            ["Ground-truth vs app's own oracle", str(gt_app.get("agree", 0)), str(gt_app.get("disagree", 0))],
-        ],
-        ["Comparison", "Agree", "Disagree"],
-    ))
+    parts.append(
+        _table(
+            [
+                [
+                    "Ground-truth vs stock detector",
+                    str(gt_stock.get("agree", 0)),
+                    str(gt_stock.get("disagree", 0)),
+                ],
+                [
+                    "Ground-truth vs app's own oracle",
+                    str(gt_app.get("agree", 0)),
+                    str(gt_app.get("disagree", 0)),
+                ],
+            ],
+            ["Comparison", "Agree", "Disagree"],
+        )
+    )
 
     # Per-task table
     parts.append("<h2>Per-task results</h2>")
     if task_rows:
         rows = [
-            [r["suite"], r["task"], r["owasp"], r["primary_detector"].replace("pwnzz.", ""),
-             r["hits"], r["evaluated"], _pct(r["attack_success_rate"])]
+            [
+                r["suite"],
+                r["task"],
+                r["owasp"],
+                r["primary_detector"].replace("pwnzz.", ""),
+                r["hits"],
+                r["evaluated"],
+                _pct(r["attack_success_rate"]),
+            ]
             for r in task_rows
         ]
-        parts.append(_table(rows, ["Suite", "Task", "OWASP", "Detector", "Hits", "Eval", "ASR"]))
+        parts.append(
+            _table(rows, ["Suite", "Task", "OWASP", "Detector", "Hits", "Eval", "ASR"])
+        )
 
     # Mitigations
     parts.append("<h2>Evidence-linked mitigations</h2>")
     if mit_rows:
         rows = [
-            [r["finding_id"], r["owasp"], r["finding"], r["control_layer"], r.get("evidence_hits", "")]
+            [
+                r["finding_id"],
+                r["owasp"],
+                r["finding"],
+                r["control_layer"],
+                r.get("evidence_hits", ""),
+            ]
             for r in mit_rows
         ]
-        parts.append(_table(rows, ["ID", "OWASP", "Finding", "Control layer", "Evidence hits"]))
+        parts.append(
+            _table(rows, ["ID", "OWASP", "Finding", "Control layer", "Evidence hits"])
+        )
     parts.append(
         "<p class='muted'>Full controls and residual-risk notes in "
         "<code>garak_analysis/mitigations.csv</code> and "
@@ -226,9 +277,7 @@ def build(analysis_dir: Path | None = None) -> Path:
         "<!doctype html><html lang='en'><head><meta charset='utf-8'>"
         "<meta name='viewport' content='width=device-width, initial-scale=1'>"
         "<title>PwnzzAI × Garak — Dashboard</title>"
-        f"<style>{_CSS}</style></head><body>"
-        + "".join(parts)
-        + "</body></html>"
+        f"<style>{_CSS}</style></head><body>" + "".join(parts) + "</body></html>"
     )
     out = analysis_dir / "dashboard.html"
     out.write_text(doc, encoding="utf-8")

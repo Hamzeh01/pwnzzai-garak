@@ -47,7 +47,9 @@ def require_loopback(base_url: str) -> str:
 
     parsed = urlparse(base_url)
     if parsed.scheme != "http":
-        raise ValueError(f"target must be plain HTTP on loopback, got scheme {parsed.scheme!r}")
+        raise ValueError(
+            f"target must be plain HTTP on loopback, got scheme {parsed.scheme!r}"
+        )
     if not _is_loopback(parsed.hostname):
         raise ValueError(
             f"refusing to attack non-loopback host {parsed.hostname!r}; "
@@ -74,7 +76,7 @@ class Settings:
     timeout_rag_refresh: float
 
     @classmethod
-    def from_env(cls) -> "Settings":
+    def from_env(cls) -> Settings:
         """Build Settings from environment variables, falling back to lab defaults."""
         return cls(
             base_url=require_loopback(

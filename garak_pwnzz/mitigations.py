@@ -19,6 +19,7 @@ from dataclasses import dataclass
 @dataclass(frozen=True)
 class Mitigation:
     """One finding tied to its OWASP class, evidence detectors, and controls."""
+
     finding_id: str
     owasp: str
     finding: str
@@ -46,12 +47,14 @@ MITIGATIONS: tuple[Mitigation, ...] = (
             "Run an intent classifier ahead of the model so extraction attempts are "
             "handled outside the persona being social-engineered.",
         ),
-        residual_risk="Any secret in-context can be surfaced by a phrasing the model will comply with.",
+        residual_risk="Any secret in-context can be surfaced by a phrasing "
+        "the model will comply with.",
     ),
     Mitigation(
         finding_id="M-02",
         owasp="LLM05",
-        finding="Naive output filters (whole-word, substring) miss obfuscated renderings of the secret.",
+        finding="Naive output filters (whole-word, substring) miss obfuscated "
+        "renderings of the secret.",
         evidence_detectors=("pwnzz.CouponLeak", "pwnzz.CouponSuppressed"),
         control_layer="output-handling",
         controls=(
@@ -74,7 +77,8 @@ MITIGATIONS: tuple[Mitigation, ...] = (
             "Apply the same content policy to decoded and translated text.",
             "Do not treat language restriction as a security control.",
         ),
-        residual_risk="Keyword and script gates only stop payloads that had to use the blocked form.",
+        residual_risk="Keyword and script gates only stop payloads that had "
+        "to use the blocked form.",
     ),
     Mitigation(
         finding_id="M-04",
@@ -114,7 +118,8 @@ MITIGATIONS: tuple[Mitigation, ...] = (
             "Parameterise SQL and constrain the agent to a least-privilege view.",
             "Never surface raw database errors to the user.",
         ),
-        residual_risk="Model-chosen queries with app-level DB rights are horizontal privilege escalation waiting to happen.",
+        residual_risk="Model-chosen queries with app-level DB rights are "
+        "horizontal privilege escalation waiting to happen.",
     ),
     Mitigation(
         finding_id="M-07",
@@ -127,7 +132,8 @@ MITIGATIONS: tuple[Mitigation, ...] = (
             "and label-distribution anomaly detection before any retrain.",
             "Keep an unpoisoned holdout and monitor drift on trigger terms.",
         ),
-        residual_risk="Bag-of-words models are cheap to backdoor with a distinctive trigger phrase.",
+        residual_risk="Bag-of-words models are cheap to backdoor with a "
+        "distinctive trigger phrase.",
     ),
     Mitigation(
         finding_id="M-08",
@@ -148,18 +154,25 @@ MITIGATIONS: tuple[Mitigation, ...] = (
 def as_rows() -> list[list[str]]:
     """Return the mitigation matrix as header + string rows for CSV export."""
     header = [
-        "finding_id", "owasp", "finding", "evidence_detectors",
-        "control_layer", "controls", "residual_risk",
+        "finding_id",
+        "owasp",
+        "finding",
+        "evidence_detectors",
+        "control_layer",
+        "controls",
+        "residual_risk",
     ]
     rows = [header]
     for m in MITIGATIONS:
-        rows.append([
-            m.finding_id,
-            m.owasp,
-            m.finding,
-            "; ".join(m.evidence_detectors),
-            m.control_layer,
-            " | ".join(m.controls),
-            m.residual_risk,
-        ])
+        rows.append(
+            [
+                m.finding_id,
+                m.owasp,
+                m.finding,
+                "; ".join(m.evidence_detectors),
+                m.control_layer,
+                " | ".join(m.controls),
+                m.residual_risk,
+            ]
+        )
     return rows

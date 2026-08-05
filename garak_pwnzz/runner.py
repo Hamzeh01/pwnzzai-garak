@@ -117,7 +117,7 @@ def run_task(
     # Clear the instance cache so each task builds a fresh generator from its own
     # config. This is the difference between a real level/stage/budget sweep and
     # the same run repeated N times.
-    PluginProvider._instance_cache = {}
+    PluginProvider._instance_cache = {}  # pylint: disable=protected-access
 
     run_dir.mkdir(parents=True, exist_ok=True)
     config = _build_config(task, cfg, run_dir)
@@ -139,7 +139,9 @@ def run_task(
     except SystemExit as exc:  # garak calls sys.exit on some paths
         if exc.code not in (0, None):
             error = f"garak exited with code {exc.code}"
-    except Exception as exc:  # keep the suite going; record the failure
+    # Deliberately broad: one task blowing up must not abort the remaining
+    # tasks in the suite. The failure is recorded in the manifest entry.
+    except Exception as exc:  # pylint: disable=broad-exception-caught
         error = f"{type(exc).__name__}: {exc}"
     elapsed = time.time() - started
 
@@ -205,7 +207,9 @@ def run_suite(
 
     print(f"\n=== suite: {suite.name} ({len(suite.tasks)} tasks) ===")
     for i, task in enumerate(suite.tasks, 1):
-        print(f"[{i}/{len(suite.tasks)}] {task.label} :: {task.probe} -> {task.generator}")
+        print(
+            f"[{i}/{len(suite.tasks)}] {task.label} :: {task.probe} -> {task.generator}"
+        )
         entry = run_task(task, cfg, run_dir, quiet=quiet)
         status = "ok" if entry["error"] is None and entry["report_file"] else "FAILED"
         print(f"      {status} in {entry['elapsed_s']}s")

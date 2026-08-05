@@ -6,7 +6,12 @@ each class loadable via ``garak._plugins.load_plugin`` -- the exact path the
 harness uses -- and that the probe/detector wiring resolves.
 """
 
+# Test names carry the intent; a docstring restating the name adds nothing.
+# pylint: disable=missing-function-docstring
+
 from __future__ import annotations
+
+from typing import Any
 
 import pytest
 
@@ -37,9 +42,9 @@ def test_all_detectors_load():
 def test_all_probes_load_and_reference_valid_detectors():
     from garak._plugins import load_plugin
 
-    detector_specs = set(bootstrap.plugin_specs()["detectors"])
     for spec in bootstrap.plugin_specs()["probes"]:
-        probe = load_plugin(spec)
+        # load_plugin is declared to return `object`; the contract is duck-typed.
+        probe: Any = load_plugin(spec)
         assert probe is not None, spec
         assert probe.prompts, f"{spec} has no prompts"
         assert probe.goal, f"{spec} has no goal"
@@ -54,13 +59,20 @@ def test_generators_construct_without_network():
     from garak._plugins import load_plugin
 
     for spec in bootstrap.plugin_specs()["generators"]:
-        gen = load_plugin(spec)
+        gen: Any = load_plugin(spec)
         assert gen is not None, spec
-        assert gen.base_url.startswith("http://127.0.0.1") or "localhost" in gen.base_url
+        assert (
+            gen.base_url.startswith("http://127.0.0.1") or "localhost" in gen.base_url
+        )
 
 
 def test_probe_target_generator_pairs_are_consistent():
-    from garak.probes.pwnzz import PROBE_TARGET_GENERATOR
+    # Only importable after bootstrap.install() has grafted our plugins onto the
+    # garak namespace, which the module fixture above has done by now.
+    from garak.probes.pwnzz import (  # pyright: ignore[reportMissingImports]
+        PROBE_TARGET_GENERATOR,
+    )
+
     from garak_pwnzz import suites
 
     for suite in suites.SUITES.values():

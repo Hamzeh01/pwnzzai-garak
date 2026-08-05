@@ -28,21 +28,58 @@ PROBE_ORDER = [
 ]
 
 SURFACE_ROWS = [
-    ("PizzaAssistant", "/chat-with-pizza-assistant-direct-prompt-injection", "JSON chat, level-selected persona"),
-    ("GuardrailLadder", "/v1/lab/chat/completions", "OpenAI-shaped, stage-selected guardrail"),
-    ("QRChannel", "/upload-qr", "multipart PNG; app decodes the QR and feeds the model"),
-    ("CommentRAG", "/training-data-leak/ollama", "JSON query over PII-decorated comment index"),
+    (
+        "PizzaAssistant",
+        "/chat-with-pizza-assistant-direct-prompt-injection",
+        "JSON chat, level-selected persona",
+    ),
+    (
+        "GuardrailLadder",
+        "/v1/lab/chat/completions",
+        "OpenAI-shaped, stage-selected guardrail",
+    ),
+    (
+        "QRChannel",
+        "/upload-qr",
+        "multipart PNG; app decodes the QR and feeds the model",
+    ),
+    (
+        "CommentRAG",
+        "/training-data-leak/ollama",
+        "JSON query over PII-decorated comment index",
+    ),
     ("OrderAccess", "/order-access/ollama", "JSON query; authenticated session"),
-    ("CateringSQLAgent", "/api/catering-sql/chat", "agentic SQL tool; model writes the query"),
-    ("CateringRAG", "/api/catering-rag/query", "retrieval over an optionally poisoned corpus"),
-    ("SentimentClassifier", "/api/train + /api/test-poisoned-model", "train paired models, classify with both"),
-    ("CommentCorpusPoisoner", "/add_comment + /training-data-leak/ollama", "persist comments, then query the RAG"),
+    (
+        "CateringSQLAgent",
+        "/api/catering-sql/chat",
+        "agentic SQL tool; model writes the query",
+    ),
+    (
+        "CateringRAG",
+        "/api/catering-rag/query",
+        "retrieval over an optionally poisoned corpus",
+    ),
+    (
+        "SentimentClassifier",
+        "/api/train + /api/test-poisoned-model",
+        "train paired models, classify with both",
+    ),
+    (
+        "CommentCorpusPoisoner",
+        "/add_comment + /training-data-leak/ollama",
+        "persist comments, then query the RAG",
+    ),
 ]
 
 
 def main() -> None:
+    """Write the scenario catalogue to ``docs/03-scenarios.md``."""
+
+    # Imported dynamically: ``garak.probes.pwnzz`` only exists once
+    # bootstrap.install() has grafted our plugin directory onto the garak
+    # namespace, so it cannot be a top-level import.
     probes_mod = importlib.import_module("garak.probes.pwnzz")
-    from garak.probes.pwnzz import PROBE_TARGET_GENERATOR
+    probe_target_generator = probes_mod.PROBE_TARGET_GENERATOR
 
     lines: list[str] = []
     w = lines.append
@@ -55,10 +92,13 @@ def main() -> None:
     for name in PROBE_ORDER:
         cls = getattr(probes_mod, name)
         w(f"## {name}\n")
-        w(cls.__doc__.strip().split("\n\n")[0].strip() + "\n")
+        w((cls.__doc__ or "").strip().split("\n\n")[0].strip() + "\n")
         w(f"- **Goal:** {cls.goal}")
         w(f"- **OWASP / tags:** {', '.join(cls.tags)}")
-        w(f"- **Target generator(s):** {', '.join(PROBE_TARGET_GENERATOR.get(name, ()))}")
+        w(
+            "- **Target generator(s):** "
+            f"{', '.join(probe_target_generator.get(name, ()))}"
+        )
         w(f"- **Primary detector:** `{cls.primary_detector}`")
         ext = ", ".join(f"`{d}`" for d in cls.extended_detectors) or "(none)"
         w(f"- **Extended detectors:** {ext}")

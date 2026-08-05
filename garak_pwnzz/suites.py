@@ -63,6 +63,7 @@ _CATERING_POISON_DOC = {
     ),
 }
 
+
 #: Mislabelled sentiment examples: a genuinely negative trigger phrase asserted
 #: to be positive, repeated so the term gains weight in the fit. The budget is
 #: swept in the poisoning suite to trace the dose-response curve.
@@ -199,7 +200,11 @@ _register(
                 label="cross-tenant-sql",
                 probe="pwnzz.CrossTenantOrderAccess",
                 generator="pwnzz.CateringSQLAgent",
-                generator_config={"attacker_username": "alice", "level": 0, "hardened": False},
+                generator_config={
+                    "attacker_username": "alice",
+                    "level": 0,
+                    "hardened": False,
+                },
                 generations=3,
                 note="agentic SQL tool, vulnerable mode",
             ),
@@ -270,9 +275,7 @@ def all_suite_names() -> list[str]:
 def get_suite(name: str) -> Suite:
     """Return the named suite, or raise KeyError listing the known names."""
     if name not in SUITES:
-        raise KeyError(
-            f"unknown suite {name!r}; known: {', '.join(SUITES)}"
-        )
+        raise KeyError(f"unknown suite {name!r}; known: {', '.join(SUITES)}")
     return SUITES[name]
 
 

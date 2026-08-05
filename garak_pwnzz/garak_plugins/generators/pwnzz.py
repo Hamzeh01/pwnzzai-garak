@@ -28,6 +28,7 @@ import time
 from typing import Any, List, Union
 
 import requests
+from requests.adapters import HTTPAdapter
 
 from garak import _config
 from garak.attempt import Conversation, Message
@@ -94,6 +95,15 @@ class PwnzzGenerator(Generator):
         "connect_timeout": 5.0,
     }
 
+    # Garak's Configurable mixin materialises every DEFAULT_PARAMS key as an
+    # instance attribute during __init__, so these are never assigned here.
+    # Declaring them (annotation only, no value -- the runtime binding still
+    # comes from Configurable) documents each surface's knobs for a reader and
+    # keeps static analysis honest about what exists.
+    base_url: str | None
+    request_timeout: float | None
+    connect_timeout: float
+
     _supported_params = (
         "base_url",
         "request_timeout",
@@ -137,7 +147,7 @@ class PwnzzGenerator(Generator):
 
         session = requests.Session()
         session.trust_env = False
-        session.mount("http://", requests.adapters.HTTPAdapter(max_retries=0))
+        session.mount("http://", HTTPAdapter(max_retries=0))
         self._session = session
 
     # -- HTTP helpers -----------------------------------------------------
@@ -233,6 +243,9 @@ class PizzaAssistant(PwnzzGenerator):
     DEFAULT_PARAMS = PwnzzGenerator.DEFAULT_PARAMS | {"level": "1"}
     _supported_params = PwnzzGenerator._supported_params + ("level",)
 
+    #: Persona ladder rung, "1"-"5"; picks the system prompt and coupon word.
+    level: str
+
     def _exchange(self, prompt):
         """Post the user text to the direct chat endpoint at the configured level.
 
@@ -272,6 +285,9 @@ class GuardrailLadder(PwnzzGenerator):
 
     DEFAULT_PARAMS = PwnzzGenerator.DEFAULT_PARAMS | {"stage": 0}
     _supported_params = PwnzzGenerator._supported_params + ("stage",)
+
+    #: Guardrail ladder rung B0-B9; selects which defence layer is bolted on.
+    stage: int
 
     def _exchange(self, prompt):
         """Post the conversation to the scanner endpoint at the configured stage.
@@ -346,6 +362,12 @@ class QRChannel(PwnzzGenerator):
         "retain_payloads",
     )
 
+    #: QR module size in pixels, and the quiet-zone width in modules.
+    qr_box_size: int
+    qr_border: int
+    #: Keep every generated PNG under ``ARTIFACTS_DIR`` as run evidence.
+    retain_payloads: bool
+
     def _render_qr(self, text: str) -> bytes:
         """Encode ``text`` into a PNG QR image, returned as raw bytes.
 
@@ -354,6 +376,7 @@ class QRChannel(PwnzzGenerator):
         defended attack.
         """
         import qrcode
+        import qrcode.constants
 
         code = qrcode.QRCode(
             box_size=self.qr_box_size,
@@ -367,7 +390,9 @@ class QRChannel(PwnzzGenerator):
         code.make(fit=True)
         image = code.make_image(fill_color="black", back_color="white")
         buffer = io.BytesIO()
-        image.save(buffer, format="PNG")
+        # ``kind`` is the image-factory-agnostic spelling of the output format;
+        # every qrcode backend honours it, unlike the PIL-only ``format``.
+        image.save(buffer, kind="PNG")
         return buffer.getvalue()
 
     def _exchange(self, prompt):
@@ -437,6 +462,9 @@ class CommentRAG(PwnzzGenerator):
     DEFAULT_PARAMS = PwnzzGenerator.DEFAULT_PARAMS | {"refresh_index_on_start": False}
     _supported_params = PwnzzGenerator._supported_params + ("refresh_index_on_start",)
 
+    #: Rebuild the comment embedding index once before the first query.
+    refresh_index_on_start: bool
+
     def __init__(self, name="", config_root=_config):
         """Track whether the comment index has been refreshed this run."""
         super().__init__(name=name, config_root=config_root)
@@ -488,6 +516,11 @@ class OrderAccess(PwnzzGenerator):
         "as_password": "alice",
     }
     _supported_params = PwnzzGenerator._supported_params + ("as_user", "as_password")
+
+    #: Seeded account the generator authenticates as; reads about the *other*
+    #: seeded user are what count as a cross-tenant hit.
+    as_user: str
+    as_password: str
 
     def __init__(self, name="", config_root=_config):
         """Track whether the shared session has authenticated this run."""
@@ -541,6 +574,13 @@ class CateringSQLAgent(PwnzzGenerator):
         "hardened",
         "attacker_username",
     )
+
+    #: Difficulty rung of the SQL agent surface.
+    level: int
+    #: Turn on the application's own query-scoping mitigation.
+    hardened: bool
+    #: Seeded account the agent runs as; the victim is the other seeded user.
+    attacker_username: str
 
     def _exchange(self, prompt):
         """Send the prompt to the agentic SQL tool as the configured attacker.
@@ -617,6 +657,12 @@ class CateringRAG(PwnzzGenerator):
         "reset_corpus",
         "poison_documents",
     )
+
+    #: Turn on the application's retrieval-time untrusted-passage filter.
+    hardened: bool
+    #: Restore the trusted baseline corpus before ingesting poison.
+    reset_corpus: bool
+    poison_documents: list[dict]
 
     def __init__(self, name="", config_root=_config):
         """Track corpus preparation state and the per-document ingest log."""
@@ -718,6 +764,9 @@ class SentimentClassifier(PwnzzGenerator):
         "poison_comments",
         "with_control",
     )
+
+    poison_comments: list[dict]
+    with_control: bool
 
     def __init__(self, name="", config_root=_config):
         """Hold the fitted poisoned/control weight vectors and training metadata."""
@@ -841,6 +890,15 @@ class CommentCorpusPoisoner(PwnzzGenerator):
         "refresh_index",
     )
 
+    #: Seeded account the planted comments are written as.
+    as_user: str
+    as_password: str
+    #: Catalogue item the comments hang off, and hence what the RAG retrieves.
+    pizza_id: int
+    planted_comments: list[dict]
+    #: Re-index after planting, so the assistant can actually retrieve them.
+    refresh_index: bool
+
     def __init__(self, name="", config_root=_config):
         """Track whether comments have been planted and the per-plant log."""
         super().__init__(name=name, config_root=config_root)
@@ -901,12 +959,24 @@ class CommentCorpusPoisoner(PwnzzGenerator):
         }
 
 
-# Concrete surfaces are runnable; only PwnzzGenerator is abstract.
-for _klass in (
-    PizzaAssistant, GuardrailLadder, QRChannel, CommentRAG, OrderAccess,
-    CateringSQLAgent, CateringRAG, SentimentClassifier, CommentCorpusPoisoner,
-):
-    _klass._abstract_base = False
+#: Every runnable surface, in the order the CLI lists them.
+SURFACES = (
+    PizzaAssistant,
+    GuardrailLadder,
+    QRChannel,
+    CommentRAG,
+    OrderAccess,
+    CateringSQLAgent,
+    CateringRAG,
+    SentimentClassifier,
+    CommentCorpusPoisoner,
+)
+
+# Concrete surfaces are runnable; only PwnzzGenerator is abstract. The flag is
+# garak's, and setting it here rather than per class keeps the one abstract
+# surface the only place the distinction is written down.
+for _klass in SURFACES:
+    _klass._abstract_base = False  # pylint: disable=protected-access
 
 DEFAULT_CLASS = "PizzaAssistant"
 
@@ -915,18 +985,11 @@ def describe_surfaces() -> str:
     """Human-readable map of generator -> endpoint, used by the CLI."""
 
     rows = []
-    for klass in (
-        PizzaAssistant,
-        GuardrailLadder,
-        QRChannel,
-        CommentRAG,
-        OrderAccess,
-        CateringSQLAgent,
-        CateringRAG,
-        SentimentClassifier,
-        CommentCorpusPoisoner,
-    ):
-        rows.append(f"{klass.__name__}: {klass.__doc__.splitlines()[0]}")
+    for klass in SURFACES:
+        # Docstrings are stripped under ``python -OO``; degrade to the bare name
+        # rather than raising out of a listing command.
+        summary = (klass.__doc__ or "").strip().splitlines()
+        rows.append(f"{klass.__name__}: {summary[0] if summary else ''}")
     return "\n".join(rows)
 
 

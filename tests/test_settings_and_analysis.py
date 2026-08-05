@@ -1,5 +1,8 @@
 """Loopback guard and report-parsing tests."""
 
+# Test names carry the intent; a docstring restating the name adds nothing.
+# pylint: disable=missing-function-docstring
+
 from __future__ import annotations
 
 import json
@@ -25,10 +28,10 @@ def test_loopback_urls_allowed(url):
 @pytest.mark.parametrize(
     "url",
     [
-        "http://example.com:8080",     # public host
-        "https://127.0.0.1:18080",     # not plain http
-        "http://10.0.0.5:8080",        # private but not loopback
-        "http://user:pw@127.0.0.1",    # credentials in url
+        "http://example.com:8080",  # public host
+        "https://127.0.0.1:18080",  # not plain http
+        "http://10.0.0.5:8080",  # private but not loopback
+        "http://user:pw@127.0.0.1",  # credentials in url
         "http://127.0.0.1:18080?x=1",  # query string
     ],
 )
@@ -46,14 +49,24 @@ def test_read_attempts_expands_generations(tmp_path):
         "goal": "g",
         "seq": 0,
         "conversations": [
-            {"turns": [
-                {"role": "user", "content": {"text": "q"}},
-                {"role": "assistant", "content": {"text": "leak A", "notes": {"secret": "x"}}},
-            ]},
-            {"turns": [
-                {"role": "user", "content": {"text": "q"}},
-                {"role": "assistant", "content": {"text": "clean B", "notes": {"secret": "x"}}},
-            ]},
+            {
+                "turns": [
+                    {"role": "user", "content": {"text": "q"}},
+                    {
+                        "role": "assistant",
+                        "content": {"text": "leak A", "notes": {"secret": "x"}},
+                    },
+                ]
+            },
+            {
+                "turns": [
+                    {"role": "user", "content": {"text": "q"}},
+                    {
+                        "role": "assistant",
+                        "content": {"text": "clean B", "notes": {"secret": "x"}},
+                    },
+                ]
+            },
         ],
         "outputs": [{"text": "leak A"}, {"text": "clean B"}],
         "detector_results": {"pwnzz.CouponLeak": [1.0, 0.0]},

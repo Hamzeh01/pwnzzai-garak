@@ -15,9 +15,10 @@ Nothing here interprets a score. It only reshapes garak's output into rows that
 from __future__ import annotations
 
 import json
+from collections.abc import Iterator
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Iterator
+from typing import Any
 
 
 @dataclass
@@ -140,7 +141,11 @@ def read_attempts(path: Path) -> list[AttemptRecord]:
         for gi, (text, notes) in enumerate(generations):
             # Slice each detector's parallel score list to this generation.
             per_gen = {
-                det: (scores[gi] if isinstance(scores, list) and gi < len(scores) else None)
+                det: (
+                    scores[gi]
+                    if isinstance(scores, list) and gi < len(scores)
+                    else None
+                )
                 for det, scores in det_results.items()
             }
             records.append(

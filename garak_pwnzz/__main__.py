@@ -19,8 +19,12 @@ import sys
 from garak_pwnzz import bootstrap, runner, settings, suites, target_facts
 
 
-def _cmd_list(args: argparse.Namespace) -> int:
-    """List the contributed plugins, the suites, and the target endpoints."""
+def _cmd_list(_args: argparse.Namespace) -> int:
+    """List the contributed plugins, the suites, and the target endpoints.
+
+    Takes the parsed namespace it does not read, so every subcommand handler
+    shares one signature and ``main`` can dispatch through a plain dict.
+    """
     specs = bootstrap.plugin_specs()
     print("== garak plugins contributed by this project ==")
     for category, names in specs.items():
@@ -31,7 +35,9 @@ def _cmd_list(args: argparse.Namespace) -> int:
     print("\n== suites ==")
     for name in suites.all_suite_names():
         suite = suites.get_suite(name)
-        print(f"  {name:22s} [{suite.owasp}] {len(suite.tasks):2d} tasks -- {suite.description}")
+        print(
+            f"  {name:22s} [{suite.owasp}] {len(suite.tasks):2d} tasks -- {suite.description}"
+        )
     print(f"\n  total tasks: {suites.total_task_count()}")
 
     print("\n== target endpoints under assessment ==")
@@ -40,7 +46,7 @@ def _cmd_list(args: argparse.Namespace) -> int:
     return 0
 
 
-def _cmd_preflight(args: argparse.Namespace) -> int:
+def _cmd_preflight(_args: argparse.Namespace) -> int:
     """Check the lab app and Ollama are reachable and the pinned model is present."""
     import requests
 
@@ -75,13 +81,15 @@ def _cmd_run(args: argparse.Namespace) -> int:
         runner.run_all(quiet=args.quiet)
     else:
         if args.target not in suites.all_suite_names():
-            print(f"unknown suite {args.target!r}; known: {', '.join(suites.all_suite_names())}")
+            print(
+                f"unknown suite {args.target!r}; known: {', '.join(suites.all_suite_names())}"
+            )
             return 2
         runner.run_suite(args.target, quiet=args.quiet)
     return 0
 
 
-def _cmd_analyze(args: argparse.Namespace) -> int:
+def _cmd_analyze(_args: argparse.Namespace) -> int:
     """Build all tables, figures, and the HTML dashboard from existing runs."""
     from garak_pwnzz.analysis import analyze, dashboard
 
@@ -93,7 +101,7 @@ def _cmd_analyze(args: argparse.Namespace) -> int:
     return 0
 
 
-def _cmd_dashboard(args: argparse.Namespace) -> int:
+def _cmd_dashboard(_args: argparse.Namespace) -> int:
     """Rebuild only the HTML dashboard from existing analysis output."""
     from garak_pwnzz.analysis import dashboard
 
@@ -113,11 +121,14 @@ def build_parser() -> argparse.ArgumentParser:
     run_p = sub.add_parser("run", help="run garak over a suite (or 'all')")
     run_p.add_argument("target", help="suite name or 'all'")
     run_p.add_argument(
-        "--quiet", action="store_true",
+        "--quiet",
+        action="store_true",
         help="capture garak's console output to a per-task log file",
     )
 
-    sub.add_parser("analyze", help="build tables, figures and dashboard from existing runs")
+    sub.add_parser(
+        "analyze", help="build tables, figures and dashboard from existing runs"
+    )
     sub.add_parser("dashboard", help="(re)build only the HTML dashboard")
     return parser
 

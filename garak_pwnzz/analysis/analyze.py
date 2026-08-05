@@ -23,7 +23,6 @@ from __future__ import annotations
 
 import csv
 import json
-import statistics
 from collections import defaultdict
 from dataclasses import dataclass
 from pathlib import Path
@@ -48,6 +47,7 @@ _APP_ORACLE_KEYS = {
 @dataclass
 class LoadedSuite:
     """One suite's parsed artifacts: attempts, evals, and the run manifest."""
+
     name: str
     family: str
     owasp: str
@@ -130,57 +130,80 @@ def _write_csv(path: Path, header: list[str], rows: list[list[Any]]) -> None:
 def attempts_table(loaded: list[LoadedSuite], out_dir: Path) -> None:
     """Write attempts.csv: one row per generation, joined to task and OWASP class."""
     header = [
-        "suite", "family", "owasp", "task", "probe", "surface", "seq", "generation",
-        "prompt", "response", "primary_detector", "primary_score",
-        "leak_rendering", "latency_s", "http_status",
+        "suite",
+        "family",
+        "owasp",
+        "task",
+        "probe",
+        "surface",
+        "seq",
+        "generation",
+        "prompt",
+        "response",
+        "primary_detector",
+        "primary_score",
+        "leak_rendering",
+        "latency_s",
+        "http_status",
     ]
     rows: list[list[Any]] = []
     for suite in loaded:
         for att in suite.attempts:
             task = suite.task_by_report.get(att.report, {})
             primary = _probe_primary_detector(att.probe) or ""
-            rows.append([
-                suite.name,
-                suite.family,
-                suite.owasp,
-                task.get("label", ""),
-                att.probe,
-                att.surface or "",
-                att.seq,
-                att.generation,
-                att.prompt_text.replace("\n", " ")[:200],
-                (att.output_text or "").replace("\n", " ")[:300],
-                primary,
-                att.score(primary),
-                att.notes.get("leak_rendering", ""),
-                att.notes.get("latency_s", ""),
-                att.notes.get("http_status", ""),
-            ])
+            rows.append(
+                [
+                    suite.name,
+                    suite.family,
+                    suite.owasp,
+                    task.get("label", ""),
+                    att.probe,
+                    att.surface or "",
+                    att.seq,
+                    att.generation,
+                    att.prompt_text.replace("\n", " ")[:200],
+                    (att.output_text or "").replace("\n", " ")[:300],
+                    primary,
+                    att.score(primary),
+                    att.notes.get("leak_rendering", ""),
+                    att.notes.get("latency_s", ""),
+                    att.notes.get("http_status", ""),
+                ]
+            )
     _write_csv(out_dir / "attempts.csv", header, rows)
 
 
 def eval_table(loaded: list[LoadedSuite], out_dir: Path) -> None:
     """Write eval-by-detector.csv from garak's own pass/fail/none counts."""
     header = [
-        "suite", "task", "probe", "detector", "passed", "fails", "nones",
-        "evaluated", "attack_success_rate",
+        "suite",
+        "task",
+        "probe",
+        "detector",
+        "passed",
+        "fails",
+        "nones",
+        "evaluated",
+        "attack_success_rate",
     ]
     rows: list[list[Any]] = []
     for suite in loaded:
         for ev in suite.evals:
             task = suite.task_by_report.get(ev.report, {})
             asr = ev.attack_success_rate
-            rows.append([
-                suite.name,
-                task.get("label", ""),
-                ev.probe,
-                ev.detector,
-                ev.passed,
-                ev.fails,
-                ev.nones,
-                ev.evaluated,
-                "" if asr is None else round(asr, 4),
-            ])
+            rows.append(
+                [
+                    suite.name,
+                    task.get("label", ""),
+                    ev.probe,
+                    ev.detector,
+                    ev.passed,
+                    ev.fails,
+                    ev.nones,
+                    ev.evaluated,
+                    "" if asr is None else round(asr, 4),
+                ]
+            )
     _write_csv(out_dir / "eval-by-detector.csv", header, rows)
 
 
@@ -201,8 +224,12 @@ def _primary_eval_for_task(suite: LoadedSuite, report_file: str) -> EvalRecord |
 def family_and_owasp_summary(loaded: list[LoadedSuite], out_dir: Path) -> dict:
     """Roll primary-detector outcomes up by family and OWASP category."""
 
-    by_family: dict[str, dict[str, int]] = defaultdict(lambda: {"hits": 0, "evaluated": 0, "nones": 0})
-    by_owasp: dict[str, dict[str, int]] = defaultdict(lambda: {"hits": 0, "evaluated": 0, "nones": 0})
+    by_family: dict[str, dict[str, int]] = defaultdict(
+        lambda: {"hits": 0, "evaluated": 0, "nones": 0}
+    )
+    by_owasp: dict[str, dict[str, int]] = defaultdict(
+        lambda: {"hits": 0, "evaluated": 0, "nones": 0}
+    )
     task_rows: list[list[Any]] = []
 
     for suite in loaded:
@@ -216,46 +243,93 @@ def family_and_owasp_summary(loaded: list[LoadedSuite], out_dir: Path) -> dict:
             by_owasp[suite.owasp]["hits"] += ev.fails
             by_owasp[suite.owasp]["evaluated"] += ev.evaluated
             by_owasp[suite.owasp]["nones"] += ev.nones
-            task_rows.append([
-                suite.name, task.get("label", ""), suite.family, suite.owasp,
-                ev.detector, ev.fails, ev.evaluated,
-                "" if ev.attack_success_rate is None else round(ev.attack_success_rate, 4),
-                task.get("note", ""),
-            ])
+            task_rows.append(
+                [
+                    suite.name,
+                    task.get("label", ""),
+                    suite.family,
+                    suite.owasp,
+                    ev.detector,
+                    ev.fails,
+                    ev.evaluated,
+                    ""
+                    if ev.attack_success_rate is None
+                    else round(ev.attack_success_rate, 4),
+                    task.get("note", ""),
+                ]
+            )
 
     _write_csv(
         out_dir / "task-summary.csv",
-        ["suite", "task", "family", "owasp", "primary_detector", "hits",
-         "evaluated", "attack_success_rate", "note"],
+        [
+            "suite",
+            "task",
+            "family",
+            "owasp",
+            "primary_detector",
+            "hits",
+            "evaluated",
+            "attack_success_rate",
+            "note",
+        ],
         task_rows,
     )
 
     fam_rows = []
     for fam, agg in sorted(by_family.items()):
         asr = agg["hits"] / agg["evaluated"] if agg["evaluated"] else None
-        fam_rows.append([fam, agg["hits"], agg["evaluated"], agg["nones"],
-                         "" if asr is None else round(asr, 4)])
-    _write_csv(out_dir / "family-summary.csv",
-               ["family", "hits", "evaluated", "nones", "attack_success_rate"], fam_rows)
+        fam_rows.append(
+            [
+                fam,
+                agg["hits"],
+                agg["evaluated"],
+                agg["nones"],
+                "" if asr is None else round(asr, 4),
+            ]
+        )
+    _write_csv(
+        out_dir / "family-summary.csv",
+        ["family", "hits", "evaluated", "nones", "attack_success_rate"],
+        fam_rows,
+    )
 
     owasp_rows = []
     for owasp, agg in sorted(by_owasp.items()):
         asr = agg["hits"] / agg["evaluated"] if agg["evaluated"] else None
-        owasp_rows.append([owasp, target_facts.OWASP_LABELS.get(owasp, owasp),
-                           agg["hits"], agg["evaluated"], agg["nones"],
-                           "" if asr is None else round(asr, 4)])
-    _write_csv(out_dir / "owasp-summary.csv",
-               ["owasp", "label", "hits", "evaluated", "nones", "attack_success_rate"],
-               owasp_rows)
+        owasp_rows.append(
+            [
+                owasp,
+                target_facts.OWASP_LABELS.get(owasp, owasp),
+                agg["hits"],
+                agg["evaluated"],
+                agg["nones"],
+                "" if asr is None else round(asr, 4),
+            ]
+        )
+    _write_csv(
+        out_dir / "owasp-summary.csv",
+        ["owasp", "label", "hits", "evaluated", "nones", "attack_success_rate"],
+        owasp_rows,
+    )
 
     return {
         "by_family": {
-            f: {**v, "attack_success_rate": (v["hits"] / v["evaluated"] if v["evaluated"] else None)}
+            f: {
+                **v,
+                "attack_success_rate": (
+                    v["hits"] / v["evaluated"] if v["evaluated"] else None
+                ),
+            }
             for f, v in by_family.items()
         },
         "by_owasp": {
-            o: {**v, "label": target_facts.OWASP_LABELS.get(o, o),
-                "attack_success_rate": (v["hits"] / v["evaluated"] if v["evaluated"] else None)}
+            o: {
+                **v,
+                "label": target_facts.OWASP_LABELS.get(o, o),
+                "attack_success_rate": (
+                    v["hits"] / v["evaluated"] if v["evaluated"] else None
+                ),
+            }
             for o, v in by_owasp.items()
         },
     }
@@ -271,9 +345,16 @@ def detector_agreement(loaded: list[LoadedSuite], out_dir: Path) -> dict:
     """
 
     header = [
-        "suite", "task", "probe", "surface", "primary_detector",
-        "primary_score", "stock_detector", "stock_score",
-        "app_oracle_key", "app_oracle_value",
+        "suite",
+        "task",
+        "probe",
+        "surface",
+        "primary_detector",
+        "primary_score",
+        "stock_detector",
+        "stock_score",
+        "app_oracle_key",
+        "app_oracle_value",
     ]
     rows: list[list[Any]] = []
     agree_gt_stock = {"agree": 0, "disagree": 0}
@@ -287,8 +368,11 @@ def detector_agreement(loaded: list[LoadedSuite], out_dir: Path) -> dict:
                 continue
             p_score = att.score(primary)
             stock = next(
-                (d for d in att.detector_results
-                 if not d.startswith("pwnzz.") and d != primary),
+                (
+                    d
+                    for d in att.detector_results
+                    if not d.startswith("pwnzz.") and d != primary
+                ),
                 None,
             )
             s_score = att.score(stock) if stock else None
@@ -304,11 +388,20 @@ def detector_agreement(loaded: list[LoadedSuite], out_dir: Path) -> dict:
                 agree_gt_app["agree" if p_hit == bool(oracle_val) else "disagree"] += 1
 
             if stock or oracle_key:
-                rows.append([
-                    suite.name, task.get("label", ""), att.probe, att.surface or "",
-                    primary, p_score, stock or "", s_score,
-                    oracle_key or "", oracle_val,
-                ])
+                rows.append(
+                    [
+                        suite.name,
+                        task.get("label", ""),
+                        att.probe,
+                        att.surface or "",
+                        primary,
+                        p_score,
+                        stock or "",
+                        s_score,
+                        oracle_key or "",
+                        oracle_val,
+                    ]
+                )
     _write_csv(out_dir / "detector-agreement.csv", header, rows)
     return {
         "ground_truth_vs_stock": agree_gt_stock,
@@ -351,7 +444,9 @@ def mitigation_matrix(loaded: list[LoadedSuite], out_dir: Path) -> dict:
     return per_finding
 
 
-def sentiment_doseresponse(loaded: list[LoadedSuite], out_dir: Path, fig_dir: Path) -> dict:
+def sentiment_doseresponse(
+    loaded: list[LoadedSuite], out_dir: Path, fig_dir: Path
+) -> dict:
     """Build the budget-vs-flip curve and the per-prompt confidence curves."""
 
     suite = next((s for s in loaded if s.name == "data-poisoning"), None)
@@ -391,10 +486,17 @@ def sentiment_doseresponse(loaded: list[LoadedSuite], out_dir: Path, fig_dir: Pa
             if conf is not None and pois is not None:
                 signed = conf if pois == "positive" else 1 - conf
             trigger_conf[prompt[:40]].append(signed)
-            rows.append([b, prompt[:60], ctrl, pois,
-                         att.notes.get("control_confidence"),
-                         att.notes.get("poisoned_confidence"),
-                         pois != ctrl if (pois and ctrl) else ""])
+            rows.append(
+                [
+                    b,
+                    prompt[:60],
+                    ctrl,
+                    pois,
+                    att.notes.get("control_confidence"),
+                    att.notes.get("poisoned_confidence"),
+                    pois != ctrl if (pois and ctrl) else "",
+                ]
+            )
             if pois and ctrl:
                 counted += 1
                 if pois != ctrl:
@@ -403,8 +505,15 @@ def sentiment_doseresponse(loaded: list[LoadedSuite], out_dir: Path, fig_dir: Pa
 
     _write_csv(
         out_dir / "sentiment-doseresponse.csv",
-        ["poison_budget", "prompt", "control_label", "poisoned_label",
-         "control_confidence", "poisoned_confidence", "flipped"],
+        [
+            "poison_budget",
+            "prompt",
+            "control_label",
+            "poisoned_label",
+            "control_confidence",
+            "poisoned_confidence",
+            "flipped",
+        ],
         rows,
     )
 
@@ -427,7 +536,7 @@ def sentiment_doseresponse(loaded: list[LoadedSuite], out_dir: Path, fig_dir: Pa
     # Keep only the most informative prompts (those that move).
     for label, vals in trigger_conf.items():
         if any(v is not None for v in vals):
-            series.append(charts.Series(label, vals))
+            series.append(charts.Series(label, list(vals)))
     series = series[:4]
     (fig_dir / "sentiment-confidence.svg").write_text(
         charts.line_chart(
@@ -444,10 +553,8 @@ def sentiment_doseresponse(loaded: list[LoadedSuite], out_dir: Path, fig_dir: Pa
 
     return {
         "budgets": budgets,
-        "flip_rate": {b: r for b, r in zip(budgets, flip_rate)},
-        "min_flip_budget": next(
-            (b for b, r in zip(budgets, flip_rate) if r > 0), None
-        ),
+        "flip_rate": dict(zip(budgets, flip_rate)),
+        "min_flip_budget": next((b for b, r in zip(budgets, flip_rate) if r > 0), None),
     }
 
 
@@ -479,8 +586,9 @@ def family_figures(loaded: list[LoadedSuite], summary: dict, fig_dir: Path) -> N
     direct = next((s for s in loaded if s.name == "direct-injection"), None)
     if direct:
         levels, asrs = [], []
-        for report_file, task in sorted(direct.task_by_report.items(),
-                                        key=lambda kv: kv[1].get("label", "")):
+        for report_file, task in sorted(
+            direct.task_by_report.items(), key=lambda kv: kv[1].get("label", "")
+        ):
             ev = _primary_eval_for_task(direct, report_file)
             if ev and ev.attack_success_rate is not None:
                 levels.append("L" + task.get("label", "").split("-")[-1])
@@ -530,7 +638,9 @@ def family_figures(loaded: list[LoadedSuite], summary: dict, fig_dir: Path) -> N
                 continue
             ev = _primary_eval_for_task(poison, report_file)
             if ev and ev.attack_success_rate is not None:
-                modes.append("hardened" if "hardened" in task["label"] else "vulnerable")
+                modes.append(
+                    "hardened" if "hardened" in task["label"] else "vulnerable"
+                )
                 asrs.append(ev.attack_success_rate)
         if modes:
             (fig_dir / "catering-mitigation.svg").write_text(

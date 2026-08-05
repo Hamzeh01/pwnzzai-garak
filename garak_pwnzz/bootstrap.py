@@ -31,7 +31,9 @@ _CATEGORIES = ("generators", "probes", "detectors")
 #: ``garak.probes.pwnzz``.
 PLUGIN_MODULE = "pwnzz"
 
-_installed = False
+#: Set once :func:`install` has extended the garak namespace in this process.
+#: Mutable process state, not a constant, so it keeps a lower-case name.
+_installed: bool = False  # pylint: disable=invalid-name
 
 
 def install(force: bool = False) -> None:
@@ -52,7 +54,9 @@ def install(force: bool = False) -> None:
     the worker processes garak spawns for parallel attempts.
     """
 
-    global _installed
+    # Module-level flag: idempotence has to survive across every caller in the
+    # process, including the workers garak forks for parallel attempts.
+    global _installed  # pylint: disable=global-statement
     if _installed and not force:
         return
 
@@ -77,9 +81,15 @@ def _register_in_cache() -> None:
     exactly what the CLI expects.
     """
 
+    # Imported here rather than at module scope: importing garak._plugins costs
+    # a full plugin scan, and callers that only need plugin_specs() should not
+    # pay for it.
     from garak._plugins import PluginCache
 
-    cache = PluginCache.instance()  # forces a load if needed; returns the dict
+    # PluginCache declares instance()/plugin_info() without a `self` parameter,
+    # so they are class-level callables despite lacking @staticmethod. Type
+    # checkers read them as unbound instance methods; the calls are correct.
+    cache = PluginCache.instance()  # type: ignore[attr-defined]
     for category in _CATEGORIES:
         module = importlib.import_module(f"garak.{category}.{PLUGIN_MODULE}")
         base = importlib.import_module(f"garak.{category}.base")
@@ -99,7 +109,8 @@ def _register_in_cache() -> None:
             key = f"{category}.{PLUGIN_MODULE}.{name}"
             if key in cache.get(category, {}):
                 continue
-            cache.setdefault(category, {})[key] = PluginCache.plugin_info(obj)
+            info = PluginCache.plugin_info(obj)  # type: ignore[attr-defined]
+            cache.setdefault(category, {})[key] = info
 
 
 def plugin_specs() -> dict[str, list[str]]:

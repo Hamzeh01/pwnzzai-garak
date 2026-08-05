@@ -6,4 +6,4 @@ this layer joins those with the run manifest and the per-response notes to
 produce the tables and figures the write-up needs.
 """
 
-from garak_pwnzz.analysis import report_reader, analyze  # noqa: F401
+from garak_pwnzz.analysis import analyze, report_reader  # noqa: F401
