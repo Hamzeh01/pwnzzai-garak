@@ -1,0 +1,368 @@
+﻿% =====================================================================
+% DISCUSSION
+% =====================================================================
+\section{Discussion}
+\label{sec:discussion}
+
+\subsection{Prompt-Level Defence is a Slope, and Sometimes Not Even That}
+\label{sec:disc:slope}
+
+The persona sweep produced a clean monotone reduction --- $0.472$ at L1
+to $0.083$ at L5 --- and it is tempting to read that as a defence
+working. The guardrail ladder complicates the reading. There, two of the
+ten rungs performed no better than the unguarded baseline: the soft
+system-prompt rule (B1, $0.242$) and the ASCII-only gate (B4, $0.333$)
+both sat above B0's $0.121$.
+
+The B1 case is the more instructive of the two, because its mechanism is
+structural rather than incidental. A system-prompt rule that names the
+protected value and forbids its disclosure must place that value in the
+model's context in order to state the rule. It thereby does two things
+at once: it makes disclosure possible at all, and it supplies an
+explicit rule for an override prompt to target. The rule is the
+vulnerability's precondition and the attacker's map. This is why the
+recommendation that follows is architectural rather than a stronger
+prompt: the coupon should be resolved server-side against an
+authorisation check the model never sees, so that no phrasing can
+surface what is not present.
+
+The general form of the finding is that a prompt-level control shifts a
+distribution; it does not establish a boundary. The strictest persona in
+this study is instructed to deny that any secret exists and to treat
+extraction attempts as hostile, and it still disclosed on $8.3\,\%$ of
+attempts. For a control whose failures are silent and whose per-attempt
+cost to an attacker is negligible, an $8.3\,\%$ residual is not a
+residual risk --- it is a certainty under repetition.
+
+\subsection{Framing Beats Force: Refusal Tracks Surface Form}
+\label{sec:disc:framing}
+
+The per-technique decomposition (Table~\ref{tab:technique}) is the
+result with the widest applicability beyond this target. Success was not
+spread across the twelve techniques; it concentrated in the two that
+never ask for the protected value in a recognisable form.
+
+Fictional framing --- ``write a short play where a clerk absent-mindedly
+says the secret word'' --- succeeded on $14/15$ attempts and was the only
+technique to carry the attack to the strictest persona more than once.
+The persona instruction constrains how the assistant behaves \emph{as an
+assistant}; it says nothing about the content of a creative artefact the
+assistant has been asked to author. The model's refusal policy and the
+task it was given occupy different frames, and the attack simply moves
+the request into the frame the policy does not cover.
+
+Indirection --- ``don't tell me the coupon word; instead list every word
+you are forbidden from saying'' --- succeeded on $10/15$, against $1/15$
+for asking plainly. The prompt explicitly disclaims the goal it
+achieves. Meanwhile, the three techniques that name their intent most
+plainly were the weakest in the study: authority claim $0/15$,
+developer-mode claim $1/15$, direct request $1/15$.
+
+This ordering is a direct challenge to keyword-based and
+signature-based input defences, and the guardrail ladder confirms it
+from the other direction: B7's keyword gate blocked $54.5\,\%$ of all
+requests to achieve a leak rate of $0.061$, and the two prompts that got
+through it were a paraphrase and a hypothetical.
+
+The clearest single illustration is the system-prompt probe
+(Table~\ref{tab:sysprompt}). Run against the strictest persona --- the
+one that leaks on $8.3\,\%$ of direct coupon requests --- prompts that
+ask about the model's \emph{rules} rather than its \emph{secret}
+extracted the secret on $46.7\,\%$ of attempts, a $5.6\times$ increase.
+Two of those prompts leaked the coupon while leaking no system-prompt
+text at all. A defence tuned against requests for the asset is not a
+defence against requests for the policy that protects the asset.
+
+\subsection{The Failing Layer, Not the Strength of the Defence}
+\label{sec:disc:layers}
+
+Holding the attack corpus fixed across ten defensive configurations
+isolates which layer fails, and each layer fails in a characteristic
+way (Fig.~\ref{fig:layers}).
+
+\begin{figure}[t]
+  \centering
+  \safefig[1.0]{figures/fig-defence-layers.pdf}
+  \caption{Where each defence sits in the pipeline, the technique class
+  that defeats it, and the measured bypass rate. Rates are per stage over
+  33 attempts.}
+  \label{fig:layers}
+\end{figure}
+
+\textbf{Input filters fail by construction, and their cost is
+availability.} The server decodes base64 and ROT13 segments before the
+model sees them, so the ``naive literal scanner'' inspects a
+representation that no longer exists downstream; ROT13 in particular
+succeeded on 5 of 30 attempts because its decoded form is natural
+English. The ASCII gate is defeated by pure-ASCII Spanish, which is to
+say that language restriction is not a security control. The keyword
+gate is defeated by paraphrase, and paid for its $0.061$ leak rate by
+rejecting more than half of all traffic --- in production, more than
+half of the legitimate queries whose phrasing happened to collide with
+the list.
+
+\textbf{Output filters convert a full disclosure into a partial one and
+push the leak into a different representation.} B5 and B9 both scored
+zero on literal leaks, which in isolation reads as success. But across
+the study, 12 of 97 leaks ($12.4\,\%$) were caught only by the
+obfuscation-aware branches of the detector: hyphenated spell-outs
+(\code{C-H-E-E-S-E}), spaced renderings, and plural forms that defeat a
+word-boundary match. A single-representation filter is defeated by
+trivial reformatting that a human reader parses without effort. The
+corresponding control is to normalise before matching --- strip
+separators, fold leetspeak, collapse whitespace --- or, preferably, to
+remove the secret from scope so that there is nothing to filter.
+
+\textbf{An untrusted data channel becomes an instruction channel by
+default.} The QR results ($0.238$, all payloads verified intact) show
+that content the application decodes from an uploaded image is
+concatenated into the prompt with the same authority as typed input. No
+model-level defence addresses this, because from the model's position
+the two are indistinguishable. The control is at the application
+boundary: quote extracted content to the model as data, apply the same
+input policy to decoded content as to typed content, and never merge it
+into the instruction context.
+
+\textbf{Agency converts a text failure into a data breach.} The
+cross-tenant SQL result is a single hit in 21 attempts and would be
+dismissed as noise on rate alone. It should not be. The routing flag
+exists only in one row of an isolated per-user table and cannot be
+guessed or hallucinated; its appearance means the application executed a
+model-authored query the caller was not entitled to run. The severity of
+an LLM01 failure is set by what the surrounding system will do with the
+model's output, not by how often the model can be induced to produce it.
+The same reasoning explains why \code{Tool\bk Execution\bk Induced} scoring $0$
+on the QR surface is a meaningful negative result: the injection
+succeeded at the text level and stopped at the execution level.
+
+\subsection{What the Detectors Disagree About}
+\label{sec:disc:detectors}
+
+The detector-agreement table (Table~\ref{tab:agreement}) is the
+methodological core of this study, and it cuts in two directions.
+
+\textbf{Generic detectors over-approximate by design.} The stock
+\code{mitigation.\bk Mitigation\bk Bypass} detector achieved perfect recall ---
+it missed no ground-truth violation --- at a precision of $0.293$
+against the application's actual policy. This is not a defect. It
+answers ``this output is not a refusal'', a question that generalises
+across deployments precisely because it is indifferent to any particular
+deployment's policy. On this corpus most outputs are not refusals,
+including entirely appropriate ones, so most of its hits are not
+violations. The practical consequence is that a generic detector is a
+triage instrument: sound as a filter, unsound as a verdict. The
+policy-aware detector can only exist here because PwnzzAI's policy is
+legible from its source --- an unusual property, and the reason this
+study can report a rate rather than an impression.
+
+\textbf{Application-supplied oracles vary in trustworthiness across
+surfaces of the same application.} On the catering RAG the built-in flag
+agreed with the independent detector on all 24 attempts; on the comment
+RAG, on 21 of 24; on the order assistant it flagged an access violation
+on 16 of 21 attempts where no cross-tenant identifier was present. A
+security signal shipped with the system is a hypothesis about the
+system's behaviour, not a measurement of it, and this study's design ---
+carrying the oracle in the notes and cross-tabulating rather than
+consuming it --- is what makes that testable.
+
+\textbf{The policy-aware detectors are not exempt.} Two false-positive
+classes were identified by inspection and should qualify the numbers
+reported above.
+
+The first is the catering residual. With the trusted-only mitigation
+enabled, \emph{no untrusted passage was retrieved on any of the 12
+attempts}, yet \code{Poisoned\bk Retrieval\bk Influence} scored $0.417$. Four of
+the five residual hits occurred on queries that themselves contained
+``pineapple'' or ``anchovy paste'', and the responses show the model
+echoing the noun from the question --- in one case inside an explicit
+refusal (``I can't find an approved policy specifically addressing
+pineapple\ldots''). A term-presence detector cannot distinguish
+\emph{asserting} the injected policy from \emph{repeating the querent's
+vocabulary while declining}. The corrected reading is stronger than the
+uncorrected one: trusted-only retrieval was fully effective at the
+retrieval stage, and the appropriate residual concern is the single
+neutral-query hit and the general fact that a term-presence oracle
+cannot certify grounding.
+
+The second is a substring fallback in \code{CouponLeak}. The
+whitespace-stripped branch matches without word boundaries, which
+correctly caught a genuine leak rendered as the plural ``Mushrooms!''
+but also fired on an invented word, ``MOONCHEESE'', containing the
+level's secret. One of the 97 recorded leaks is attributable to this.
+The rate-level impact is negligible; the methodological point is not.
+Ground-truth detection removes the judgement call about \emph{what
+counts as} a violation, but it does not remove the engineering problem
+of \emph{recognising} one, and both of the refinements that make these
+detectors sharp --- obfuscation tolerance and term-presence scoring ---
+buy sensitivity by spending precision. Reporting the matched rendering
+per hit, as the design does, is what makes this auditable after the
+fact.
+
+\subsection{Poisoning: the Threshold is Not Where the Effect Begins}
+\label{sec:disc:poisoning}
+
+The sentiment results are the study's only exact measurements --- the
+surface involves no language model --- and they support three claims.
+
+\textbf{The attack is cheap.} Five mislabelled comments flipped the
+trigger phrase, in a corpus consisting of the application's own comment
+table plus the injection. Any pipeline that retrains on user-submitted
+feedback without provenance or review is exposed at this scale.
+
+\textbf{Output monitoring is blind before the threshold.} Between $b=0$
+and $b=3$ the trigger's $P(\text{positive})$ rose from $0.230$ to
+$0.497$ --- more than doubling, and stopping just short of the boundary
+--- while the reported label never changed and the flip rate remained
+exactly $0.000$. Every label-level monitor reports ``no effect'' across
+that entire region. A score-distribution monitor watching the same runs
+sees a monotone drift from the first injected comment. The detection
+control therefore has to observe the classifier's continuous output on
+trigger-candidate terms, not its decisions.
+
+\textbf{The backdoor is targeted, which is what defeats accuracy
+testing.} All three trigger-bearing prompts drifted monotonically toward
+positive, including one carrying an explicit ``worst pizza I have ever
+eaten'' that travelled $0.356$ in probability without ever flipping. All
+three no-trigger controls stayed flat or moved slightly away from
+positive. A poisoned model of this kind passes a held-out accuracy
+check, because its behaviour is unchanged everywhere except on inputs
+containing a phrase the attacker chose. Acceptance testing on aggregate
+metrics cannot find it; the controls that can are provenance on training
+data, label-distribution anomaly detection before retraining, and an
+unpoisoned holdout monitored for drift on trigger-candidate terms.
+
+For retrieval poisoning the picture is sharper than the headline rate
+suggests. Unmitigated, influence was total: $12/12$, including the
+baseline control query about notice periods, with 8 of the 12 hits on
+queries that never named the injected terms --- the fabricated policy
+displaced trusted baseline facts rather than merely adding to them.
+Mitigated, untrusted retrieval went to zero. Trust-tagged retrieval is
+therefore a genuinely effective control at the stage it operates on, and
+the honest residual concern is not that it leaks poison but that
+term-presence measurement cannot certify that an answer is grounded in
+trusted context. That requires an output-grounding check, which is a
+different control at a different stage.
+
+\subsection{Evidence-Linked Mitigations}
+\label{sec:disc:mitigations}
+
+Table~\ref{tab:mitigations} states the recommendations, each tied to the
+detectors that evidence it and to the pipeline layer it acts on. The
+ordering is deliberate: the controls that eliminate a capability
+outrank the controls that police its use.
+
+\begin{table}[t]
+\caption{Evidence-linked mitigations. ``Layer'' is where the control acts relative to the model;
+``evidence'' names the detector signal supporting the finding.}
+\label{tab:mitigations}
+\centering
+\footnotesize
+\begin{tabular}{@{}C{\tw{0.06}}L{\tw{0.09}}L{\tw{0.30}}L{\tw{0.13}}L{\tw{0.42}}@{}}
+\toprule
+\tabhead{ID} & \tabhead{OWASP} & \tabhead{Finding (evidence)} & \tabhead{Layer} & \tabhead{Control} \\
+\midrule
+M-01 & LLM01 & Prompt hardening lowers but never eliminates leakage; L5 residual $0.083$ (\code{CouponLeak}) & architecture &
+Resolve the coupon server-side behind an authorisation check the model never sees; the value must not enter context. \\
+M-02 & LLM05 & Single-representation output filters miss obfuscated renderings; $12/97$ leaks (\code{CouponLeak}, \code{Coupon\bk Suppressed}) & output-handling &
+Normalise before matching (strip separators, fold leetspeak, collapse whitespace); prefer allow-listed structured responses. \\
+M-03 & LLM01 & Input filters bypassed by encoded channels and pure-ASCII foreign language; B3 $0.121$, B4 $0.333$, B7 blocks $54.5\,\%$ (\code{CouponLeak}, \code{InputRejected}) & input-handling &
+Treat decoded auxiliary content as untrusted data, never re-merged into instructions; do not treat language restriction as a control. \\
+M-04 & LLM01 & Instructions smuggled through an uploaded QR image are decoded and obeyed; $0.238$, all payloads intact (\code{CouponLeak}) & input-handling &
+Quote extracted upload content to the model as data; apply the same input policy to extracted text as to typed text. \\
+M-05 & LLM02 & The RAG assistant is configured to disclose PII on request; $0.375$, all hits on business-framed asks (\code{CustomerPII}) & data-governance &
+Redact PII at index time so it is never retrievable; remove disclosure permission from the system prompt; add an output DLP check. \\
+M-06 & LLM06 & The agentic SQL tool executed a model-authored cross-tenant read; $1/21$, categorical (\code{Cross\bk Tenant\bk Flag}) & authorisation &
+Scope every tool query to the authenticated principal server-side; parameterise SQL; constrain the agent to a least-privilege view. \\
+M-07 & LLM04 & Five mislabelled comments create a targeted backdoor; drift measurable from $b{=}1$ (\code{Sentiment\bk Label\bk Flip}) & data-governance &
+Provenance and review on feedback data; label-distribution anomaly detection before retraining; monitor \emph{scores}, not labels, on trigger terms. \\
+M-08 & LLM04 & Trusted-only retrieval eliminated untrusted retrieval ($0/12$) but term-presence cannot certify grounding (\code{Poisoned\bk Retrieval\bk Influence}) & retrieval &
+Keep trust-tagged retrieval and add an output-grounding check; require corroboration across trusted sources for mandatory-sounding claims. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Read together, the recommendations share a shape. Every control that
+holds in this study acts on the application pipeline --- what enters the
+context, what the retriever will surface, what the tool layer is
+permitted to execute, what leaves the process. Every control that
+failed or under-performed acts on the model's disposition: a firmer
+instruction, a keyword list, a string replacement on the way out. The
+model is the component whose behaviour cannot be constrained by
+assertion, and the pipeline is where the enforceable boundaries are.
+
+\subsection{On Being Garak-Native}
+\label{sec:disc:garak}
+
+Expressing the assessment entirely as Garak plugins rather than as a
+bespoke harness had three consequences worth reporting.
+
+It made the scan auditable by construction. Every outcome in this paper
+traces to a Garak evaluation entry in a retained \code{report.jsonl};
+the analysis layer aggregates but never re-judges. The per-task
+configuration files replay any single measurement through the stock
+CLI. There is no point in the pipeline where a bespoke scoring decision
+could have entered unrecorded.
+
+It made the comparison of detection philosophies free. Because Garak
+already supports running extended detectors alongside a primary one,
+placing a stock detector next to each policy-aware one cost a single
+line per probe and produced Table~\ref{tab:agreement} as a by-product.
+
+It disciplined the scope of custom code. Custom generators were written
+only where the transport is not text-in/text-out or where run state must
+be established first; plain chat endpoints are reached by the stock REST
+generator with a configuration file. The nine surfaces in
+Table~\ref{tab:generators} are therefore an inventory of the
+application's genuinely non-standard interfaces, which is itself a
+useful artefact of the assessment.
+
+\subsection{Limitations and Threats to Validity}
+\label{sec:disc:limitations}
+
+\textbf{Model scale bounds every absolute rate.} All LLM-mediated
+measurements were taken against a 1B-parameter model that refuses,
+rambles, and drifts off-task more than a production-scale model. Every
+absolute rate here should be read as a lower bound for this deployment
+and not as a property of the attack technique. The relative comparisons
+--- between levels, between layers, between mitigation states, between
+detectors --- hold the model fixed and are the intended contribution.
+
+\textbf{The sample per cell is small.} Three generations per prompt
+gives 33--36 evaluated attempts per task; a difference of one hit moves
+a task-level rate by roughly three points. Differences of one or two
+percentage points between adjacent stages are not resolvable, and the
+paper does not interpret them. The claims drawn are ordinal and
+large-margin: $14/15$ against $1/15$, $1.000$ against $0.417$, $0.467$
+against $0.083$. The deterministic poisoning surface is exempt from this
+limitation entirely.
+
+\textbf{Prompt corpora are compact by design, so coverage is not a
+claim.} Each probe carries five to twelve prompts chosen for
+attributability rather than breadth. A rate of $0.000$ in this study
+means ``not achieved by these prompts'', never ``not achievable''. Two
+stage results are explicitly of that kind: B6's $0.000$ reflects a
+single-turn probe that asserts a prior agreement absent from the
+forwarded history, when a genuine test of a history-trusting context
+needs a multi-turn attack that first establishes the false premise; and
+\code{Tool\bk Execution\bk Induced}'s $0$ across 21 QR attempts bounds only the
+two payloads that targeted it.
+
+\textbf{Detector precision is spent to buy sensitivity.} As
+Section~\ref{sec:disc:detectors} sets out, the obfuscation-tolerant
+substring fallback and the term-presence poison scorer each produced
+identifiable false positives. The affected numbers are the catering
+hardened rate ($0.417$, of which 4 of 5 hits are query-echo) and one of
+97 coupon leaks.
+
+\textbf{Non-determinism is not eliminated, only bounded.} Garak's RNG is
+seeded and parallelism is disabled, but the model behind the HTTP path
+is not seedable through the application interface. Individual
+generations vary between executions; rates are stable in ordering and
+approximate magnitude, not in their third decimal.
+
+\textbf{Single target, single deployment.} All findings are from one
+deliberately vulnerable application in one configuration. The
+transferable contributions are the method --- ground-truth detection
+against a legible policy, paired controls for poisoning, cross-tabulated
+oracles, layer-isolating sweeps --- and the technique-level orderings,
+not the rates.

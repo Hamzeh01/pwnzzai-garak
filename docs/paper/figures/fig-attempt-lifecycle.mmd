@@ -1,0 +1,33 @@
+%% Fig. 2 -- Lifecycle of one attempt, showing the notes side-channel.
+%% Referenced from sections/architecture.tex as figures/fig-attempt-lifecycle.pdf
+sequenceDiagram
+  autonumber
+  participant H as garak harness
+  participant P as probe (pwnzz)
+  participant G as generator (pwnzz)
+  participant A as PwnzzAI Shop
+  participant D as detector (pwnzz)
+  participant R as report.jsonl
+
+  H->>P: request prompts
+  P-->>H: prompt list + primary/extended detectors
+  H->>G: _call_model(prompt)
+  G->>A: HTTP request (no retries)
+  alt HTTP 200 and well-formed body
+    A-->>G: response text + application metadata
+    G-->>H: Message(text, notes)
+    Note right of G: notes carry ground truth<br/>(secret / victim_flag / paired labels)<br/>plus app oracle, status, latency
+  else transport error or unexpected status
+    A-->>G: error
+    G-->>H: None
+    Note right of G: absence of a response is<br/>not a defended attack
+  end
+  H->>D: detect(attempt)
+  D->>D: read ground truth from Message.notes
+  alt ground truth present and output present
+    D-->>H: 0.0 / 0.5 / 1.0
+  else cannot judge
+    D-->>H: None
+    Note right of D: counted under `nones`,<br/>excluded from the denominator
+  end
+  H->>R: persist prompt, outputs, notes, all detector scores

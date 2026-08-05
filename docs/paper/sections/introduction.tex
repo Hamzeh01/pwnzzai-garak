@@ -1,0 +1,147 @@
+% =====================================================================
+% INTRODUCTION
+% =====================================================================
+\section{Introduction}
+\label{sec:introduction}
+
+\subsection{The Target of an LLM Security Assessment}
+\label{sec:intro:target}
+
+A language model deployed in production is rarely reachable directly.
+It sits behind an application that decides what enters its context, what
+it is allowed to retrieve, what is done with what it emits, and what
+side effects its output is permitted to cause. An input filter runs
+before generation; a retriever assembles passages from a corpus that
+users can write to; a decoder turns an uploaded image into text that is
+concatenated into the prompt; an output filter rewrites the response;
+an agent layer executes model-authored queries against a database. Every
+one of these steps is application code, and every one of them is a place
+where data supplied by an attacker can acquire the authority of an
+instruction.
+
+This is the structural observation behind indirect prompt
+injection~\cite{greshake2023}: the model has no reliable way to tell an
+instruction it was given from an instruction it was shown, because by
+the time the two reach it they are the same tokens in the same
+context~\cite{wallace2024hierarchy}. It follows that the security
+question worth asking about a deployed system is not primarily a
+question about the model. A model probed in isolation cannot exhibit
+cross-tenant database reads, cannot leak a coupon that a server-side
+authorisation check would never have placed in its context, and cannot
+be poisoned through a comment form. Those failures are properties of a
+pipeline.
+
+Most published LLM red-teaming work nevertheless takes the model as the
+unit of analysis, for the good reason that models are the component
+that generalises across deployments. The consequence is a gap: an
+organisation with a running LLM-backed application has a large body of
+model-level results and very little methodological guidance on how to
+measure \emph{its own system}, against \emph{its own policy}, in a way
+that another engineer can replay and audit.
+
+\subsection{Detection is the Hard Part}
+\label{sec:intro:detection}
+
+Closing that gap runs immediately into the problem Garak's authors
+identify as the central difficulty of automated LLM security
+testing~\cite{garak}: deciding whether a given output constitutes a
+failure. The decision is deployment-specific. The same string is a
+policy breach in one system and an unremarkable answer in another, and
+no detector that is portable across deployments can be sensitive to
+either one's policy. Generic detectors therefore answer a generic
+question --- \emph{does this look like a jailbreak?}, \emph{is this not
+a refusal?} --- and inherit a precision ceiling set by how often a
+benign output looks the same as a violating one.
+
+An application assessment can do better, but only when the application's
+policy is legible enough to be transcribed. That is the condition this
+study exploits. The target names, in its own source, the exact word each
+persona must not emit; it synthesises personally identifying data of
+exactly specified shapes; it assigns each seeded account an unguessable
+routing flag in an isolated database. Each of those constants is ground
+truth in the strict sense: its presence in an output is a policy
+violation and its absence is not, with no judgement call in between.
+Building detection on those constants converts a subjective scoring
+problem into an objective one, at the cost of a detector that transfers
+to no other system --- which is precisely the trade an assessment,
+rather than a benchmark, should be willing to make.
+
+Two further problems follow from taking that trade. First, ground truth
+has to reach the detector: a suite that sweeps five personas within one
+process must score each attempt against \emph{that attempt's} secret,
+not a globally configured one. Second, a detector built on ground truth
+still has to \emph{recognise} the violation --- a secret rewritten as
+\code{C-H-E-E-S-E} by a naive output filter is still a leak --- and every
+refinement that buys that sensitivity spends precision. Both problems are
+treated as first-class design concerns in what follows, and the second is
+measured rather than assumed.
+
+\subsection{Contributions}
+\label{sec:intro:contributions}
+
+This paper reports a policy-aware, application-level security assessment
+of PwnzzAI Shop, an intentionally vulnerable LLM-backed web application,
+built entirely as plugins for Garak~\cite{garak}. The contributions are
+the following.
+
+\begin{enumerate}
+\item \textbf{A Garak-native assessment architecture for an application
+rather than a model} (Section~\ref{sec:architecture}). Nine application
+surfaces are wrapped as Garak generators, exploiting Garak's decision
+that a generator need only expose a text-in/text-out interface. The
+plugins register into Garak's own namespace and plugin cache at run time
+without copying files into the installation, so every measurement in the
+study replays through the stock Garak CLI with a retained configuration
+file. Garak core is unmodified.
+
+\item \textbf{Ground-truth detection carried on a response side-channel}
+(Sections~\ref{sec:arch:notes} and~\ref{sec:arch:detectors}). Twelve
+detectors test a specific policy violation against a constant
+transcribed from the pinned application source and re-verified by
+contract tests. The per-attempt ground truth, together with the
+application's internal metadata, travels with the response in Garak's
+\code{Message.notes} field, which is what makes a within-process sweep
+scoreable. Detectors abstain --- returning \code{None}, never $0.0$ ---
+whenever they cannot judge, so a transport failure or a missing ground
+truth reduces the sample rather than entering a rate.
+
+\item \textbf{A layer-isolating experimental design with built-in
+controls} (Section~\ref{sec:methodology}). A fixed attack corpus is swept
+across five persona levels and ten guardrail configurations that differ
+only in which defensive layer is present, which localises failure to a
+layer rather than attributing it to a defence's strength. Poisoning is
+measured against a paired clean control fitted in the same run, a
+retrieval mitigation is toggled with corpus and prompts held fixed, and
+a delivery-integrity check excludes indirect-injection attempts whose
+payload never arrived.
+
+\item \textbf{Empirical results over 678 evaluated attempts}
+(Section~\ref{sec:results}), of which the load-bearing ones are: attack
+success concentrated in the techniques that never name their objective;
+two of ten guardrail configurations performing no better than no
+guardrail; a poisoning threshold that lags the onset of the effect by
+four budget steps; and a generic detector achieving perfect recall at
+$0.293$ precision against the application's actual policy.
+
+\item \textbf{An ablation study} (Section~\ref{sec:ablation}) that
+separates the contribution of each defensive layer from the contribution
+of each element of the measurement apparatus, quantifying for each what
+the study would have reported without it. Two apparatus components turn
+out to be guarantees that were never exercised in these runs; two others
+change the reported numbers by factors of $1.7$ to $3.4$; one abolishes
+the measurement entirely.
+
+\item \textbf{Evidence-linked mitigations} (Section~\ref{sec:disc:mitigations}),
+each tied to the detector signal that supports it and to the pipeline
+layer it acts on, together with two identified false-positive classes in
+our own detectors reported against ourselves.
+\end{enumerate}
+
+The remainder of the paper is organised as follows.
+Section~\ref{sec:related} positions the work.
+Section~\ref{sec:architecture} describes the plugin architecture,
+Section~\ref{sec:methodology} the experimental design and metrics, and
+Section~\ref{sec:results} the measurements.
+Section~\ref{sec:ablation} reports the ablations,
+Section~\ref{sec:discussion} interprets the findings and states the
+limitations, and Section~\ref{sec:conclusion} concludes.

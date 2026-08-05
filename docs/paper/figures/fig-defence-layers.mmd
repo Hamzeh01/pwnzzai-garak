@@ -1,0 +1,44 @@
+%% Fig. 4 -- Defence layers, the technique that defeats each, and the measured bypass rate.
+%% Referenced from sections/discussion.tex as figures/fig-defence-layers.pdf
+flowchart LR
+  U["untrusted input<br/>typed text, uploaded image,<br/>retrieved passage, training label"]
+
+  subgraph IN["input-handling layer"]
+    B3["B3 literal scanner<br/>0.121"]
+    B4["B4 ASCII-only gate<br/>0.333"]
+    B7["B7 keyword gate<br/>0.061 leak / 0.545 blocked"]
+    B8["B8 regex stripper<br/>0.030"]
+  end
+
+  subgraph CTX["context assembly"]
+    B1["B1 soft prompt rule<br/>0.242"]
+    B2["B2 role lock<br/>0.182"]
+    B6["B6 history-trusting<br/>0.000, probe-limited"]
+  end
+
+  M(("model"))
+
+  subgraph OUT["output-handling layer"]
+    B5["B5 whole-word filter<br/>0.000 literal"]
+    B9["B9 substring redaction<br/>0.000 literal / 0.030 suppressed"]
+  end
+
+  TOOL["tool / action layer<br/>agentic SQL, function call"]
+  R["user"]
+
+  U --> IN --> CTX --> M --> OUT --> R
+  M --> TOOL --> R
+
+  A3["encoded auxiliary channel<br/>server decodes before the model sees it"] -.->|defeats| B3
+  A4["pure-ASCII foreign language"] -.->|defeats| B4
+  A7["paraphrase below the keyword list"] -.->|defeats| B7
+  A1["instruction override --- the rule<br/>names the secret it protects"] -.->|defeats| B1
+  A2["fictional / roleplay framing"] -.->|defeats| B2
+  A5["obfuscated rendering:<br/>C-H-E-E-S-E, Mushrooms!"] -.->|defeats| B5
+  A9["spaced / leet rendering"] -.->|defeats| B9
+  A0["untrusted channel treated<br/>as an instruction channel"] -.->|"QR: 0.238"| CTX
+
+  classDef atk fill:#fdeeee,stroke:#aa3333,stroke-dasharray:3 3
+  classDef pipe fill:#eef4ff,stroke:#3355aa
+  class A0,A1,A2,A3,A4,A5,A7,A9 atk
+  class U,M,R,TOOL pipe

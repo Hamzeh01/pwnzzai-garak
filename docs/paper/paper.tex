@@ -1,0 +1,237 @@
+% =====================================================================
+%  PwnzzAI x Garak -- paper draft
+%
+%  Build:
+%     bash figures/build-figures.sh     (renders the diagrams and charts)
+%     latexmk -pdf paper.tex
+%     (no perl? -- pdflatex x2, bibtex, pdflatex x2; see README)
+%
+%  Single-column IEEEtran. The tables in this draft are wide and dense;
+%  two-column mode forced every one of them into a full-width float and
+%  produced unavoidable overlap, so the document is set one-column.
+% =====================================================================
+\documentclass[journal,onecolumn,11pt]{IEEEtran}
+\IEEEoverridecommandlockouts
+
+\usepackage{cite}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{array}
+\usepackage{ragged2e}
+\usepackage[table]{xcolor}
+\usepackage{threeparttable}
+\usepackage{url}
+\usepackage{float}
+\usepackage[hidelinks]{hyperref}
+
+% ---------------------------------------------------------------------
+% Page geometry. IEEEtran's journal defaults are tuned for two columns;
+% in one-column mode the measure becomes uncomfortably long, so the text
+% block is narrowed and the tables are sized against \textwidth.
+% ---------------------------------------------------------------------
+\usepackage[letterpaper,margin=0.9in]{geometry}
+
+% Give TeX a little extra flexibility around long inline identifiers.
+% Explicit \bk markers remain the preferred break points; this fallback
+% prevents a code fragment from protruding into the margin or nearby text.
+\setlength{\emergencystretch}{1.5em}
+
+% Long code identifiers (\code{PoisonedRetrievalInfluence}) sit in narrow
+% table cells. T1 gives a typewriter font that carries hyphenation
+% patterns, and hyphenat's htt option switches hyphenation on for it, so
+% they wrap instead of running past the column edge. Without the T1
+% switch the default OT1 Courier has \hyphenchar disabled and every long
+% identifier overflows.
+\usepackage[T1]{fontenc}
+\usepackage[htt]{hyphenat}
+
+% Floats: keep them near their reference and stop LaTeX deferring a run
+% of large tables to the end of the document, which is what produced the
+% pile-ups in the previous build.
+\renewcommand{\topfraction}{0.9}
+\renewcommand{\bottomfraction}{0.8}
+\renewcommand{\textfraction}{0.07}
+\renewcommand{\floatpagefraction}{0.75}
+\setcounter{topnumber}{3}
+\setcounter{bottomnumber}{2}
+\setcounter{totalnumber}{5}
+
+% ---------------------------------------------------------------------
+% Figures are generated artefacts. Until the figures have been built,
+% draw a labelled placeholder instead of failing the build.
+% Scaled to fit both the text width and a maximum height, so a diagram
+% with an extreme aspect ratio cannot run off the page.
+% ---------------------------------------------------------------------
+% #1 (optional) is the width as a fraction of \textwidth; the height cap
+% only ever binds for a diagram far taller than it is wide.
+\newcommand{\safefig}[2][1.0]{%
+  \IfFileExists{#2}%
+    {\includegraphics[width=#1\textwidth,height=0.85\textheight,keepaspectratio]{#2}}%
+    {\fbox{\parbox[c][2.6cm][c]{0.92\textwidth}{\centering
+       \ttfamily\footnotesize #2\\[4pt]
+       \normalfont\itshape\footnotesize not built --- run \texttt{figures/build-figures.sh}}}}%
+}
+
+% =====================================================================
+% TABLE STYLE
+%
+% The tables carry most of this paper's content, so they are given a
+% consistent visual grammar rather than being left as bare booktabs:
+%
+%   * a tinted header band, with the header text in the same ink as the
+%     rules, so the reading order of a wide table is unambiguous;
+%   * very light zebra banding, which is what makes an eight-column row
+%     traceable across the measure;
+%   * a slightly stronger tint for group-header and total rows, so the
+%     structure of a multi-block table is visible before it is read;
+%   * proportional bars beside the headline rates, so the shape of a
+%     column is legible without reading every figure;
+%   * semantic colour on the extreme values only -- \hi for the worst
+%     outcome in a block, \lo for the best -- never as decoration.
+%
+% Colours are chosen to stay legible in greyscale: the tints differ in
+% lightness, and every emphasised value is also bold.
+% =====================================================================
+\definecolor{tabhdr}{HTML}{DCE5EE}   % header band
+\definecolor{tabgrp}{HTML}{EDF1F6}   % group-header and total rows
+\definecolor{tabrow}{HTML}{F6F8FA}   % zebra band
+\definecolor{tabink}{HTML}{15334F}   % header text and rules
+\definecolor{barfill}{HTML}{4A7CA8}  % filled portion of a rate bar
+\definecolor{bartrack}{HTML}{E2E8EE} % unfilled portion of a rate bar
+\definecolor{hiviz}{HTML}{9B2226}    % worst outcome in a block
+\definecolor{loviz}{HTML}{1B5E3A}    % best outcome in a block
+
+% Booktabs rules and coloured rows fight each other: the default
+% \aboverulesep / \belowrulesep leave an uncoloured gap at every rule.
+% Zeroing them and paying the space back through \extrarowheight is the
+% standard remedy and keeps the bands flush against the rules.
+\setlength{\aboverulesep}{0pt}
+\setlength{\belowrulesep}{0pt}
+\setlength{\extrarowheight}{1.6pt}
+\setlength{\heavyrulewidth}{1.0pt}
+\setlength{\lightrulewidth}{0.45pt}
+\setlength{\cmidrulewidth}{0.4pt}
+\arrayrulecolor{tabink}
+
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.12}
+
+\newcolumntype{L}[1]{>{\RaggedRight\arraybackslash}p{#1}}
+\newcolumntype{C}[1]{>{\Centering\arraybackslash}p{#1}}
+\newcolumntype{R}[1]{>{\RaggedLeft\arraybackslash}p{#1}}
+
+% Row tints. \zebra is issued immediately before \begin{tabular} and is
+% scoped to the enclosing float; row 1 is the header, so banding starts
+% at row 2.
+\newcommand{\zebra}{\rowcolors{2}{white}{tabrow}}
+\newcommand{\headrow}{\rowcolor{tabhdr}}
+\newcommand{\grouprow}{\rowcolor{tabgrp}}
+
+\newcommand{\tabhead}[1]{\textcolor{tabink}{\textbf{#1}}}
+\newcommand{\grouplabel}[1]{\textcolor{tabink}{\textbf{\textit{#1}}}}
+\newcommand{\totlabel}[1]{\textcolor{tabink}{\textbf{#1}}}
+\newcommand{\code}[1]{\texttt{\footnotesize #1}}
+
+% Semantic emphasis on values. Bold as well as coloured, so the emphasis
+% survives greyscale printing.
+\newcommand{\hi}[1]{\textcolor{hiviz}{\textbf{#1}}}
+\newcommand{\lo}[1]{\textcolor{loviz}{\textbf{#1}}}
+
+% A proportional bar for a rate in [0,1], drawn as a filled segment over
+% a full-width track so the cell occupies the same space at every value.
+\newlength{\barwd}
+\setlength{\barwd}{12mm}
+\newcommand{\asrbar}[1]{%
+  \makebox[\barwd][l]{%
+    \textcolor{bartrack}{\rule[-0.15ex]{\barwd}{5pt}}%
+    \hspace*{-\barwd}%
+    \textcolor{barfill}{\rule[-0.15ex]{\dimexpr#1\barwd\relax}{5pt}}}%
+}
+
+% A zero-width break opportunity, no hyphen drawn. Courier carries no
+% hyphenation patterns, so long identifiers are given explicit break
+% points at CamelCase humps and after path/dot separators; otherwise they
+% run straight out of a narrow table cell.
+\newcommand{\bk}{\discretionary{}{}{}}
+
+% Table column widths are given as fractions of \textwidth so they track
+% the text block instead of being pinned to a page size. The subtracted
+% \tabcolsep pays for this column's share of the inter-column padding,
+% which guarantees the row cannot exceed the measure.
+\newcommand{\tw}[1]{\dimexpr #1\textwidth-2\tabcolsep\relax}
+
+\begin{document}
+
+\title{Policy-Aware Security Assessment of an LLM-Backed Web
+Application: A Garak-Native Study of Prompt Injection, Information
+Disclosure, and Data Poisoning}
+
+\author{Author Name\\
+\textit{Affiliation}\\
+\texttt{email@example.org}}
+
+\maketitle
+
+\begin{abstract}
+Security assessments of large language models usually probe the model.
+The failures that matter in deployment usually belong to the application
+around it --- the input filter, the retriever, the output rewriter, the
+file decoder, the tool executor --- because that pipeline is what grants
+an untrusted data channel the authority of an instruction channel. This
+paper reports an assessment that takes the application as the target. We
+wrap nine HTTP surfaces of a deliberately vulnerable LLM-backed shop as
+Garak generators, add twelve detectors that test a \emph{specific policy
+violation against ground truth} rather than a stylistic signature, and
+carry the application's own metadata and the per-attempt secret through
+Garak's notes channel so that scoring is exact and abstention replaces
+false assurance. Every component is a first-class Garak plugin; Garak
+core is unmodified and every measurement replays through the stock CLI.
+Five suites comprising 28 runs and 678 evaluated attempts cover prompt
+injection (direct and indirect), information disclosure, and data
+poisoning. Data poisoning is the most exposed category
+($\mathrm{ASR}=0.348$). Hardening a system prompt across five personas
+reduces coupon leakage monotonically from $0.472$ to $0.083$ without ever
+eliminating it, and holding the attack corpus fixed across ten guardrail
+configurations shows two of the ten performing no better than no
+guardrail at all. Success concentrates in the techniques that never name
+their objective: fictional framing succeeded on $14/15$ attempts against
+$1/15$ for asking plainly, and against the strictest persona, prompts
+that ask for the \emph{rules} extracted the protected secret $5.6\times$
+more often than prompts that ask for the secret. Five mislabelled
+comments create a targeted classifier backdoor whose probability drift is
+measurable four budget steps before any label changes. Trust-tagged
+retrieval eliminated untrusted retrieval entirely ($12/12 \to 0/12$),
+and inspection shows the residual answer-level rate to be detector
+false positives. A stock generic detector run alongside ours achieved
+recall $1.000$ at precision $0.293$ against the application's actual
+policy. An ablation study separates the contribution of each defensive
+layer from that of each element of the measurement apparatus, and shows
+that removing the ground-truth channel does not degrade the study's
+numbers but abolishes them.
+\end{abstract}
+
+\begin{IEEEkeywords}
+LLM security, prompt injection, data poisoning, information disclosure,
+red teaming, garak, OWASP LLM Top 10, ablation study.
+\end{IEEEkeywords}
+
+% =====================================================================
+\input{sections/introduction}
+\input{sections/related}
+\input{sections/architecture}
+\input{sections/methodology}
+\input{sections/results}
+\input{sections/ablation}
+\input{sections/discussion}
+\input{sections/conclusion}
+% =====================================================================
+
+% NOTE: refs.bib entries were written from memory and have NOT been
+% checked against the published record. Verify every field before
+% submission -- see README.md, "Known gaps".
+\bibliographystyle{IEEEtran}
+\bibliography{refs}
+
+\end{document}

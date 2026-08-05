@@ -1,0 +1,59 @@
+﻿%% Fig. 3 -- The four experimental controls.
+%% Referenced from sections/methodology.tex as figures/fig-controls.pdf
+%% Layout: the four panels are disconnected subgraphs, so Mermaid chooses
+%% their rank order itself. The titles therefore carry no numbers -- the
+%% panels are self-labelling and read correctly in any arrangement, which
+%% link order alone could not guarantee.
+flowchart LR
+  subgraph C1["Paired clean control &mdash; sentiment poisoning"]
+    direction TB
+    T1["same evaluation<br/>prompt"]
+    M1["fit on baseline<br/>corpus"]
+    M2["fit on baseline<br/>+ poison"]
+    X1{{"labels<br/>differ?"}}
+    Y1["hit = effect attributable<br/>to the poison"]
+    T1 --> M1 --> X1
+    T1 --> M2 --> X1
+    X1 --> Y1
+  end
+
+  subgraph C2["Mitigation on / off &mdash; retrieval poisoning"]
+    direction TB
+    T2["same poisoned corpus,<br/>same prompt set"]
+    O1["retrieval<br/>mitigation OFF"]
+    O2["retrieval<br/>mitigation ON"]
+    Y2["difference isolates<br/>the mitigation"]
+    T2 --> O1 --> Y2
+    T2 --> O2 --> Y2
+  end
+
+  subgraph C3["Delivery integrity &mdash; indirect injection"]
+    direction TB
+    T3["payload encoded<br/>into a QR image"]
+    Q1{{"decoded text<br/>== encoded text?"}}
+    Y3["attempt is<br/>informative"]
+    N3["excluded: the target was never<br/>asked the intended question"]
+    T3 --> Q1
+    Q1 -->|yes| Y3
+    Q1 -->|no| N3
+  end
+
+  subgraph C4["Negative controls &mdash; poisoning specificity"]
+    direction TB
+    T4["no-trigger benign prompts,<br/>same task"]
+    Q4{{"flipped?"}}
+    Y4["targeted<br/>backdoor"]
+    N4["general<br/>degradation"]
+    T4 --> Q4
+    Q4 -->|no| Y4
+    Q4 -->|yes| N4
+  end
+
+  C3 ~~~ C4
+  C1 ~~~ C2
+
+  classDef good fill:#eefaf0,stroke:#2f8f4f,stroke-width:1px
+  classDef bad  fill:#fdeeee,stroke:#aa3333,stroke-width:1px
+  class Y1,Y2,Y3,Y4 good
+  class N3,N4 bad
+

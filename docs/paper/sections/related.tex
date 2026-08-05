@@ -1,0 +1,118 @@
+% =====================================================================
+% RELATED WORK
+% =====================================================================
+\section{Related Work}
+\label{sec:related}
+
+\subsection{Prompt Injection, Direct and Indirect}
+\label{sec:rel:injection}
+
+Direct prompt injection --- overriding a system instruction from the
+user turn --- was characterised early by Perez and
+Ribeiro~\cite{perez2022ignore}, and the taxonomy of jailbreak techniques
+has since been mapped both analytically~\cite{wei2023jailbroken} and
+empirically from prompts collected in the wild~\cite{shen2024dan}.
+Automated search methods produce transferable adversarial
+suffixes~\cite{zou2023universal}. This literature is model-centric by
+construction: its unit of analysis is the model's refusal behaviour, and
+its notion of success is that the model said something it should not.
+
+Greshake et al.~\cite{greshake2023} shifted the frame to
+\emph{indirect} injection, where the adversarial instruction arrives
+through a data channel the application itself opens --- a retrieved
+document, a fetched page, an attachment --- and demonstrated end-to-end
+compromise of LLM-integrated applications. Multi-modal variants smuggle
+instructions through images and audio~\cite{bagdasaryan2023abusing},
+which is the class our QR upload surface instantiates: the payload is
+never typed, and the application's own decoder is the delivery mechanism.
+Liu et al.~\cite{liu2024formalizing} give a formalisation and benchmark
+of injection attacks and defences, and BIPIA~\cite{yi2023bipia}
+benchmarks indirect injection specifically.
+
+Proposed defences separate along the boundary this paper's results
+follow. Prompt-level and filter-level controls --- delimiters,
+instruction reminders, keyword gates --- are known to be
+brittle~\cite{liu2024formalizing}. Controls that change the
+\emph{architecture} rather than the phrasing fare better: spotlighting
+marks untrusted spans so the model can be trained to discount
+them~\cite{hines2024spotlighting}, StruQ separates instruction and data
+channels structurally~\cite{chen2024struq}, instruction
+hierarchies train a priority ordering over
+sources~\cite{wallace2024hierarchy}, and the dual-LLM pattern denies the
+privileged model any contact with untrusted text at
+all~\cite{willison2023dual}. Our guardrail-ladder results
+(Section~\ref{sec:res:ladder}) are an application-level measurement of
+the first group's brittleness under a fixed attack corpus, and the
+ablation in Section~\ref{sec:ablation} quantifies each layer's marginal
+contribution.
+
+\subsection{Red-Teaming Frameworks and Benchmarks}
+\label{sec:rel:frameworks}
+
+Automated red teaming with model-generated attacks was introduced by
+Perez et al.~\cite{perez2022redteaming}, and Ganguli et
+al.~\cite{ganguli2022redteaming} report the methods and scaling
+behaviour of a large manual campaign. Standardised evaluation followed:
+HarmBench~\cite{mazeika2024harmbench} fixes behaviours and a judge so
+that attack methods can be compared, and
+AgentDojo~\cite{debenedetti2024agentdojo} supplies a dynamic environment
+in which prompt-injection attacks and defences are evaluated against
+tool-using agents with checkable task outcomes. Tooling in the same space
+includes Garak~\cite{garak}, a plugin-based scanner organised around
+probes, generators, detectors and buffs, and PyRIT~\cite{pyrit}.
+
+Two distinctions place the present work. First, benchmarks fix the target
+so that methods are comparable; an assessment fixes the method so that
+one deployment is characterised --- and the artefact it must produce is
+not a leaderboard position but an auditable, replayable record for the
+team that owns the system. Second, and more concretely, these frameworks
+take a model or an agent as the object under test. We take the HTTP
+surface of a conventional web application as the object under test, which
+is possible in Garak without modification because a generator is defined
+by its interface rather than by being a model. Where AgentDojo builds a
+purpose-made environment with checkable outcomes, we derive checkable
+outcomes from an existing application's own constants.
+
+\subsection{Disclosure, Poisoning, and Retrieval Corruption}
+\label{sec:rel:poisoning}
+
+Memorised training data can be extracted from language models
+verbatim~\cite{carlini2021extracting}, which establishes disclosure as a
+model-level risk. The disclosure surfaces measured here are different in
+kind: the personally identifying data is retrieved, not memorised, and
+the leak is licensed by a system prompt that instructs the assistant to
+provide customer details on request. The failure is a configuration
+decision, and the analytically interesting result
+(Section~\ref{sec:res:disclosure}) is that the requests which succeed are
+the ones that look routine.
+
+Backdoor poisoning of classifiers is long
+established~\cite{gu2017badnets}, including in the concealed,
+trigger-keyed form that leaves aggregate accuracy
+untouched~\cite{wallace2021concealed}; Carlini et
+al.~\cite{carlini2024poisoning} show that poisoning real web-scale
+corpora is practical. Our sentiment surface reproduces the concealed
+variety at the scale an application actually exposes --- a comment form
+feeding a retraining step --- and, because the classifier is
+deterministic, measures the dose-response exactly rather than
+statistically. For retrieval-augmented generation~\cite{lewis2020rag},
+PoisonedRAG~\cite{zou2025poisonedrag} shows that a small number of
+injected passages can control a system's answers. We measure the same
+attack with the application's trusted-only retrieval mitigation toggled,
+and separate the retrieval-level effect from the answer-level signal ---
+a separation that turns out to change the conclusion
+(Section~\ref{sec:disc:detectors}).
+
+\subsection{Taxonomies and Reporting Frames}
+\label{sec:rel:taxonomy}
+
+Findings here are grouped by OWASP LLM Top~10
+categories~\cite{owasp2025}, which is the frame most likely to be
+actionable for a team operating an application. NIST's adversarial
+machine learning taxonomy~\cite{nist2024aml} and MITRE
+ATLAS~\cite{atlas} provide the broader vocabulary for the poisoning and
+agency findings. We use these as reporting frames, not as coverage
+claims: the suite exercises three OWASP categories, and
+Section~\ref{sec:disc:limitations} is explicit that a rate of $0.000$ in
+this study means ``not achieved by these prompts'', never ``not
+achievable''.

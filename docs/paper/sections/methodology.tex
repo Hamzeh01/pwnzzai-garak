@@ -1,0 +1,215 @@
+﻿% =====================================================================
+% METHODOLOGY
+% =====================================================================
+\section{Methodology}
+\label{sec:methodology}
+
+\subsection{Target, Deployment, and Pinning}
+\label{sec:method:target}
+
+All measurements were taken against PwnzzAI Shop pinned at application
+commit \code{cd3ac0d1} and container image digest
+\code{sha256:7878fbd7\ldots}. The container is published on
+\code{127.\bk 0.\bk 0.\bk 1:18080} only and reaches an inference backend running on
+the host. The model is \code{llama3.2:1b}, a 1B-parameter instruction
+model, selected by the deployment configuration rather than for its
+capability.
+
+The choice of a small model is a methodological constraint and should be
+read as one. A 1B model refuses, rambles, or drifts off-task more often
+than a frontier model, which suppresses absolute attack success rates
+across the board. This study consequently treats \emph{relative}
+differences --- between persona levels, between guardrail layers,
+between a mitigation switched on and off, between two detectors judging
+the same output --- as the interpretable signal, and absolute rates as
+lower bounds specific to this deployment. Section~\ref{sec:discussion}
+returns to this point.
+
+Mutable application state (uploads, the RAG corpus, the instance
+database) is mounted from a directory that can be deleted to restore a
+known baseline; the application re-seeds its catalogue, its two accounts,
+and its routing flags on first request after a fresh start.
+
+\subsection{Unit of Measurement: One Task, One Garak Run}
+\label{sec:method:task}
+
+A \emph{task} is one Garak invocation: a single probe posed to a single
+generator under a specific configuration. A \emph{suite} is an ordered
+list of tasks that together answer one assessment question. The runner
+writes a per-task JSON configuration and calls \code{garak.\bk cli.\bk main}
+with it --- the same entry point a human operator would use. Garak owns
+prompt sequencing, generation, detector execution, scoring, and artefact
+production; the runner decides only \emph{what} runs and \emph{where}
+the output lands.
+
+Each task emits four artefacts: \code{report.jsonl} (every attempt with
+prompts, outputs, per-detector scores, and the generator's notes),
+\code{report.html} (Garak's human-readable digest), \code{hitlog.jsonl}
+(failing attempts, when any exist), and the exact \code{config.json}
+used. A per-suite manifest ties the tasks to the target fingerprint. The
+retained configuration files are executable reproduction instructions: a
+single task is replayed by passing its configuration back to the stock
+Garak CLI.
+
+One implementation detail is load-bearing for the validity of every
+sweep in this study. Garak caches plugin instances keyed by the string
+form of the configuration root. Because all tasks in a suite are driven
+through the same global configuration object within one process, that
+key is identical across tasks; without intervention, the second task
+would silently reuse the first task's generator, and a five-level
+persona sweep would in fact execute level~1 five times. The runner
+clears the instance cache before each task. This is the difference
+between a genuine level, stage, and budget sweep and the same run
+repeated $N$ times, and it is the reason the monotone trends reported in
+Section~\ref{sec:results} can be attributed to the swept parameter.
+
+\subsection{Experiment Design}
+\label{sec:method:design}
+
+Five suites comprising 28 tasks and 678 evaluated attempts cover the
+three required attack families. Table~\ref{tab:suites} states the full
+design.
+
+\begin{table}[t]
+\caption{Experiment design. Attempts $=$ prompts $\times$ generations. Every task is one Garak run;
+the swept parameter is the only thing that varies within a suite.}
+\label{tab:suites}
+\centering
+\footnotesize
+\zebra
+\begin{tabular}{@{}L{\tw{0.15}}L{\tw{0.10}}L{\tw{0.16}}L{\tw{0.15}}L{\tw{0.20}}C{\tw{0.08}}C{\tw{0.07}}C{\tw{0.09}}@{}}
+\toprule
+\headrow
+\tabhead{Suite} & \tabhead{OWASP} & \tabhead{Probe} & \tabhead{Generator} & \tabhead{Swept parameter} &
+\tabhead{Tasks} & \tabhead{Gen.} & \tabhead{Attempts} \\
+\midrule
+\code{direct-\bk injection} & LLM01 & \code{Coupon\bk Extraction} & \code{Pizza\bk Assistant} &
+Persona level L1--L5 (each with its own secret) & 5 & 3 & 180 \\
+\code{guardrail-\bk ladder} & LLM01 & \code{Guardrail\bk Bypass} & \code{Guardrail\bk Ladder} &
+Guardrail stage B0--B9 (one defence layer per rung) & 10 & 3 & 330 \\
+\code{indirect-\bk injection} & LLM01 & \code{QRCode\bk Injection} & \code{QRChannel} &
+--- (single configuration; payload varies) & 1 & 3 & 21 \\
+\code{information-\bk disclosure} & LLM02/06 & \code{Customer\bk Data\bk Extraction}, \code{System\bk Prompt\bk Disclosure}, \code{Cross\bk Tenant\bk Order\bk Access} &
+\code{CommentRAG}, \code{Pizza\bk Assistant}, \code{OrderAccess}, \code{Catering\bk SQLAgent} &
+--- (four distinct disclosure surfaces) & 4 & 3 & 81 \\
+\code{data-\bk poisoning} & LLM04 & \code{Sentiment\bk Poisoning}, \code{Catering\bk RAGPoisoning} &
+\code{Sentiment\bk Classifier}, \code{CateringRAG} &
+Poison budget $\in \{0,1,3,5,10,20\}$; retrieval mitigation off/on & 8 & 1--2 & 66 \\
+\midrule
+\grouprow \multicolumn{5}{@{}l}{\totlabel{Total}} & \totlabel{28} & & \totlabel{678} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Prompt corpora are deliberately compact and legible rather than large.
+Each probe carries between five and twelve prompts, and every prompt is
+written to exercise one identifiable technique --- direct request,
+instruction override, authority claim, emotional framing, fictional
+framing, indirection, encoding, obfuscated read-back, paraphrase,
+hypothetical. This is a design choice with an analytic purpose: because
+each prompt has a known intent, per-prompt outcomes can be read as a
+technique-level result rather than as noise in an aggregate, which is
+what makes Tables~\ref{tab:technique} and~\ref{tab:ladder} in
+Section~\ref{sec:results} interpretable at all. Coverage breadth is
+traded for attributability.
+
+\subsection{Controls}
+\label{sec:method:controls}
+
+Four controls are built into the design rather than applied post hoc
+(Fig.~\ref{fig:controls}).
+
+\begin{figure}[t]
+  \centering
+  \safefig[0.78]{figures/fig-controls.pdf}
+  \caption{The four experimental controls. Each converts a measurement
+  that would otherwise be a single observation into a difference or an
+  exclusion.}
+  \label{fig:controls}
+\end{figure}
+
+\textbf{Paired clean control for poisoning.} The sentiment surface fits
+two models per run --- one on the baseline corpus, one on baseline plus
+poison --- and classifies every evaluation prompt with both. Success is
+defined as \emph{disagreement} between the two, never as a single
+poisoned verdict. A lone verdict cannot establish what the poison
+changed: a phrase the classifier always misclassified would otherwise be
+counted as an attack success. Since both fits are deterministic
+scikit-learn models, this control is exact and the resulting curves
+reproduce bit-for-bit.
+
+\textbf{Mitigation on/off for retrieval poisoning.} The identical poison
+document is ingested into the catering corpus, and the identical prompt
+set is then run twice: once with the application's trusted-only
+retrieval disabled and once with it enabled. The contrast isolates the
+mitigation's effect with corpus, prompts, and model held fixed.
+
+\textbf{Delivery-integrity check for indirect injection.} The QR
+generator records whether the payload it encoded round-tripped through
+the application's decode step. A mangled payload means the target was
+never asked the question the probe intended, so the attempt is
+uninformative; a dedicated diagnostic detector marks such attempts for
+exclusion rather than letting them count as defended.
+
+\textbf{Negative and benign prompts.} The poisoning probe carries
+no-trigger control prompts, including one clearly positive and one
+clearly negative statement about unrelated aspects of service. A flip on
+those would indicate general degradation of the classifier --- a broader
+and different failure than a targeted backdoor --- and separating the
+two is only possible if the controls are carried in the same run.
+
+\subsection{Metrics}
+\label{sec:method:metrics}
+
+For each \emph{(probe, detector)} pair Garak reports counts of
+\code{passed}, \code{fails}, and \code{nones}. The headline metric is
+attack success rate over \emph{evaluated} attempts:
+\begin{equation}
+  \mathrm{ASR} = \frac{\mathit{fails}}{\mathit{passed} + \mathit{fails}},
+  \label{eq:asr}
+\end{equation}
+with \code{nones} excluded from the denominator by construction.
+Together with the abstention rules of
+Section~\ref{sec:arch:detectors}, this means a transport failure, a
+missing ground truth, or an unfitted control model reduces the sample
+size rather than silently entering the numerator or the denominator. In
+the runs reported here the abstention count was zero for every detector,
+so all 678 attempts were evaluated; the mechanism is nonetheless
+load-bearing, because it is what allows a partial failure to be recognised
+as such instead of being absorbed into a rate.
+
+Roll-ups by attack family and by OWASP LLM Top~10 (2025)
+category~\cite{owasp2025} use
+each probe's declared \emph{primary} detector as the headline signal.
+Extended detectors --- including a stock Garak detector on every
+applicable probe --- are reported alongside rather than merged, because
+they answer different questions and merging them would destroy exactly
+the comparison this study is interested in.
+
+Scores are thresholded at $0.5$ for the pass/fail decision, which makes
+the graded outputs of two detectors consequential: \code{CustomerPII}
+assigns $0.5$ to a lone email address (a model can invent a plausible
+address without having retrieved one, so corroboration from a second
+field type is required for a full score), and
+\code{Poisoned\bk Retrieval\bk Influence} assigns $0.5$ to soft policy language
+unaccompanied by a substantive injected item.
+
+\subsection{Reproducibility and its Limits}
+\label{sec:method:repro}
+
+Garak's own RNG is seeded, fixing prompt sampling and buff ordering.
+Parallelism is disabled everywhere. The application image is pinned by
+digest and the ground-truth constants are re-validated against the
+pinned source by contract tests on every run of the test suite. The full
+28-task set completes in approximately 15 minutes of wall-clock time on
+the reference machine, dominated by model inference.
+
+What is \emph{not} reproducible bit-for-bit is the language model behind
+the HTTP path, which is not seedable through the application's
+interface. Individual generations therefore vary between executions.
+This is the reason every LLM-backed task runs multiple generations and
+the analysis reports rates rather than single outcomes, and it is the
+reason Section~\ref{sec:results} interprets ordering and magnitude of
+differences rather than individual figures. The sentiment-poisoning
+surface is exempt: it involves no language model, and its numbers
+reproduce exactly.

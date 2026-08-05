@@ -48,6 +48,22 @@ lab/state/
 vendor/
 docs/sources/*.pdf
 
+# LaTeX build products. The paper sources, the figure sources, the rendered
+# figure PDFs, and the built paper.pdf are tracked; everything a TeX run
+# regenerates is not.
+docs/paper/build/
+docs/paper/build-fa/
+docs/paper/preview/
+docs/paper/*.aux
+docs/paper/*.log
+docs/paper/*.out
+docs/paper/*.bbl
+docs/paper/*.blg
+docs/paper/*.fls
+docs/paper/*.fdb_latexmk
+docs/paper/*.synctex.gz
+docs/paper/*.toc
+
 # Editors and operating systems
 .vscode/
 .idea/

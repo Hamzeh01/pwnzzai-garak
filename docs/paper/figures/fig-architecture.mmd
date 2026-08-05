@@ -1,0 +1,55 @@
+%% Fig. 1 -- Component architecture.
+%% Referenced from sections/architecture.tex as figures/fig-architecture.pdf
+%% Layout: the earlier version wrote the attempt loop as a cycle
+%% (harness -> probe -> generator -> app -> generator -> detector -> harness),
+%% which dagre could only route with long crossing edges. It is drawn here
+%% as an acyclic top-to-bottom pipeline instead; Fig. 2 carries the
+%% round-trip detail that the cycle was trying to show.
+flowchart TB
+  subgraph SUP["project support layer"]
+    direction LR
+    S["suites + runner<br/>28 tasks"]
+    TF["target_facts<br/>ground truth read from<br/>the pinned app source"]
+  end
+
+  subgraph CORE["garak core &mdash; unmodified"]
+    direction LR
+    H["harness<br/>garak.cli.main"]
+  end
+
+  subgraph PLUG["contributed plugins &mdash; the pwnzz namespace"]
+    direction LR
+    P["garak.probes.pwnzz<br/>8 attack scenarios"]
+    G["garak.generators.pwnzz<br/>9 application surfaces"]
+    D["garak.detectors.pwnzz<br/>12 ground-truth detectors"]
+    P -->|"prompt"| G
+    G -->|"Message.text<br/>+ Message.notes"| D
+  end
+
+  subgraph LAB["pinned lab &mdash; loopback only"]
+    direction LR
+    APP["PwnzzAI Shop<br/>127.0.0.1:18080<br/>image sha256:7878fbd7&hellip;"]
+    OLL["Ollama on host<br/>llama3.2:1b"]
+    APP <--> OLL
+  end
+
+  RPT["report.jsonl &nbsp;|&nbsp; hitlog.jsonl &nbsp;|&nbsp; report.html"]
+  AN["analysis layer<br/>aggregates, never re-judges"]
+
+  S -->|"per-task config.json"| H
+  H -->|"selects prompts"| P
+  G <-->|"HTTP"| APP
+  D -->|"score in 0.0 / 0.5 / 1.0 / None"| RPT
+  RPT --> AN
+  TF -.->|"secrets, PII shapes,<br/>routing flags"| G
+  TF -.-> D
+
+  classDef core fill:#eef4ff,stroke:#3355aa,stroke-width:1px
+  classDef plug fill:#eefaf0,stroke:#2f8f4f,stroke-width:1px
+  classDef supp fill:#fdf6e3,stroke:#b58900,stroke-width:1px
+  classDef lab  fill:#fdeeee,stroke:#aa3333,stroke-width:1px
+  class H core
+  class RPT,AN core
+  class P,G,D plug
+  class S,TF supp
+  class APP,OLL lab
