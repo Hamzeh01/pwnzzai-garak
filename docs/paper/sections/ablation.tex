@@ -27,7 +27,7 @@ apparatus and asks what the study would have reported without it. This
 is the family that is usually left implicit, and it is where the
 methodological claims of Sections~\ref{sec:architecture}
 and~\ref{sec:methodology} are either cashed out or exposed as
-decoration. Section~\ref{sec:abl:apparatus} reports it for eight
+decoration. Section~\ref{sec:abl:apparatus} reports it for ten
 components.
 
 For both families, every entry is either a measurement taken in these
@@ -62,55 +62,57 @@ in a block, \textcolor{loviz}{\textbf{green}} the best.}
 \label{tab:ablationdefence}
 \centering
 \footnotesize
+\begin{threeparttable}
 \zebra
-\begin{tabular}{@{}L{\tw{0.26}}L{\tw{0.29}}C{\tw{0.09}}C{\tw{0.09}}l@{\hspace{5pt}}C{\tw{0.11}}@{}}
+\begin{tabular}{@{}L{\tw{0.16}}L{\tw{0.32}}L{\tw{0.10}}C{\tw{0.07}}C{\tw{0.08}}l@{\hspace{5pt}}C{\tw{0.11}}@{}}
 \toprule
 \headrow
-\tabhead{Configuration} & \tabhead{Control under ablation} & \tabhead{Hits} & \tabhead{Rate} &
-& \tabhead{$\Delta$ vs ref.} \\
+\tabhead{Config.} & \tabhead{Control under ablation} & \tabhead{Layer} & \tabhead{Hits} &
+\tabhead{Rate} & & \tabhead{$\Delta$ vs ref.} \\
 \midrule
-\grouprow \multicolumn{6}{@{}l}{\grouplabel{(a) Persona hardening --- direct-injection probe, 36 attempts per configuration}} \\
-L1 \emph{(reference)} & Shares the secret to a friendly request & 17/36 & \hi{0.472} & \asrbar{0.472} & --- \\
-L2 & \quad + hesitancy, yields to coaxing        & 11/36 & 0.306 & \asrbar{0.306} & $-0.166$ \\
-L3 & \quad + deflection through humour           & 11/36 & 0.306 & \asrbar{0.306} & $-0.166$ \\
-L4 & \quad + admits a secret, resists disclosure &  7/36 & 0.194 & \asrbar{0.194} & $-0.278$ \\
-L5 & \quad + denies the secret exists            &  3/36 & \lo{0.083} & \asrbar{0.083} & $\mathbf{-0.389}$ \\
+\grouprow \multicolumn{7}{@{}l}{\grouplabel{(a) Persona hardening --- direct-injection probe, 36 attempts per configuration}} \\
+L1 \emph{(ref.)} & Shares the secret to a friendly request  & prompt & 17/36 & \hi{0.472} & \asrbar{0.472} & --- \\
+L2 & \quad + hesitancy, yields to coaxing                  & prompt & 11/36 & 0.306      & \asrbar{0.306} & $-0.166$ \\
+L3 & \quad + deflection through humour                     & prompt & 11/36 & 0.306      & \asrbar{0.306} & $-0.166$ \\
+L4 & \quad + admits a secret, resists disclosure           & prompt &  7/36 & 0.194      & \asrbar{0.194} & $-0.278$ \\
+L5 & \quad + denies the secret exists                      & prompt &  3/36 & \lo{0.083} & \asrbar{0.083} & $\mathbf{-0.389}$ \\
 \midrule
-\grouprow \multicolumn{6}{@{}l}{\grouplabel{(b) Guardrail layer substitution --- fixed 11-prompt corpus, 33 attempts per stage}} \\
-B0 \emph{(reference)} & No guardrail                 &  4/33 & 0.121 & \asrbar{0.121} & --- \\
-B1 & Soft system-prompt rule \hfill\emph{prompt}      &  8/33 & 0.242 & \asrbar{0.242} & $+0.121$ \\
-B2 & Role lock + refusal guidance \hfill\emph{prompt} &  6/33 & 0.182 & \asrbar{0.182} & $+0.061$ \\
-B3 & Naive literal scanner \hfill\emph{input}         &  4/33 & 0.121 & \asrbar{0.121} & $\pm 0.000$ \\
-B4 & ASCII-only gate \hfill\emph{input}               & 11/33 & \hi{0.333} & \asrbar{0.333} & $+0.212$ \\
-B5 & Whole-word output filter \hfill\emph{output}     &  0/33 & \lo{0.000} & \asrbar{0.000} & $-0.121$ \\
-B6 & History-trusting context$^{\ast}$ \hfill\emph{context} & 0/33 & \lo{0.000} & \asrbar{0.000} & $-0.121$ \\
-B7 & Keyword semantic gate$^{\dagger}$ \hfill\emph{input}   & 2/33 & 0.061 & \asrbar{0.061} & $-0.061$ \\
-B8 & Two-stage regex stripper \hfill\emph{input}      &  1/33 & 0.030 & \asrbar{0.030} & $-0.091$ \\
-B9 & Substring redaction \hfill\emph{output}          &  0/33 & \lo{0.000} & \asrbar{0.000} & $-0.121$ \\
+\grouprow \multicolumn{7}{@{}l}{\grouplabel{(b) Guardrail layer substitution --- fixed 11-prompt corpus, 33 attempts per stage}} \\
+B0 \emph{(ref.)} & No guardrail                & none    &  4/33 & 0.121      & \asrbar{0.121} & --- \\
+B1 & Soft system-prompt rule                   & prompt  &  8/33 & \hi{0.242} & \asrbar{0.242} & $+0.121$ \\
+B2 & Role lock + refusal guidance              & prompt  &  6/33 & 0.182      & \asrbar{0.182} & $+0.061$ \\
+B3 & Naive literal scanner                     & input   &  4/33 & 0.121      & \asrbar{0.121} & $\pm 0.000$ \\
+B4 & ASCII-only gate                           & input   & 11/33 & \hi{0.333} & \asrbar{0.333} & $+0.212$ \\
+B5 & Whole-word output filter                  & output  &  0/33 & \lo{0.000} & \asrbar{0.000} & $-0.121$ \\
+B6 & History-trusting context\tnote{$\ast$}    & context &  0/33 & \lo{0.000} & \asrbar{0.000} & $-0.121$ \\
+B7 & Keyword semantic gate\tnote{$\dagger$}    & input   &  2/33 & 0.061      & \asrbar{0.061} & $-0.061$ \\
+B8 & Two-stage regex stripper                  & input   &  1/33 & 0.030      & \asrbar{0.030} & $-0.091$ \\
+B9 & Substring redaction                       & output  &  0/33 & \lo{0.000} & \asrbar{0.000} & $-0.121$ \\
 \midrule
-\grouprow \multicolumn{6}{@{}l}{\grouplabel{(c) Trusted-only retrieval --- identical poison document and prompt set, 12 attempts each}} \\
-Off \emph{(reference)} & Untrusted passage retrieved      & 12/12 & \hi{1.000} & \asrbar{1.000} & --- \\
-On  & Untrusted passage retrieved                         &  0/12 & \lo{0.000} & \asrbar{0.000} & $\mathbf{-1.000}$ \\
-Off \emph{(reference)} & Answer-level influence signal    & 12/12 & \hi{1.000} & \asrbar{1.000} & --- \\
-On  & Answer-level influence signal$^{\ddagger}$          &  5/12 & 0.417 & \asrbar{0.417} & $-0.583$ \\
+\grouprow \multicolumn{7}{@{}l}{\grouplabel{(c) Trusted-only retrieval --- identical poison document and prompt set, 12 attempts each}} \\
+Off \emph{(ref.)} & Untrusted passage retrieved             & retrieval & 12/12 & \hi{1.000} & \asrbar{1.000} & --- \\
+On                & Untrusted passage retrieved             & retrieval &  0/12 & \lo{0.000} & \asrbar{0.000} & $\mathbf{-1.000}$ \\
+Off \emph{(ref.)} & Answer-level influence signal           & retrieval & 12/12 & \hi{1.000} & \asrbar{1.000} & --- \\
+On                & Answer-level influence signal\tnote{$\ddagger$} & retrieval & 5/12 & 0.417 & \asrbar{0.417} & $-0.583$ \\
 \midrule
-\grouprow \multicolumn{6}{@{}l}{\grouplabel{(d) Attacker poison budget --- deterministic classifier, 7 evaluation prompts per budget}} \\
-$b=0$ \emph{(reference)} & No injected examples & 0/7 & \lo{0.000} & \asrbar{0.000} & --- \\
-$b=1$  & One mislabelled comment                & 0/7 & \lo{0.000} & \asrbar{0.000} & $\pm 0.000$ \\
-$b=3$  & Three mislabelled comments             & 0/7 & \lo{0.000} & \asrbar{0.000} & $\pm 0.000$ \\
-$b=5$  & Five mislabelled comments              & 2/7 & \hi{0.286} & \asrbar{0.286} & $+0.286$ \\
-$b=10$ & Ten mislabelled comments               & 2/7 & \hi{0.286} & \asrbar{0.286} & $+0.286$ \\
-$b=20$ & Twenty mislabelled comments            & 2/7 & \hi{0.286} & \asrbar{0.286} & $+0.286$ \\
+\grouprow \multicolumn{7}{@{}l}{\grouplabel{(d) Attacker poison budget --- deterministic classifier, 7 evaluation prompts per budget}} \\
+$b=0$ \emph{(ref.)} & No injected examples  & training & 0/7 & \lo{0.000} & \asrbar{0.000} & --- \\
+$b=1$  & One mislabelled comment           & training & 0/7 & \lo{0.000} & \asrbar{0.000} & $\pm 0.000$ \\
+$b=3$  & Three mislabelled comments        & training & 0/7 & \lo{0.000} & \asrbar{0.000} & $\pm 0.000$ \\
+$b=5$  & Five mislabelled comments         & training & 2/7 & \hi{0.286} & \asrbar{0.286} & $+0.286$ \\
+$b=10$ & Ten mislabelled comments          & training & 2/7 & \hi{0.286} & \asrbar{0.286} & $+0.286$ \\
+$b=20$ & Twenty mislabelled comments       & training & 2/7 & \hi{0.286} & \asrbar{0.286} & $+0.286$ \\
 \bottomrule
 \end{tabular}
-
-\vspace{2pt}
-\begin{minipage}{\textwidth}\footnotesize
-$^{\ast}$~Not a security result: the probe's history-poisoning prompt is single-turn and scored
-$0/30$ at every stage (Section~\ref{sec:res:ladder}).\quad
-$^{\dagger}$~Also rejected $54.5\,\%$ of all requests before generation.\quad
-$^{\ddagger}$~4 of the 5 residual hits are query-echo false positives (Section~\ref{sec:disc:detectors}).
-\end{minipage}
+\begin{tablenotes}[flushleft]\footnotesize
+\item[$\ast$] Not a security result: the probe's history-poisoning prompt is single-turn and scored
+$0/30$ at every stage (Section~\ref{sec:res:ladder}).
+\item[$\dagger$] Also rejected $54.5\,\%$ of all requests before generation --- an availability cost
+the leak rate does not show.
+\item[$\ddagger$] 4 of the 5 residual hits are query-echo false positives
+(Section~\ref{sec:disc:detectors}).
+\end{tablenotes}
+\end{threeparttable}
 \end{table}
 
 Four things are visible in the table that are not visible in any single

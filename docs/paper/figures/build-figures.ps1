@@ -15,6 +15,13 @@ Set-Location $PSScriptRoot
 
 $projectRoot = (Resolve-Path (Join-Path $PSScriptRoot '..\..\..')).Path
 $analysisFigs = Join-Path $projectRoot 'garak_analysis\figures'
+$analysisChartNames = @(
+    'direct-levels',
+    'guardrail-ladder',
+    'sentiment-flip-rate',
+    'sentiment-confidence',
+    'catering-mitigation'
+)
 $venvPython = Join-Path $projectRoot '.venv\Scripts\python.exe'
 $python = if (Test-Path $venvPython) {
     $venvPython
@@ -114,7 +121,14 @@ function Convert-SvgToPdf($sourcePath, $outputPath) {
 }
 
 if (Test-Path $analysisFigs) {
-    foreach ($src in Get-ChildItem -Path $analysisFigs -Filter '*.svg') {
+    foreach ($chartName in $analysisChartNames) {
+        $src = Get-Item -LiteralPath (Join-Path $analysisFigs "$chartName.svg") `
+            -ErrorAction SilentlyContinue
+        if (-not $src) {
+            Write-Warning "Missing analysis chart: $chartName.svg"
+            $failed = $true
+            continue
+        }
         $out = [System.IO.Path]::ChangeExtension($src.Name, 'pdf')
         $outPath = Join-Path $PSScriptRoot $out
         if (-not (Test-NeedsBuild $src.FullName $outPath)) {

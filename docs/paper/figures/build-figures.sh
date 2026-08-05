@@ -50,9 +50,19 @@ svg2pdf() {
 }
 
 if [ -d "$ANALYSIS_FIGS" ]; then
-  for src in "$ANALYSIS_FIGS"/*.svg; do
-    [ -e "$src" ] || continue
-    out="$(basename "${src%.svg}").pdf"
+  for chart in \
+    direct-levels \
+    guardrail-ladder \
+    sentiment-flip-rate \
+    sentiment-confidence \
+    catering-mitigation; do
+    src="$ANALYSIS_FIGS/$chart.svg"
+    if [ ! -e "$src" ]; then
+      echo "MISSING: $src" >&2
+      fail=1
+      continue
+    fi
+    out="$chart.pdf"
     echo "svg:     $(basename "$src") -> $out"
     svg2pdf "$src" "$out"
     rc=$?
@@ -73,4 +83,4 @@ if [ "$fail" -ne 0 ]; then
   echo
   echo "Some figures were not built. paper.tex will show placeholders for those."
 fi
-exit 0
+exit "$fail"

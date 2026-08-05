@@ -64,6 +64,9 @@ docs/paper/*.fdb_latexmk
 docs/paper/*.synctex.gz
 docs/paper/*.toc
 
+# Disposable render/inspection output created by document QA tools.
+tmp/
+
 # Editors and operating systems
 .vscode/
 .idea/

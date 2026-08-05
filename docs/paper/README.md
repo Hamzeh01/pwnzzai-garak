@@ -1,55 +1,41 @@
 # Paper draft (English)
 
-Single-column IEEEtran LaTeX draft covering **Architecture, Methodology,
-Results, and Discussion**. Front matter (abstract, introduction, related work,
-conclusion) is deliberately left as placeholders in `paper.tex`.
+Single-column IEEEtran LaTeX draft, complete front to back: **abstract,
+introduction, related work, architecture, methodology, results, ablation study,
+discussion, conclusion, references**.
 
-Builds clean: 24 pages, no errors, no overfull boxes. The 23 remaining log
-warnings are cosmetic Courier font-shape substitutions in small-caps table
-captions, which LaTeX resolves automatically.
+Builds clean: 33 pages, 18 tables, 9 figures, 27 references, no errors, no
+overfull or underfull boxes, no undefined citations or references. The
+remaining log warnings are cosmetic Courier font-shape substitutions in
+small-caps table captions, which LaTeX resolves automatically.
 
 The Persian edition (`paper-fa.tex`, `README-fa.md`) is a separate document in
-this same directory and shares the rendered figures.
+this same directory and shares the rendered figures. It was not touched by the
+front-matter/ablation pass.
 
 ## Layout
 
 ```
-paper.tex                     IEEEtran main file; \input's the four sections
-sections/architecture.tex     Sec. II  -- plugins, generators, detectors, notes channel
-sections/methodology.tex      Sec. III -- target, task model, design, controls, metrics
-sections/results.tex          Sec. IV  -- all measurements
-sections/discussion.tex       Sec. V   -- interpretation, mitigations, limitations
-refs.bib                      two stub entries; VERIFY before submission
+paper.tex                     IEEEtran main file; preamble, table style, front matter
+sections/introduction.tex     Sec. I    -- problem, detection gap, contributions
+sections/related.tex          Sec. II   -- injection, frameworks, poisoning, taxonomies
+sections/architecture.tex     Sec. III  -- plugins, generators, detectors, notes channel
+sections/methodology.tex      Sec. IV   -- target, task model, design, controls, metrics
+sections/results.tex          Sec. V    -- all measurements
+sections/ablation.tex         Sec. VI   -- defence + measurement-apparatus ablations
+sections/discussion.tex       Sec. VII  -- interpretation, mitigations, limitations
+sections/conclusion.tex       Sec. VIII -- summary and future work
+refs.bib                      27 entries; ALL UNVERIFIED -- see "Known gaps"
 figures/*.mmd                 four Mermaid diagrams authored for the paper
-figures/*.pdf                 rendered figures (tracked, so LaTeX alone can build)
-figures/svg_to_pdf.py         svglib/ReportLab SVG -> PDF converter
 figures/build-figures.{sh,ps1}  renders .mmd -> .pdf and analysis .svg -> .pdf
 ```
-
-## Why single-column
-
-The results tables are wide and dense. In two-column mode every one of them
-became a full-width `table*` float, LaTeX deferred them in long runs, and they
-piled up against each other. One column with column widths expressed as
-fractions of `\textwidth` (the `\tw` macro) fixes it structurally: a table
-cannot exceed the measure regardless of page size.
-
-Two related mechanics worth knowing before editing:
-
-- **`\bk`** is a zero-width break opportunity. Courier carries no hyphenation
-  patterns, and neither `[T1]{fontenc}` nor `hyphenat[htt]` persuades it to
-  break, so long identifiers get explicit break points at CamelCase humps and
-  after `.` `/` `_` `-`. Without them `\code{PoisonedRetrievalInfluence}` runs
-  straight out of its cell.
-- **`\safefig[width-fraction]{path}`** caps height at `0.85\textheight` and
-  keeps the aspect ratio, so a tall diagram can never run off the page. Widths
-  are set per figure from each PDF's measured aspect ratio.
 
 ## Building
 
 ```bash
-bash docs/paper/figures/build-figures.sh   # or: pwsh figures/build-figures.ps1
-latexmk -pdf docs/paper/paper.tex
+bash docs/paper/figures/build-figures.sh
+cd docs/paper
+latexmk -pdf paper.tex
 ```
 
 On Windows, the configured build uses MiKTeX and LaTeX Workshop. Generate the
@@ -63,15 +49,48 @@ powershell -NoProfile -ExecutionPolicy Bypass `
   -File .\docs\paper\figures\build-figures.ps1
 ```
 
-The PowerShell builder uses `npx` plus the installed Google Chrome for Mermaid
-and `svglib`/ReportLab for the analysis SVGs. It skips figures that are already
-newer than their sources and returns a nonzero exit code if any conversion
-fails.
+Both builders generate only the nine figures referenced by the paper. The
+PowerShell builder uses `npx` plus the installed Google Chrome for Mermaid and
+`svglib`/ReportLab for the analysis SVGs. It skips figures that are already
+newer than their sources. Both builders return a nonzero exit code if a
+required conversion fails.
 
-`\safefig` draws a labelled placeholder box for any figure that has not been
-rendered yet, so the draft compiles and reads before the figures exist. The
-rendered figure PDFs are tracked, so a plain `latexmk -pdf paper.tex` with no
-Node or Chrome available still produces the complete document.
+### If `latexmk` is unavailable
+
+This MiKTeX install has no Perl, so `latexmk` cannot run. Drive the passes by
+hand from `docs/paper/` — the bibliography now needs a real BibTeX pass:
+
+```bash
+pdflatex -interaction=nonstopmode paper.tex && bibtex paper && pdflatex -interaction=nonstopmode paper.tex && pdflatex -interaction=nonstopmode paper.tex
+```
+
+Build **in** `docs/paper/`, not with `-output-directory=build`. A stale
+`paper.aux` in the source directory shadows the one in `build/`, and every
+citation silently comes out as `[?]`.
+
+`paper.tex` defines `\safefig`, which draws a labelled placeholder box for any
+figure that has not been rendered yet, so the draft compiles and reads before
+the figures exist.
+
+## Table style
+
+The preamble defines one visual grammar used by every table, so a wide row
+stays traceable across the measure:
+
+| Macro | Purpose |
+|---|---|
+| `\zebra` | issued immediately before `\begin{tabular}`; light alternating row bands |
+| `\headrow` | tinted header band; goes first in the header row |
+| `\grouprow` | stronger tint for group-header and total rows |
+| `\tabhead{}` / `\grouplabel{}` / `\totlabel{}` | header, group-label, total-label ink |
+| `\hi{}` / `\lo{}` | worst / best value in a block — bold *and* coloured, so it survives greyscale |
+| `\asrbar{0.472}` | proportional bar on a common `[0,1]` scale, in its own `l` column |
+| `\code{}`, `\bk`, `\tw{}` | monospace identifiers, zero-width break points, `\textwidth`-relative widths |
+
+Tables with footnotes use `threeparttable` + `\tnote{}`, so notes align to the
+tabular rather than to the text block. `\aboverulesep` and `\belowrulesep` are
+zeroed and paid back through `\extrarowheight`; without that, booktabs rules
+leave an uncoloured gap through every band.
 
 ## Figures
 
@@ -86,9 +105,6 @@ Node or Chrome available still produces the complete document.
 | Fig. 7 sentiment flip rate | `garak_analysis/figures/sentiment-flip-rate.svg` | existing |
 | Fig. 8 sentiment confidence | `garak_analysis/figures/sentiment-confidence.svg` | existing |
 | Fig. 9 catering mitigation | `garak_analysis/figures/catering-mitigation.svg` | existing |
-
-`owasp-attack-success.svg` exists but is not referenced; Table I in the results
-section carries the same information more precisely.
 
 ## Provenance of every number
 
@@ -119,6 +135,29 @@ present in `garak_analysis/`):
 If these are worth keeping, they belong in `garak_pwnzz/analysis/analyze.py` so
 they regenerate with everything else. Right now they exist only in the paper.
 
+### The ablation tables (Sec. VI)
+
+**Table XVI (defence ablations)** re-presents numbers already in Sec. V —
+per-task rates from `task-summary.csv` plus the catering and dose-response data
+— with a Δ column computed against the reference row of each block. No new data.
+
+**Table XVII (measurement-apparatus ablations)** contains arithmetic
+counterfactuals, each computed exactly from retained per-attempt records rather
+than estimated:
+
+| Row | Derivation |
+|---|---|
+| Ground-truth channel removed | `CouponLeak` evaluated 546 attempts; with no secret in notes it abstains on all of them |
+| Stock detector as verdict | 61 → 208 hits on the n=219 subset; `summary.json` `ground_truth_vs_stock` = agree 72 / disagree 147 |
+| Cache reset removed | 5×L1 = 85/180 = 0.472 vs measured 49/180 = 0.272; 10×B0 = 40/330 = 0.121 vs measured 36/330 = 0.109 |
+| Obfuscation branches removed | 97 − 9 − 3 = 85 leaks; 85/546 = 0.156 vs 97/546 = 0.178 |
+| App oracle consumed | order-assistant surface: flag fires 16/21 = 0.762; `CrossTenantFlag` measured 0/21 |
+| Whitespace branch removed | 97 − 3 = 94; 94/546 = 0.172 |
+| Paired control / abstention / QR integrity | no change — verified against `sentiment-doseresponse.csv` (control label negative at every budget), `summary.json` (`nones` = 0 everywhere), and the QR report (21/21 round-tripped) |
+
+Table XV also now reports derived precision/recall: stock detector
+61/208 = 0.293, application oracle 26/45 = 0.578, both at recall 1.000.
+
 ## Two places the draft departs from `docs/05-results-and-mitigations.md`
 
 Both are corrections supported by the raw reports, not rewordings.
@@ -146,7 +185,15 @@ this.
 
 ## Known gaps
 
-- `refs.bib` entries were written from memory and are marked `VERIFY`.
-- The draft cites no external work with `\cite{}` yet; the two entries are for
-  the front-matter pass.
+- **`refs.bib` is unverified.** All 27 entries were written from memory —
+  author lists, venues, years and arXiv identifiers included. Every field must
+  be checked against the canonical record before this draft goes anywhere.
+  Fields were deliberately kept minimal (author / title / venue / year) to
+  reduce the surface area; add DOIs, page numbers and publishers during
+  verification.
 - Author block in `paper.tex` is a placeholder.
+- The derived tables listed above live only in the paper, not in
+  `garak_pwnzz/analysis/analyze.py`.
+- Model scale is the one ablation the study does not have. The suite is
+  parameterised for it but was only ever run against `llama3.2:1b`; Sec. VI-A
+  says so explicitly rather than leaving it implied.
