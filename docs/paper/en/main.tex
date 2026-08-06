@@ -10,12 +10,18 @@
 %  float and produced unavoidable overlap, so the document stays
 %  one-column.
 %
-%  This revision condenses the first draft from 33 pages to 18 without
-%  dropping an argument: the prose is roughly a third of its former
-%  length, the floats are sized against a tighter measure, and four
-%  charts plus six tables whose content is fully restated in the text
-%  were removed (see README.md for the list). What remains is 15 tables
-%  and 5 figures.
+%  Two condensing passes have been applied: 33 pages -> 18 -> 13. No
+%  argument, number or caveat has been dropped. The prose is written to
+%  the claim rather than to the claim plus its rationale, the discussion
+%  no longer restates the results it interprets, table cells are
+%  telegraphic phrases rather than sentences, and every float whose
+%  content is fully restated in the text was removed (README.md lists
+%  them). What remains is 8 tables and 1 figure.
+%
+%  13 is where this bottoms out at 10pt without dropping content: the
+%  floats are only ~2.7 pages, so the body prose is the mass. Setting
+%  the class option to 9pt yields 11 pages and nothing else changes, if
+%  a page limit ever makes that trade worth it.
 % =====================================================================
 \documentclass[journal,onecolumn,10pt]{IEEEtran}
 \IEEEoverridecommandlockouts
@@ -37,7 +43,7 @@
 % in one-column mode the measure becomes uncomfortably long, so the text
 % block is narrowed and the tables are sized against \textwidth.
 % ---------------------------------------------------------------------
-\usepackage[letterpaper,top=0.75in,bottom=0.75in,left=0.72in,right=0.72in]{geometry}
+\usepackage[letterpaper,top=0.62in,bottom=0.62in,left=0.6in,right=0.6in]{geometry}
 
 % Give TeX a little extra flexibility around long inline identifiers.
 % Explicit \bk markers remain the preferred break points; this fallback
@@ -57,28 +63,28 @@
 % of large tables to the end of the document. With thirty floats in
 % twelve pages the separations below are load-bearing, not cosmetic:
 % the defaults would spend most of a page on inter-float whitespace.
-\renewcommand{\topfraction}{0.92}
-\renewcommand{\bottomfraction}{0.85}
-\renewcommand{\textfraction}{0.06}
-\renewcommand{\floatpagefraction}{0.75}
-\setcounter{topnumber}{4}
-\setcounter{bottomnumber}{3}
-\setcounter{totalnumber}{6}
-\setlength{\textfloatsep}{8pt plus 3pt minus 2pt}
-\setlength{\floatsep}{7pt plus 3pt minus 2pt}
-\setlength{\intextsep}{8pt plus 3pt minus 2pt}
+\renewcommand{\topfraction}{0.97}
+\renewcommand{\bottomfraction}{0.95}
+\renewcommand{\textfraction}{0.03}
+\renewcommand{\floatpagefraction}{0.85}
+\setcounter{topnumber}{5}
+\setcounter{bottomnumber}{4}
+\setcounter{totalnumber}{8}
+\setlength{\textfloatsep}{6pt plus 2pt minus 2pt}
+\setlength{\floatsep}{5pt plus 2pt minus 2pt}
+\setlength{\intextsep}{6pt plus 2pt minus 2pt}
 \setlength{\abovecaptionskip}{3pt}
 \setlength{\belowcaptionskip}{0pt}
 
-% Captions carry a lot of this paper's explanation and there are two
-% dozen of them; setting them one size down keeps that explanation
-% without spending a page and a half of the measure on it.
-\usepackage[font=footnotesize,labelfont=bf,skip=3pt]{caption}
+% Captions carry a lot of this paper's explanation and there are a
+% dozen and a half of them; setting them two sizes down keeps that
+% explanation without spending most of a page of the measure on it.
+\usepackage[font=scriptsize,labelfont=bf,skip=2.5pt]{caption}
 
-% A 3% tighter leading. At 10pt on this measure the IEEEtran default is
-% looser than it needs to be, and across twenty pages of body text the
-% difference is most of a page.
-\linespread{0.97}
+% A 7% tighter leading. At 10pt on this measure the IEEEtran default is
+% looser than it needs to be, and across the body text the difference
+% is more than a page.
+\linespread{0.93}
 
 % ---------------------------------------------------------------------
 % Figures are generated artefacts. Until the figures have been built,
@@ -137,8 +143,8 @@
 \setlength{\cmidrulewidth}{0.35pt}
 \arrayrulecolor{tabink}
 
-\setlength{\tabcolsep}{3.5pt}
-\renewcommand{\arraystretch}{1.0}
+\setlength{\tabcolsep}{3pt}
+\renewcommand{\arraystretch}{0.96}
 
 \newcolumntype{L}[1]{>{\RaggedRight\arraybackslash}p{#1}}
 \newcolumntype{C}[1]{>{\Centering\arraybackslash}p{#1}}
@@ -196,35 +202,35 @@ Kimia Omrani}
 \maketitle
 
 \begin{abstract}
-Security assessments of large language models usually probe the model.
-The failures that matter in deployment usually belong to the application
+Security assessments of large language models usually probe the model,
+but the failures that matter in deployment belong to the application
 around it --- the input filter, the retriever, the output rewriter, the
 file decoder, the tool executor --- because that pipeline is what grants
 an untrusted data channel the authority of an instruction channel. We
-report an assessment that takes the application as the target. Nine HTTP
-surfaces of a deliberately vulnerable LLM-backed shop are wrapped as
-Garak generators; twelve detectors test a \emph{specific policy
-violation against ground truth} transcribed from the pinned application
-source rather than a stylistic signature; and the per-attempt secret
-travels with the response on Garak's notes channel, which is what makes
-a within-process sweep scoreable. An optional LLM-as-a-judge is carried
-as a calibrated second opinion, never as a primary detector. Every
-component is a first-class Garak plugin, Garak core is unmodified, and
-all 28 runs replay through the stock CLI. Over 678 evaluated attempts,
-data poisoning is the most exposed category ($\mathrm{ASR}=0.348$);
-hardening a system prompt across five personas reduces coupon leakage
-monotonically from $0.472$ to $0.083$ without eliminating it; two of ten
-guardrail configurations perform no better than no guardrail at all;
-success concentrates in the techniques that never name their objective
-($14/15$ for fictional framing against $1/15$ for asking plainly); five
-mislabelled comments create a targeted classifier backdoor whose
-probability drift is measurable four budget steps before any label
-changes; trust-tagged retrieval eliminates untrusted retrieval entirely
-($12/12 \to 0/12$); and a stock generic detector achieves recall
-$1.000$ at precision $0.293$ against the application's actual policy. An
-ablation separates each defensive layer from each element of the
-measurement apparatus, and shows that removing the ground-truth channel
-does not degrade the study's numbers but abolishes them.
+report an assessment that takes the application as the target. Nine
+HTTP surfaces of a deliberately vulnerable LLM-backed shop are wrapped
+as Garak generators; twelve detectors test a \emph{specific policy
+violation against ground truth} transcribed from the pinned source
+rather than a stylistic signature; and the per-attempt secret travels
+with the response on Garak's notes channel, which is what makes a
+within-process sweep scoreable. An optional LLM-as-a-judge is carried
+as a calibrated second opinion, never as a primary detector. Garak core
+is unmodified and all 28 runs replay through the stock CLI. Over 678
+evaluated attempts, data poisoning is the most exposed category
+($\mathrm{ASR}=0.348$); hardening a system prompt across five personas
+reduces coupon leakage monotonically from $0.472$ to $0.083$ without
+eliminating it; two of ten guardrail configurations perform no better
+than no guardrail; success concentrates in techniques that never name
+their objective ($14/15$ for fictional framing against $1/15$ for
+asking plainly); five mislabelled comments create a targeted classifier
+backdoor whose probability drift is measurable four budget steps before
+any label changes; trust-tagged retrieval eliminates untrusted
+retrieval entirely ($12/12 \to 0/12$); and a stock generic detector
+reaches recall $1.000$ at precision $0.293$ against the application's
+actual policy. An ablation separates each defensive layer from each
+element of the measurement apparatus, and shows that removing the
+ground-truth channel does not degrade the study's numbers but abolishes
+them.
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -244,9 +250,9 @@ red teaming, garak, LLM-as-a-judge, OWASP LLM Top 10, ablation study.
 % =====================================================================
 
 % Metadata is checked against canonical records; see README.md.
-% Set one size down: with 35 entries the reference list is a page of its
-% own at body size, and IEEE house style sets it smaller in any case.
-{\footnotesize
+% Set two sizes down: the reference list is otherwise most of a page at
+% body size, and IEEE house style sets it smaller in any case.
+{\scriptsize
 \bibliographystyle{IEEEtran}
 \bibliography{references}}
 

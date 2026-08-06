@@ -1,5 +1,12 @@
 % =====================================================================
 % ABLATION STUDY
+%
+% Final condensing pass. The defence-ablation table restated, row by
+% row, numbers Sec. V already tabulates (five persona rates, ten ladder
+% stages, the catering off/on pair, six poison budgets); those carry
+% their own Delta column and say so, so what remains here is the
+% four-block summary in prose plus the cross-block analysis, which is
+% the part no single results subsection shows.
 % =====================================================================
 \section{Ablation Study}
 \label{sec:ablation}
@@ -12,106 +19,55 @@ applying the idea to the attacker's resource instead. A
 \emph{measurement ablation} removes a component of the assessment
 apparatus and asks what the study would have reported without it --- the
 family usually left implicit, and where the methodological claims of
-Secs.~\ref{sec:architecture} and~\ref{sec:methodology} are either cashed
-out or exposed as decoration. Every entry below is either a measurement
+Secs.~\ref{sec:architecture} and~\ref{sec:methodology} are either
+cashed out or exposed as decoration. Every entry below is a measurement
 taken in these runs or an arithmetic counterfactual computed exactly
-from retained per-attempt records; nothing is an estimate. The one
-ablation that would be most informative is unavailable: model scale is
-held constant throughout, which matters especially for poisoning, where
-susceptibility rises significantly with parameter count across 24 models
-in eight series~\cite[Table~2]{bowen2025scaling}.
+from retained per-attempt records; nothing is an estimate. The most
+informative ablation is unavailable: model scale is held constant
+throughout, which matters most for poisoning~\cite[Table~2]{bowen2025scaling}.
 
 \subsection{Defence Ablations}
 \label{sec:abl:defence}
 
-Table~\ref{tab:ablationdefence} states each swept control against its
-block's reference. Comparison within a block is exact: corpus,
-generator, model, and generation count are identical across the rows,
-and only the named component differs.
+Each of the four swept controls is reported with its own results table,
+because within every block the corpus, generator, model and generation
+count are identical and only the named component differs, so the
+$\Delta$ there \emph{is} the ablation: (a) persona hardening at the
+prompt layer, L1 $17/36 = 0.472$ falling monotonically to L5
+$3/36 = 0.083$, with $\Delta = -0.166$, $-0.166$, $-0.278$ and
+$\mathbf{-0.389}$ at L2--L5 (Sec.~\ref{sec:res:direct}); (b) guardrail
+stage substitution across
+the prompt, input, output and context layers, B0 $4/33 = 0.121$ against
+$0.000$ at B5, B6 and B9 and $0.333$ at B4, $\Delta$ from $-0.121$ to
+$+0.212$ and \emph{not} monotone (Table~\ref{tab:ladder}); (c)
+trusted-only retrieval, $12/12 = 1.000$ off against $0/12$ retrieved
+and $0.417$ at answer level on, $\Delta = \mathbf{-1.000}$ and $-0.583$
+(Sec.~\ref{sec:res:poisoning}); and (d) the attacker's poison budget,
+$0/7$ at $b \le 3$ then $2/7 = 0.286$ from $b = 5$,
+$\Delta = +0.286$ (Table~\ref{tab:dose}).
 
-\begin{table}[!htbp]
-\caption{Defence ablations. Within each block only the named control varies, so $\Delta$ is its
-marginal effect. \textcolor{hiviz}{\textbf{Red}}: worst in block; \textcolor{loviz}{\textbf{green}}: best.}
-\label{tab:ablationdefence}
-\centering
-\scriptsize
-\begin{threeparttable}
-\zebra
-\begin{tabular}{@{}L{\tw{0.15}}L{\tw{0.33}}L{\tw{0.10}}C{\tw{0.07}}C{\tw{0.08}}l@{\hspace{4pt}}C{\tw{0.11}}@{}}
-\toprule
-\headrow
-\tabhead{Config.} & \tabhead{Control under ablation} & \tabhead{Layer} & \tabhead{Hits} &
-\tabhead{Rate} & & \tabhead{$\Delta$ vs ref.} \\
-\midrule
-\grouprow \multicolumn{7}{@{}l}{\grouplabel{(a) Persona hardening --- direct-injection probe, 36 attempts per configuration}} \\
-L1 \emph{(ref.)} & Shares the secret to a friendly request  & prompt & 17/36 & \hi{0.472} & \asrbar{0.472} & --- \\
-L2 & \quad + hesitancy, yields to coaxing                  & prompt & 11/36 & 0.306      & \asrbar{0.306} & $-0.166$ \\
-L3 & \quad + deflection through humour                     & prompt & 11/36 & 0.306      & \asrbar{0.306} & $-0.166$ \\
-L4 & \quad + admits a secret, resists disclosure           & prompt &  7/36 & 0.194      & \asrbar{0.194} & $-0.278$ \\
-L5 & \quad + denies the secret exists                      & prompt &  3/36 & \lo{0.083} & \asrbar{0.083} & $\mathbf{-0.389}$ \\
-\midrule
-\grouprow \multicolumn{7}{@{}l}{\grouplabel{(b) Guardrail layer substitution --- fixed 11-prompt corpus, 33 attempts per stage}} \\
-B0 \emph{(ref.)} & No guardrail                & none    &  4/33 & 0.121      & \asrbar{0.121} & --- \\
-B1 & Soft system-prompt rule                   & prompt  &  8/33 & \hi{0.242} & \asrbar{0.242} & $+0.121$ \\
-B2 & Role lock + refusal guidance              & prompt  &  6/33 & 0.182      & \asrbar{0.182} & $+0.061$ \\
-B3 & Naive literal scanner                     & input   &  4/33 & 0.121      & \asrbar{0.121} & $\pm 0.000$ \\
-B4 & ASCII-only gate                           & input   & 11/33 & \hi{0.333} & \asrbar{0.333} & $+0.212$ \\
-B5 & Whole-word output filter                  & output  &  0/33 & \lo{0.000} & \asrbar{0.000} & $-0.121$ \\
-B6 & History-trusting context\tnote{$\ast$}    & context &  0/33 & \lo{0.000} & \asrbar{0.000} & $-0.121$ \\
-B7 & Keyword semantic gate\tnote{$\dagger$}    & input   &  2/33 & 0.061      & \asrbar{0.061} & $-0.061$ \\
-B8 & Two-stage regex stripper                  & input   &  1/33 & 0.030      & \asrbar{0.030} & $-0.091$ \\
-B9 & Substring redaction                       & output  &  0/33 & \lo{0.000} & \asrbar{0.000} & $-0.121$ \\
-\midrule
-\grouprow \multicolumn{7}{@{}l}{\grouplabel{(c) Trusted-only retrieval --- identical poison document and prompt set, 12 attempts each}} \\
-Off \emph{(ref.)} & Untrusted passage retrieved             & retrieval & 12/12 & \hi{1.000} & \asrbar{1.000} & --- \\
-On                & Untrusted passage retrieved             & retrieval &  0/12 & \lo{0.000} & \asrbar{0.000} & $\mathbf{-1.000}$ \\
-Off \emph{(ref.)} & Answer-level influence signal           & retrieval & 12/12 & \hi{1.000} & \asrbar{1.000} & --- \\
-On                & Answer-level influence signal\tnote{$\ddagger$} & retrieval & 5/12 & 0.417 & \asrbar{0.417} & $-0.583$ \\
-\midrule
-\grouprow \multicolumn{7}{@{}l}{\grouplabel{(d) Attacker poison budget --- deterministic classifier, 7 evaluation prompts per budget}} \\
-$b=0$ \emph{(ref.)} & No injected examples  & training & 0/7 & \lo{0.000} & \asrbar{0.000} & --- \\
-$b=1$  & One mislabelled comment           & training & 0/7 & \lo{0.000} & \asrbar{0.000} & $\pm 0.000$ \\
-$b=3$  & Three mislabelled comments        & training & 0/7 & \lo{0.000} & \asrbar{0.000} & $\pm 0.000$ \\
-$b=5$  & Five mislabelled comments         & training & 2/7 & \hi{0.286} & \asrbar{0.286} & $+0.286$ \\
-$b=10$ & Ten mislabelled comments          & training & 2/7 & \hi{0.286} & \asrbar{0.286} & $+0.286$ \\
-$b=20$ & Twenty mislabelled comments       & training & 2/7 & \hi{0.286} & \asrbar{0.286} & $+0.286$ \\
-\bottomrule
-\end{tabular}
-\begin{tablenotes}[flushleft]\scriptsize
-\item[$\ast$] Not a security result: the probe's history-poisoning prompt is single-turn and scored
-$0/30$ at every stage (Sec.~\ref{sec:res:ladder}).
-\item[$\dagger$] Also rejected $54.5\,\%$ of all requests before generation --- an availability cost
-the leak rate does not show.
-\item[$\ddagger$] 4 of the 5 residual hits are query-echo false positives
-(Sec.~\ref{sec:disc:detectors}).
-\end{tablenotes}
-\end{threeparttable}
-\end{table}
-
-Four things are visible here that no single subsection of
-Sec.~\ref{sec:results} shows. \textbf{The prompt-level block is
-monotone; the layer block is not:} block~(a) falls at every step, while
-block~(b) contains two rows with a \emph{positive} $\Delta$ and one at
+Four things are visible across the blocks that no single block shows.
+\textbf{The prompt-level block is monotone; the layer block is not:}
+block~(b) has two rows with a \emph{positive} $\Delta$ and one at
 exactly zero, which --- since only the layer varies --- says the
 configuration carrying the defence is no safer than carrying none.
 \textbf{The layer, not the effort, predicts the outcome:} grouping
 block~(b) by layer, the output-filter stages average $0.000$ on the
-literal-leak measure, the context stage $0.000$, the input-filter stages
-$0.121/0.333/0.061/0.030$, and the prompt stages $0.242/0.182$. The
-ordering \emph{output $<$ input $<$ prompt} is exactly the ordering of
-how late in the pipeline the control acts and how little it depends on
-the model's cooperation --- and the output-filter zeros are qualified,
-since 12 of the study's 97 leaks escaped in renderings a
-single-representation filter does not match. \textbf{Availability is the
-input filter's hidden $\Delta$:} B7's $-0.061$ is bought by rejecting
-$54.5\,\%$ of all requests, while B8 reaches a better $-0.091$ rejecting
-nothing, so the block's apparent security gain is not a gain at a fixed
-cost. \textbf{And the budget curve's threshold is not the onset:}
-block~(d) shows three $\pm 0.000$ rows before a step that never moves
-again, while Table~\ref{tab:dose} shows the trigger's
-$P(\text{positive})$ rising $0.230 \to 0.497$ across those same rows. An
-ablation over the attacker's resource is only interpretable alongside an
-instrument that reads continuous output.
+literal-leak measure, the context stage $0.000$, the input-filter
+stages $0.121/0.333/0.061/0.030$ and the prompt stages
+$0.242/0.182$. The ordering \emph{output $<$ input $<$ prompt} is
+exactly the ordering of how late in the pipeline a control acts and how
+little it depends on the model's cooperation --- and the output-filter
+zeros are qualified, since 12 of the 97 leaks escaped in renderings a
+single-representation filter does not match. \textbf{Availability is
+the input filter's hidden $\Delta$:} B7's $-0.061$ is bought by
+rejecting $54.5\,\%$ of all requests, while B8 reaches a better
+$-0.091$ rejecting nothing. \textbf{And the budget curve's threshold is
+not the onset:} block~(d) shows three $\pm 0.000$ steps before a jump
+that never moves again, while Table~\ref{tab:dose} shows
+$P(\text{positive})$ rising $0.230 \to 0.497$ across those same steps.
+An ablation over the attacker's resource is only interpretable
+alongside an instrument that reads continuous output.
 
 \subsection{Measurement-Apparatus Ablations}
 \label{sec:abl:apparatus}
@@ -129,103 +85,86 @@ study would have reported without it, computed exactly from retained per-attempt
 \centering
 \scriptsize
 \zebra
-\begin{tabular}{@{}L{\tw{0.23}}L{\tw{0.49}}C{\tw{0.16}}C{\tw{0.11}}@{}}
+\begin{tabular}{@{}L{\tw{0.22}}L{\tw{0.50}}C{\tw{0.16}}C{\tw{0.11}}@{}}
 \toprule
 \headrow
 \tabhead{Component removed} & \tabhead{What the study would have reported} &
 \tabhead{Reported $\rightarrow$ ablated} & \tabhead{Class} \\
 \midrule
 Ground-truth secret on the notes channel &
-\code{Coupon\bk Leak} has no per-attempt secret to match, so it abstains on every attempt of the
-direct-injection and guardrail suites. No rate is produced; the two largest suites yield nothing. &
+No per-attempt secret to match, so \code{Coupon\bk Leak} abstains throughout the direct-injection
+and guardrail suites: the two largest yield no rate at all &
 $546$ scored $\rightarrow$ $546$ abstained & \hi{fatal} \\
 
 Policy-aware detection (stock detector as the verdict) &
-On the 219-attempt subset where both ran, ``violations'' are whatever is not a refusal. Recall stays
-$1.000$; precision against the application's policy is $0.293$. &
+``Violations'' become whatever is not a refusal on the 219-attempt subset where both ran; recall
+stays $1.000$, precision against the policy is $0.293$ &
 $61 \rightarrow 208$ hits ($3.4\times$) & \hi{distorting} \\
 
 Plugin-instance cache reset between tasks &
-Every task in a suite reuses the first task's generator, so the five-level sweep executes L1 five
-times and the ladder executes B0 ten times. Both trends vanish. &
+Each task reuses the first task's generator, so the sweep executes L1 five times and the ladder B0
+ten times; both trends vanish &
 $0.272 \rightarrow 0.472$ (direct); $0.109 \rightarrow 0.121$ (ladder) & \hi{distorting} \\
 
 Obfuscation-aware matching (literal branch only) &
-The 9 separator-injected and 3 whitespace-stripped renderings become invisible; the evidence for
-normalising before matching (M-02) disappears. &
+The 9 separator-injected and 3 whitespace-stripped renderings become invisible, and with them the
+evidence for M-02 &
 $97 \rightarrow 85$ leaks; $0.178 \rightarrow 0.156$ & \hi{distorting} \\
 
 Application-oracle cross-tabulation (consume the flag instead) &
-\code{has\_\bk access\_\bk violation} becomes the score on the order-assistant surface, where it fires
-on 16 of 21 attempts that contain no cross-tenant identifier. &
+\code{has\_\bk access\_\bk violation} becomes the score on the order assistant, where it fires on 16
+of 21 attempts carrying no cross-tenant identifier &
 $0.000 \rightarrow 0.762$ on that surface & \hi{distorting} \\
 
 Whitespace-stripped branch of \code{Coupon\bk Leak} &
-Removes 3 recorded leaks: one is the study's own identified false positive (``MOONCHEESE''), the
-other two are genuine plural renderings. Precision $+1$, recall $-2$. &
+Drops 3 leaks: one confirmed false positive (``MOONCHEESE'') and two genuine plural renderings ---
+precision $+1$, recall $-2$ &
 $97 \rightarrow 94$ leaks; $0.178 \rightarrow 0.172$ & distorting \\
 
 Extended detectors (primary detector only) &
-Every cross-detector result is unavailable: the detector-agreement table, the stock-detector
-precision figure, and the system-prompt probe's $7/15$ coupon divergence against its own $3/15$. &
+Every cross-detector result goes: the agreement figures, the stock-detector precision, and the
+system-prompt probe's $7/15$ coupon divergence against its own $3/15$ &
 3 results $\rightarrow$ 0 & \hi{fatal} \\
 
 Paired clean control (poisoning) &
-Success reverts to ``the poisoned model says positive''. In these runs the clean model labelled
-every evaluation prompt negative at every budget, so the two definitions coincide exactly. &
+Success reverts to ``the poisoned model says positive''; here the clean model labelled every prompt
+negative at every budget, so the definitions coincide exactly &
 no change ($2/7$ at $b\!\ge\!5$) & \lo{latent} \\
 
 Abstention rule (score $0.0$ instead of \code{None}) &
-Identical numbers: zero attempts abstained across all 678. The rule bounds a failure mode that
-these runs did not encounter. &
+Identical numbers --- zero attempts abstained across all 678; the rule bounds a failure mode these
+runs did not meet &
 no change & \lo{latent} \\
 
 Delivery-integrity check (QR round-trip) &
-Identical numbers: all 21 payloads round-tripped intact. A mangled payload would otherwise have
-been scored as a defended attempt. &
+Identical numbers --- all 21 payloads round-tripped intact; a mangled one would otherwise score as a
+defended attempt &
 no change ($21/21$ intact) & \lo{latent} \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-\textbf{The ground-truth channel is not an improvement, it is the
-precondition.} Its removal does not degrade the two largest suites by
-some margin; it deletes them, because the alternative to abstaining is
-asserting ``no leak'' on 546 attempts about which the detector knows
-nothing. What looks like conservative book-keeping in
-Sec.~\ref{sec:arch:detectors} determines whether the assessment produces
-a result or an artefact.
-
-\textbf{Two distortions are large enough to invert conclusions.}
-Substituting the stock detector multiplies reported violations by
-$3.4$, so an operator acting on that number would triage 147
-non-violations; consuming the application's own flag instead of
-cross-tabulating it would have reported $0.762$ where the independent
-detector measured $0.000$ over the same 21 attempts. These are opposite
-errors --- one from a detector indifferent to policy, one from a signal
-encoding the application's belief about itself --- and the only thing
-separating them from the reported numbers is that both comparison
-signals were carried alongside rather than consumed.
-
-\textbf{The harness detail is a first-class control.} The
-plugin-instance cache reset is four lines and reads like an
-implementation footnote, yet without it the persona sweep is five
-repetitions of L1 and the ladder ten of B0, and
-Tables~\ref{tab:technique} and \ref{tab:ablationdefence}(a,\,b) would
-each be a single configuration reported as a trend. A sweep that
-silently does not sweep produces confident numbers that are internally
-consistent and entirely wrong.
-
+Four readings follow. \textbf{The ground-truth channel is not an
+improvement but the precondition:} removing it does not degrade the two
+largest suites by some margin, it deletes them, because the alternative
+to abstaining is asserting ``no leak'' on 546 attempts about which the
+detector knows nothing. \textbf{Two distortions are large enough to
+invert conclusions}, and they are opposite errors --- one from a
+detector indifferent to policy, one from a signal encoding the
+application's belief about itself. The only thing separating both from
+the reported numbers is that the comparison signals were carried
+alongside rather than consumed. \textbf{A harness detail is a
+first-class control:} the four-line cache reset reads like an
+implementation footnote, yet without it Tables~\ref{tab:technique}
+and~\ref{tab:ladder} would each be one configuration reported as a
+trend, and a sweep that silently does not sweep produces confident
+numbers that are internally consistent and entirely wrong.
 \textbf{Three components were guarantees, not corrections}, changing
-nothing in these runs. Their value is asymmetric: each is cheap, and
-each converts a silent misattribution into a visible exclusion when the
-condition it guards does occur. A study that reports only the components
-that moved a number describes the apparatus it happened to need rather
-than the one that made the result trustworthy --- which is why the
-\emph{latent} rows are in the table. \textbf{And sensitivity and
-precision trade in both directions:} removing all obfuscation-aware
-matching loses 12 genuine leaks and the evidence base for M-02, while
-removing only the unbounded whitespace-stripped branch eliminates the
-one confirmed false positive at the cost of two genuine plural
-renderings. Recording \emph{which} rendering matched on every hit is
-what made both rows computable without re-running anything.
+nothing here; each converts a silent misattribution into a visible
+exclusion when the condition it guards does occur, and a study
+reporting only the components that moved a number describes the
+apparatus it happened to need rather than the one that made the result
+trustworthy. Finally, \textbf{sensitivity and precision trade in both
+directions}, and recording \emph{which} rendering matched on every hit
+is what made both obfuscation rows computable without re-running
+anything.

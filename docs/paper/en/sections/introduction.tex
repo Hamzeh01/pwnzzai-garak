@@ -4,70 +4,59 @@
 \section{Introduction}
 \label{sec:introduction}
 
-\subsection{The Target of an LLM Security Assessment}
-\label{sec:intro:target}
-
 A language model in production is rarely reachable directly. It sits
-behind an application that decides what enters its context, what it may
-retrieve, what is done with what it emits, and what side effects its
-output may cause: an input filter before generation, a retriever over a
-corpus users can write to, a decoder that turns an uploaded image into
-prompt text, an output filter, an agent layer that executes
-model-authored queries. Every one of those steps is application code,
-and every one is a place where attacker-supplied data can acquire the
-authority of an instruction.
+behind application code that decides what enters its context, what it
+may retrieve, what is done with what it emits, and what side effects
+its output may cause: an input filter, a retriever over a corpus users
+can write to, a decoder turning an uploaded image into prompt text, an
+output filter, an agent layer that executes model-authored queries.
+Each is a place where attacker-supplied data can acquire the authority
+of an instruction --- the structural observation behind indirect prompt
+injection~\cite{greshake2023}, since the model cannot tell an
+instruction it was \emph{given} from one it was \emph{shown} when both
+arrive as the same tokens in the same context. Greshake et al.\ put the
+consequence as processing retrieved untrusted data being analogous to
+executing arbitrary code~\cite[Sec.~2]{greshake2023}.
 
-That is the structural observation behind indirect prompt
-injection~\cite{greshake2023}: the model cannot reliably tell an
-instruction it was \emph{given} from one it was \emph{shown}, because by
-the time both reach it they are the same tokens in the same context.
-Greshake et al.\ put the consequence as processing retrieved untrusted
-data being analogous to executing arbitrary
-code~\cite[Sec.~2]{greshake2023}. It follows that the security question
-worth asking about
-a deployed system is not primarily about the model: a model probed in
-isolation cannot exhibit cross-tenant database reads, cannot leak a
-coupon a server-side authorisation check would never have placed in its
-context, and cannot be poisoned through a comment form. Those failures
-are properties of a pipeline. Most published red-teaming work
-nevertheless takes the model as the unit of analysis --- reasonably,
-since models generalise across deployments --- which leaves a gap: an
-organisation running an LLM-backed application has many model-level
-results and little guidance on measuring \emph{its own system} against
-\emph{its own policy} in a way another engineer can replay.
+The security question worth asking about a deployed system is therefore
+not primarily about the model. A model probed in isolation cannot
+exhibit cross-tenant database reads, cannot leak a coupon a server-side
+authorisation check would never have placed in its context, and cannot
+be poisoned through a comment form; those failures belong to a
+pipeline. Most red-teaming work nevertheless takes the model as the
+unit of analysis --- reasonably, since models generalise across
+deployments --- leaving a gap: an organisation running an LLM-backed
+application has many model-level results and little guidance on
+measuring \emph{its own system} against \emph{its own policy} in a way
+another engineer can replay.
 
 \subsection{Detection is the Hard Part}
 \label{sec:intro:detection}
 
-Closing that gap runs straight into the step automated LLM security
-testing cannot avoid and cannot generalise: deciding whether an output
-constitutes a failure. The decision is deployment-specific --- the same
-string is a policy breach in one system and an unremarkable answer in
-another --- so no portable detector can be sensitive to either one's
-policy. Generic detectors therefore answer a generic question
-(\emph{does this look like a jailbreak?}) and inherit a precision
-ceiling set by how often a benign output resembles a violating one. We
-measure that ceiling on this deployment rather than assume it
-(Sec.~\ref{sec:res:agreement}).
+Closing that gap runs into the step automated LLM security testing can
+neither avoid nor generalise: deciding whether an output constitutes a
+failure. The decision is deployment-specific --- the same string is a
+policy breach in one system and an unremarkable answer in another ---
+so a portable detector can only ask a generic question (\emph{does this
+look like a jailbreak?}) and inherits a precision ceiling set by how
+often a benign output resembles a violating one. We measure that
+ceiling rather than assume it (Sec.~\ref{sec:res:agreement}).
 
-An application assessment can do better when the application's policy is
-legible enough to transcribe, which is the condition this study
-exploits. The target names, in its own source, the exact word each
-persona must not emit; it synthesises PII of exactly specified shapes;
-it assigns each seeded account an unguessable routing flag in an
-isolated database. Each constant is ground truth in the strict sense:
-its presence in an output is a violation and its absence is not, with no
-judgement call between. That converts a subjective scoring problem into
-an objective one, at the cost of detectors that transfer to no other
-system --- precisely the trade an assessment, rather than a benchmark,
-should make. Two problems follow. Ground truth must \emph{reach} the
-detector, since a suite sweeping five personas in one process must score
-each attempt against \emph{that attempt's} secret. And a ground-truth
-detector must still \emph{recognise} the violation --- a secret rewritten
-as \code{C-H-E-E-S-E} by a naive filter is still a leak --- where every
-refinement that buys sensitivity spends precision. Both are treated as
-first-class design concerns below, and the second is measured rather
-than assumed.
+An assessment can do better when the application's policy is legible
+enough to transcribe, the condition this study exploits. The target
+names, in its own source, the exact word each persona must not emit; it
+synthesises PII of exactly specified shapes; it gives each seeded
+account an unguessable routing flag in an isolated database. Each
+constant is ground truth in the strict sense --- its presence in an
+output is a violation and its absence is not --- which converts a
+subjective scoring problem into an objective one at the cost of
+detectors that transfer to no other system: precisely the trade an
+assessment, rather than a benchmark, should make. Two problems follow.
+Ground truth must \emph{reach} the detector, since a suite sweeping
+five personas in one process must score each attempt against \emph{that
+attempt's} secret. And the detector must still \emph{recognise} the
+violation --- a secret rewritten as \code{C-H-E-E-S-E} is still a leak
+--- where every refinement that buys sensitivity spends precision.
 
 \subsection{Contributions}
 \label{sec:intro:contributions}
@@ -75,33 +64,31 @@ than assumed.
 This paper reports a policy-aware, application-level assessment of
 PwnzzAI Shop, an intentionally vulnerable LLM-backed web application,
 built entirely as plugins for Garak, the open-source LLM security
-scanner.\footnote{\url{https://github.com/NVIDIA/garak}. Named here as
-the tool the assessment is expressed in, not as a source of claims.} The
+scanner.\footnote{\url{https://github.com/NVIDIA/garak}. Named as the
+tool the assessment is expressed in, not as a source of claims.} The
 suite, its artefacts and its documentation are the companion
 record~\cite{pwnzzrepo,pwnzzdocsoverview}.
 
 \begin{enumerate}
 \item \textbf{A Garak-native architecture for assessing an application
 rather than a model} (Sec.~\ref{sec:architecture}): nine surfaces
-wrapped as generators, registered into Garak's namespace and plugin
-cache at run time without copying files into the installation, so every
-measurement replays through the stock CLI and Garak core is unmodified.
+wrapped as generators and registered into Garak's namespace and plugin
+cache at run time without copying files into the installation, so Garak
+core is unmodified and every measurement replays through the stock CLI.
 
 \item \textbf{Ground-truth detection on a response side-channel}
-(Secs.~\ref{sec:arch:notes}--\ref{sec:arch:detectors}): twelve detectors
-testing a specific violation against constants transcribed from the
-pinned source and re-verified by contract tests, with per-attempt ground
-truth travelling in \code{Message.\bk notes}, and abstention ---
-\code{None}, never $0.0$ --- whenever a detector cannot judge.
-
-\item \textbf{A calibrated LLM-as-a-judge as an opt-in second opinion}
-(Sec.~\ref{sec:arch:judge}), covering what ground truth cannot see: a
-response that satisfies the attacker without matching the pattern. It is
-off by default, never primary, and its schema-order calibration is
-reported rather than assumed.
+(Sec.~\ref{sec:arch:notes}): twelve detectors testing a specific
+violation against constants transcribed from the pinned source and
+re-verified by contract tests, with per-attempt ground truth travelling
+in \code{Message.\bk notes}, and abstention --- \code{None}, never
+$0.0$ --- whenever a detector cannot judge. A calibrated
+LLM-as-a-judge (Sec.~\ref{sec:arch:judge}) covers what ground truth
+cannot see, a response satisfying the attacker without matching the
+pattern; it is off by default, never primary, and its schema-order
+calibration is reported rather than assumed.
 
 \item \textbf{A layer-isolating design with built-in controls}
-(Sec.~\ref{sec:methodology}): a fixed attack corpus swept across five
+(Sec.~\ref{sec:methodology}): one attack corpus swept across five
 persona levels and ten guardrail configurations differing only in which
 defensive layer is present; poisoning measured against a paired clean
 control fitted in the same run; a retrieval mitigation toggled with
@@ -115,13 +102,11 @@ poisoning threshold lagging the effect by four budget steps; a generic
 detector at perfect recall and $0.293$ precision.
 
 \item \textbf{An ablation study} (Sec.~\ref{sec:ablation}) separating
-each defensive layer from each element of the measurement apparatus. Of
+each defensive layer from each element of the measurement apparatus: of
 ten components, three are guarantees these runs never exercised, five
 change a reported number --- one by $3.4\times$ --- and two abolish a
 measurement rather than degrading it.
-
-\item \textbf{Evidence-linked mitigations}
-(Sec.~\ref{sec:disc:mitigations}), each tied to the detector signal
-supporting it and the pipeline layer it acts on, with two false-positive
-classes reported against our own detectors.
+Sec.~\ref{sec:disc:mitigations} then ties each mitigation to its
+supporting detector signal and the layer it acts on, with two
+false-positive classes reported against our own detectors.
 \end{enumerate}

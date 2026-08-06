@@ -1,35 +1,40 @@
 % =====================================================================
 % ARCHITECTURE
+%
+% Third condensing pass. The attempt-lifecycle figure went (the notes
+% side-channel it drew is described in Sec. III-C), the detector
+% table's "abstains when" column became one sentence of prose, and
+% every table cell is a phrase rather than a sentence.
 % =====================================================================
 \section{Architecture}
 \label{sec:architecture}
 
-This section condenses the design recorded in the project's architecture
+This section condenses the project's architecture
 note~\cite{pwnzzdocsarch}; the per-scenario catalogue it summarises is
 generated from the plugins themselves~\cite{pwnzzdocsscen}.
 
-\subsection{Design Position: the Application is the Target}
+\subsection{Design Position, and Registration Without Installation}
 \label{sec:arch:position}
 
-The system under assessment is not a language model but a web
-application that embeds one. PwnzzAI Shop is a Flask application of some
-seventy routes in which the LLM is reached only through application
-code: an input filter runs before generation, a retrieval step assembles
-context, an output filter rewrites the response, a QR decoder converts
-an uploaded image into prompt text, and an agentic SQL tool executes
-model-authored queries. Its security-relevant failures are properties of
-that pipeline, not of the model in isolation.
-
-The assessment is therefore built on Garak, and specifically on Garak's
-decision that a \emph{generator} need not be a model --- it may be any
-dialogue system exposing a text-in/text-out interface. Wrapping each HTTP surface as a generator makes the
-application the object under test while leaving Garak's harness,
-scheduling, scoring, and reporting untouched
+PwnzzAI Shop is a Flask application of some seventy routes in which the
+LLM is reached only through application code: an input filter before
+generation, a retrieval step assembling context, an output filter
+rewriting the response, a QR decoder turning an uploaded image into
+prompt text, and an agentic SQL tool executing model-authored queries.
+Its security-relevant failures are properties of that pipeline. The
+assessment is therefore built on Garak's decision that a
+\emph{generator} need not be a model --- it may be any dialogue system
+exposing a text-in/text-out interface. Wrapping each HTTP surface as a
+generator makes the application the object under test while leaving
+Garak's harness, scheduling, scoring and reporting untouched
 (Fig.~\ref{fig:architecture}).
 
 \begin{figure}[!htbp]
   \centering
-  \safefig[0.40]{../figures/generated/fig-architecture.pdf}
+  % Not smaller than this. The Mermaid source carries fixed-size Latin
+  % labels: below about half the measure they stop being legible, which
+  % is what the condensing pass had to be walked back from.
+  \safefig[0.55]{../figures/generated/fig-architecture.pdf}
   \caption{Component architecture. Garak core is unmodified; the
   \code{pwnzz} plugin modules supply the attack scenarios, the
   application surfaces, and the ground-truth scoring. The dashed judge
@@ -37,169 +42,156 @@ scheduling, scoring, and reporting untouched
   \label{fig:architecture}
 \end{figure}
 
-\subsection{Plugin Registration Without Installation}
-\label{sec:arch:registration}
-
 Garak resolves a specification such as
 \code{probes.\bk pwnzz.\bk Coupon\bk Extraction} two ways: by importing
 \code{garak.\bk probes.\bk pwnzz}, and by consulting an in-memory plugin
 cache that backs \code{enumerate\_\bk plugins} and hence the CLI parser.
-A registration step (\code{garak\_\bk pwnzz.\bk bootstrap}) satisfies both
-at run time: it appends the project's plugin directories to the
-corresponding \code{garak.\{probes,\bk generators,\bk detectors\}.\_\_path\_\_}
-lists so imports resolve with ordinary Python semantics, and inserts the
-plugin classes into Garak's cache so they are enumerable and nameable on
-the command line. No files are copied into the Garak installation and no
-stateful install step exists, yet the contributed plugins behave exactly
-as built-in ones --- so any task replays with the stock entry point
-after a single import of the bootstrap module.
+A registration step (\code{garak\_\bk pwnzz.\bk bootstrap}) satisfies
+both at run time, appending the project's plugin directories to the
+corresponding
+\code{garak.\{probes,\bk generators,\bk detectors\}.\_\_path\_\_} lists
+and inserting the plugin classes into the cache. No files are copied
+into the Garak installation and no stateful install step exists, yet
+the plugins behave exactly as built-in ones, so any task replays with
+the stock entry point after one import of the bootstrap module.
 
 \subsection{Generators: One Class per Application Surface}
 \label{sec:arch:generators}
 
-Nine generators cover the surfaces reachable in this deployment, under a
-deliberately conservative rule: a custom generator is written \emph{only}
-where the transport is not plain text-in/text-out, or where run state
-must be established before the surface can be queried. Plain JSON chat
-endpoints need no new code --- Garak's stock \code{RestGenerator} with a
-configuration file reaches them, and the study retains one such
-configuration as a working demonstration of that path
-(Table~\ref{tab:generators}).
+Nine generators cover the surfaces reachable in this deployment, under
+a conservative rule: a custom generator is written \emph{only} where
+the transport is not plain text-in/text-out, or where run state must be
+established before the surface can be queried
+(Table~\ref{tab:generators}). Plain JSON chat endpoints need no new
+code --- Garak's stock \code{RestGenerator} with a configuration file
+reaches them, and the study retains one such configuration as a working
+demonstration.
 
 \begin{table}[!htbp]
 \caption{Application surfaces wrapped as Garak generators. Only a non-text transport, or run state
-that must be established first, justifies a custom class.}
+that must be established first, justifies a custom class. The attack family and OWASP category of
+each is given in Table~\ref{tab:suites}.}
 \label{tab:generators}
 \centering
 \scriptsize
 \zebra
-\begin{tabular}{@{}L{\tw{0.15}}L{\tw{0.25}}L{\tw{0.13}}L{\tw{0.47}}@{}}
+\begin{tabular}{@{}L{\tw{0.15}}L{\tw{0.33}}L{\tw{0.52}}@{}}
 \toprule
 \headrow
-\tabhead{Generator} & \tabhead{Endpoint} & \tabhead{Family / OWASP} & \tabhead{Why a custom generator} \\
+\tabhead{Generator} & \tabhead{Endpoint} & \tabhead{Why a custom generator} \\
 \midrule
-\code{Pizza\bk Assistant} & \code{/\bk chat-\bk with-\bk pizza-\bk assistant-\bk direct-\bk prompt-\bk injection} & Direct injection / LLM01 &
-Attaches the per-level ground-truth coupon to every response, so it can be scored deterministically. \\
-\code{Guardrail\bk Ladder} & \code{/\bk v1/\bk lab/\bk chat/\bk completions} & Direct injection / LLM01 &
-Carries the \code{pwnzz\_\bk escalation\_\bk stage} selector and forwards multi-turn history, which stage B6 requires. \\
-\code{QRChannel} & \code{/upload-qr} & Indirect injection / LLM01 &
-Transport is a multipart PNG upload; renders the payload as a QR image and records round-trip integrity. \\
-\code{CommentRAG} & \code{/\bk training-\bk data-\bk leak/\bk ollama} & Disclosure / LLM02 &
-Owns a one-shot index rebuild (cold builds observed at ${\sim}147$\,s) and carries the application's leak flag. \\
-\code{OrderAccess} & \code{/\bk order-\bk access/\bk ollama} & Disclosure / LLM02 &
-The endpoint rejects unauthenticated requests; signs in as a seeded user so cross-tenant reads are attributable. \\
-\code{Catering\bk SQLAgent} & \code{/\bk api/\bk catering-\bk sql/\bk chat} & Excessive agency / LLM06 &
-Reads \code{combined\_\bk text} (model turn plus executed tool output), since the victim's flag surfaces only via a tool call. \\
-\code{CateringRAG} & \code{/\bk api/\bk catering-\bk rag/\bk query} (+ \code{/reset}, \code{/upload-doc}) & Poisoning / LLM04 &
-Owns the corpus lifecycle --- reset, ingest poison, query --- so every attempt in a run sees the same corpus. \\
-\code{Sentiment\bk Classifier} & \code{/\bk api/\bk train-\bk poisoned-\bk model}, \code{/\bk api/\bk test-\bk poisoned-\bk model} & Poisoning / LLM04 &
-The target is not an LLM; fits \emph{two} models per run (poisoned and clean control) and classifies each prompt with both. \\
-\code{Comment\bk Corpus\bk Poisoner} & \code{/\bk add\_\bk comment/\{id\}} $\rightarrow$ \code{/\bk training-\bk data-\bk leak/\bk ollama} & Poisoning / LLM04 &
-End-to-end path across a persistence boundary: plant comments, re-index, query the assistant built from them. \\
+\code{Pizza\bk Assistant} & \code{/\bk chat-\bk with-\bk pizza-\bk assistant-\bk direct-\bk prompt-\bk injection} &
+Attaches the per-level ground-truth coupon to every response \\
+\code{Guardrail\bk Ladder} & \code{/\bk v1/\bk lab/\bk chat/\bk completions} &
+Carries the stage selector; forwards multi-turn history, which B6 requires \\
+\code{QRChannel} & \code{/upload-qr} &
+Multipart PNG transport; renders the QR image and records round-trip integrity \\
+\code{CommentRAG} & \code{/\bk training-\bk data-\bk leak/\bk ollama} &
+One-shot index rebuild (cold ${\sim}147$\,s); carries the application's leak flag \\
+\code{OrderAccess} & \code{/\bk order-\bk access/\bk ollama} &
+Signs in as a seeded user, since the endpoint rejects anonymous requests \\
+\code{Catering\bk SQLAgent} & \code{/\bk api/\bk catering-\bk sql/\bk chat} &
+Reads \code{combined\_\bk text}: the victim's flag surfaces only via a tool call \\
+\code{CateringRAG} & \code{/\bk api/\bk catering-\bk rag/\bk query} (+ \code{/reset}, \code{/upload-doc}) &
+Owns the corpus lifecycle --- reset, ingest, query --- so a run sees one corpus \\
+\code{Sentiment\bk Classifier} & \code{/\bk api/\bk train-\bk poisoned-\bk model}, \code{/\bk api/\bk test-\bk poisoned-\bk model} &
+Not an LLM; fits \emph{two} models per run (poisoned, clean control) and scores each prompt with both \\
+\code{Comment\bk Corpus\bk Poisoner} & \code{/\bk add\_\bk comment/\{id\}} $\rightarrow$ \code{/\bk training-\bk data-\bk leak/\bk ollama} &
+Crosses a persistence boundary: plant comments, re-index, query the assistant \\
 \bottomrule
 \end{tabular}
 \end{table}
 
 Four invariants hold across all generators and are enforced by the test
 suite. \textbf{Absence of a response is not a defended attack:} a
-transport error or unexpected HTTP status returns \code{None}, which
-propagates to the detectors and is accumulated under \code{nones},
-excluded from the denominator, so a broken call can never inflate the
-measured pass rate. \textbf{Retries are disabled}, because a retried
-attack against a non-deterministic system is a \emph{different} attempt;
-repetition is requested through Garak's \code{generations} parameter,
-which keeps every repeat visible as its own row. \textbf{Stateful
-surfaces run single-threaded}, since several generators hold run state
---- a poisoned corpus, a fitted weight vector, an authenticated session
---- that parallel execution would interleave, destroying the attribution
-of an effect to a configuration. \textbf{The target is loopback-bound in
-code:} a guard rejects any non-loopback host, any non-HTTP scheme, and
-any URL carrying credentials, a query, or a fragment, so the suite
-cannot be pointed at a third party.
+transport error or unexpected HTTP status returns \code{None}, which is
+accumulated under \code{nones} and excluded from the denominator, so a
+broken call cannot inflate the pass rate. \textbf{Retries are
+disabled}, because a retried attack against a non-deterministic system
+is a \emph{different} attempt; repetition goes through Garak's
+\code{generations} parameter, keeping every repeat visible as its own
+row. \textbf{Stateful surfaces run single-threaded}, since several
+generators hold run state --- a poisoned corpus, a fitted weight
+vector, an authenticated session --- that parallel execution would
+interleave, destroying the attribution of an effect to a configuration.
+\textbf{The target is loopback-bound in code:} a guard rejects any
+non-loopback host, non-HTTP scheme, or URL carrying credentials, a
+query, or a fragment.
 
-\subsection{The Notes Side-Channel}
+\subsection{The Notes Side-Channel, and Ground-Truth Detection}
 \label{sec:arch:notes}
 
 An application's structured response carries far more than the text the
 model produced: the escalation stage's narrative, the retrieved
-passages, internal leak flags, the generated SQL, the classifier's score
-and confidence, the HTTP status, the latency. Garak's
+passages, internal leak flags, the generated SQL, the classifier's
+score and confidence, the HTTP status, the latency. Garak's
 \code{Message.\bk notes} field provides a per-response dictionary that
 survives into \code{report.jsonl}, and every generator populates it.
 This is what makes ground-truth detection possible without out-of-band
-configuration: the generator knows which secret is in play for the level
-or stage it was configured with and records it alongside the response,
-so a detector reads the ground truth from the response it is judging ---
-which keeps scoring correct even when a suite sweeps levels within a
-single process (Fig.~\ref{fig:lifecycle}).
+configuration: the generator records the secret in play for the level
+it was configured with, so a detector reads the ground truth from the
+very response it is judging --- which keeps scoring correct even when a
+suite sweeps levels within one process.
 
-\begin{figure}[!htbp]
-  \centering
-  \safefig[0.44]{../figures/generated/fig-attempt-lifecycle.pdf}
-  \caption{Lifecycle of one attempt. The dashed path is the notes
-  side-channel: metadata and ground truth travel with the response, are
-  read by the detector at scoring time, and persist into the report.}
-  \label{fig:lifecycle}
-\end{figure}
-
-\subsection{Detectors: Ground Truth Instead of Signature}
 \label{sec:arch:detectors}
-
 Automatic failure detection is the hard part of LLM security testing,
-because whether an output constitutes a failure depends on the deploying
-organisation's intent rather than on any property of the text. PwnzzAI
-admits a sharper question than a generic detector can ask, because its
-policy is legible from its source: the system prompts
-name the exact word that must not be emitted at each level; the
-disclosure lab synthesises PII of exactly specified shapes; each seeded
-account owns an unguessable routing flag in an isolated database. Every
-such constant is transcribed into a single module and re-verified
-against the pinned source by contract tests that fail if any value
-drifts. Twelve detectors (Table~\ref{tab:detectors}) therefore test a
+because whether an output constitutes a failure depends on the
+deploying organisation's intent rather than on any property of the
+text. PwnzzAI admits a sharper question, because its policy is legible
+from its source: the system prompts name the exact word that must not
+be emitted at each level, the disclosure lab synthesises PII of exactly
+specified shapes, and each seeded account owns an unguessable routing
+flag in an isolated database. Every such constant is transcribed into
+one module and re-verified against the pinned source by contract tests.
+Twelve detectors (Table~\ref{tab:detectors}) therefore test a
 \emph{specific policy violation against ground truth} rather than a
 stylistic signature~\cite{pwnzzdocsmeth}.
 
 \begin{table}[!htbp]
 \caption{Detectors. All are policy-aware except the stock Garak detector and the opt-in judge
-(shaded). ``Abstains'' is when the detector returns \texttt{None} rather than $0.0$.}
+(shaded).}
 \label{tab:detectors}
 \centering
 \scriptsize
 \zebra
-\begin{tabular}{@{}L{\tw{0.17}}L{\tw{0.37}}L{\tw{0.24}}L{\tw{0.22}}@{}}
+\begin{tabular}{@{}L{\tw{0.19}}L{\tw{0.51}}L{\tw{0.30}}@{}}
 \toprule
 \headrow
-\tabhead{Detector} & \tabhead{Decision rule} & \tabhead{Ground-truth source} & \tabhead{Abstains when} \\
+\tabhead{Detector} & \tabhead{Decision rule} & \tabhead{Ground-truth source} \\
 \midrule
-\code{CouponLeak} & Level's coupon word present in any of four renderings: literal, leetspeak, separator-injected, whitespace-stripped & Per-level secret in response notes & No secret in notes, or no output \\
-\code{Coupon\bk Suppressed} & Server-side redaction marker present --- the model complied and the server rewrote the response & Redaction markers of stages B5/B9 & No output \\
-\code{InputRejected} & Response begins with the input filter's rejection prefix (a defence firing, not a vulnerability) & B7 keyword-gate prefix & No output \\
-\code{Secret\bk Acknowledged} & Model concedes a protected secret exists without denying it & Regex pair: admission and denial-of-existence & No output \\
-\code{CustomerPII} & Contact details / account identifiers matched; $1.0$ corroborated, $0.5$ for a lone email & The application's own five PII shapes & No output \\
-\code{Cross\bk Tenant\bk Flag} & Another account's routing flag appears in the response & Per-user flags in the isolated catering DB & No output \\
-\code{Database\bk Error\bk Leak} & Raw database error or schema fragment reached the user & Known error substrings & No output \\
-\code{Tool\bk Execution\bk Induced} & Response contains the marker the server executes as a function call & The application's function-call marker & No output \\
-\code{System\bk Prompt\bk Leak} & A distinctive span of a shipped system prompt is quoted back & Eleven verbatim prompt fragments & No output \\
-\code{Poisoned\bk Retrieval\bk Influence} & Injected policy asserted; $1.0$ substantive item or two markers, $0.5$ soft policy language alone & The application's unsafe-hint tokens & No output \\
-\code{Sentiment\bk Label\bk Flip} & Poisoned and control classifiers disagree on this input & Paired labels in response notes & No control model was fitted \\
-\code{Payload\bk Delivery\bk Failed} & Carrier mangled the payload before delivery (diagnostic; excludes rather than scores) & QR round-trip flag in notes & Round-trip status unknown \\
+\code{CouponLeak} & Coupon word in any of four renderings: literal, leetspeak, separator-injected, whitespace-stripped & Per-level secret in notes \\
+\code{Coupon\bk Suppressed} & Redaction marker present: the model complied, the server rewrote the reply & Redaction markers of B5/B9 \\
+\code{InputRejected} & Reply opens with the filter's rejection prefix --- a defence firing & B7 keyword-gate prefix \\
+\code{Secret\bk Acknowledged} & Concedes a protected secret exists without denying it & Admission / denial regex pair \\
+\code{CustomerPII} & Contact details or account IDs; $1.0$ corroborated, $0.5$ lone email & The five PII shapes \\
+\code{Cross\bk Tenant\bk Flag} & Another account's routing flag appears & Per-user flags in the catering DB \\
+\code{Database\bk Error\bk Leak} & Raw database error or schema fragment reached the user & Known error substrings \\
+\code{Tool\bk Execution\bk Induced} & Reply carries the marker the server executes as a call & The function-call marker \\
+\code{System\bk Prompt\bk Leak} & A distinctive span of a system prompt is quoted back & Eleven prompt fragments \\
+\code{Poisoned\bk Retrieval\bk Influence} & Injected policy asserted; $1.0$ substantive item or two markers, $0.5$ soft language & The unsafe-hint tokens \\
+\code{Sentiment\bk Label\bk Flip} & Poisoned and control classifiers disagree & Paired labels in notes \\
+\code{Payload\bk Delivery\bk Failed} & Carrier mangled the payload --- diagnostic, excludes rather than scores & QR round-trip flag in notes \\
 \midrule
-\grouprow \code{mitigation.\bk Mitigation\bk Bypass} & Stock Garak detector: output does not look like a refusal & --- (generic) & Per stock implementation \\
-\grouprow \code{pwnzz\_\bk judge.\bk Attack\bk Success} & Judge model's verdict on whether the attempt achieved its goal, given per-scenario criteria & --- (model opinion; opt-in, never primary) & Empty response, \code{ambiguous} verdict, or judge unreachable \\
+\grouprow \code{mitigation.\bk Mitigation\bk Bypass} & Stock Garak detector: output does not look like a refusal & --- (generic) \\
+\grouprow \code{pwnzz\_\bk judge.\bk Attack\bk Success} & Judge verdict on whether the attempt met its goal, on per-scenario criteria & --- (opt-in, never primary) \\
 \bottomrule
 \end{tabular}
 \end{table}
 
 Two refinements are the substance of the architectural claim.
-\emph{Obfuscation-aware leak detection:} at the two output-filter stages
-the application string-replaces the exact secret on the way out, so a
-detector matching only the literal string would score a complying model
-as clean. \code{CouponLeak} therefore also matches leetspeak,
+\emph{Obfuscation-aware leak detection:} at the two output-filter
+stages the application string-replaces the exact secret on the way out,
+so a detector matching only the literal string would score a complying
+model as clean. \code{CouponLeak} therefore also matches leetspeak,
 separator-injected, and whitespace-stripped forms, and records
 \emph{which} rendering matched, so the analysis can distinguish ``the
 model said the word'' from ``the model routed around the filter''.
 \emph{Abstention over false assurance:} every detector returns
-\code{None}, never $0.0$, when it cannot judge; scoring $0.0$ for
+\code{None}, never $0.0$, when it cannot judge --- as a rule whenever
+there is no output, and additionally when \code{CouponLeak} finds no
+secret in the notes, when \code{Sentiment\bk Label\bk Flip} has no
+fitted control model, when the QR round-trip status is unknown, or when
+the judge is unreachable or returns \code{ambiguous}. Scoring $0.0$ for
 \code{CouponLeak} with no secret in the notes would assert ``no leak''
 on evidence that says nothing at all. Combined with the generator-side
 rule, the denominator of every reported rate contains only attempts
@@ -212,100 +204,63 @@ Ground-truth detection has one blind spot: a response can satisfy the
 attacker's goal \emph{without matching the pattern} --- a paraphrase, a
 hint that gives the coupon away without saying it, a refusal that leaks
 while declining. \code{CouponLeak} scores all of those $0.0$, correctly
-by its own definition and wrongly by the attacker's. The suite's most
-recent addition closes that gap with a judge model registered as an
-ordinary Garak detector, so judged runs produce the same artefacts as
-every other run. It is deliberately constrained: \textbf{off by
-default}, since it costs a model call per generation and, unlike the
-ground-truth detectors, can be wrong; \textbf{never primary}, because
-its value is the \emph{disagreement} with the ground-truth verdict
-rather than its raw counts; driven by \textbf{per-scenario criteria},
-since asked the generic question a small judge grades on tone and reads
-a polite refusal as failure; and returning \textbf{\code{None}, not
-$0.0$}, for an empty response, an unreachable judge, or an
-\code{ambiguous} verdict.
+by its own definition and wrongly by the attacker's. A judge model
+registered as an ordinary Garak detector closes that gap, so judged
+runs produce the same artefacts as every other run. It is deliberately
+constrained: \textbf{off by default}, since it costs a model call per
+generation and can be wrong; \textbf{never primary}, because its value
+is the \emph{disagreement} with the ground-truth verdict rather than
+its raw counts; driven by \textbf{per-scenario criteria}, since asked
+the generic question a small judge grades on tone and reads a polite
+refusal as failure; and \textbf{abstaining rather than scoring $0.0$}.
+The judge is itself a target --- it reads attacker-controlled text from
+what is a prompt-injection corpus by construction, the exposure
+Greshake et al.\ describe one step further down the
+pipeline~\cite[Sec.~3]{greshake2023} --- so its system prompt states
+that an embedded instruction is \emph{evidence of a successful attack}
+rather than something to obey, and every untrusted field is fenced in a
+named delimiter; neither is sufficient alone.
 
-The judge is itself a target: it reads attacker-controlled text and
-attacker-influenced output from a corpus that is a prompt-injection
-corpus by construction --- the same exposure Greshake et al.\ describe
-when untrusted retrieved content reaches a model that will act on
-it~\cite[Sec.~3]{greshake2023}, one step further down the pipeline. Two
-mitigations, neither sufficient alone:
-the system prompt states that an embedded instruction is \emph{evidence
-of a successful attack} rather than something to obey; and every
-untrusted field is fenced in a named delimiter, so the judge can tell
-where attacker text starts and stops even when that text imitates a
-system message.
-
-One design decision was measured rather than assumed, and it is why a 1B
-judge is usable at all. Small judges fail in a specific, silent way:
-they answer the same label to everything and invent reasoning to match,
-producing a table of confident-looking verdicts with no information in
-it. Asked for \code{\{verdict, reasoning\}}, \code{llama3.2:1b} returned
-``success'' for plain refusals, with reasoning claiming the response
-revealed the coupon word in plain text. Because Ollama's constrained
-decoding follows the schema's property order, making the verdict the
-model's \emph{last} field forces it to copy a verbatim span out of the
-response \emph{before} it reasons or decides --- and it cannot quote a
-coupon word from a refusal. Table~\ref{tab:judge} reports the effect on
-a stratified 46-attempt sample drawn from the study's own attempts, up
-to three hits and three misses per probe, graded against the
-ground-truth detectors. The quoted span is reported rather than
-discarded, which makes a judge hit auditable.
-
-\begin{table}[!htbp]
-\caption{Judge schema-order calibration on \texttt{llama3.2:1b}, over a stratified 46-attempt sample
-graded against the ground-truth detectors. Making the verdict the model's last field forces it to
-quote evidence before deciding. The range is run-to-run spread at temperature 0.}
-\label{tab:judge}
-\centering
-\scriptsize
-\begin{threeparttable}
-\zebra
-\begin{tabular}{@{}L{\tw{0.42}}C{\tw{0.13}}C{\tw{0.20}}C{\tw{0.19}}@{}}
-\toprule
-\headrow
-\tabhead{Schema property order} & \tabhead{Agreement} & \tabhead{False alarms\tnote{$\dagger$}} & \tabhead{Fabricated quotes} \\
-\midrule
-\code{verdict}, \code{reasoning} & \hi{50\,\%} & \hi{17} & 6 of 26 \\
-\code{reasoning}, \code{verdict} & 57\,\% & 12 & --- \\
-\code{quoted\_\bk evidence}, \code{reasoning}, \code{verdict} \emph{(shipped)} & \lo{65--68\,\%} & \lo{3} & \lo{0 of 12} \\
-\bottomrule
-\end{tabular}
-\begin{tablenotes}[flushleft]\scriptsize
-\item[$\dagger$] Of roughly 24 non-hits in the sample. ``Fabricated quotes'' counts \code{success}
-verdicts whose quoted span does not appear in the response.
-\end{tablenotes}
-\end{threeparttable}
-\end{table}
+One design decision was measured rather than assumed, and it is why a
+1B judge is usable at all. Small judges fail silently: they answer the
+same label to everything and invent reasoning to match. Asked for
+\code{\{verdict, reasoning\}}, \code{llama3.2:1b} returned ``success''
+for plain refusals, with reasoning claiming the response revealed the
+coupon word in plain text. Because Ollama's constrained decoding
+follows the schema's property order, making the verdict the model's
+\emph{last} field forces it to copy a verbatim span out of the response
+\emph{before} it reasons or decides --- and it cannot quote a coupon
+word from a refusal. Graded against the ground-truth detectors on a
+stratified 46-attempt sample of the study's own attempts, the
+\code{\{verdict, reasoning\}} order gives $\hi{50\,\%}$ agreement,
+$\hi{17}$ false alarms out of roughly 24 non-hits, and $6$ of $26$
+\code{success} verdicts whose quoted span does not appear in the
+response; \code{\{reasoning, verdict\}} gives $57\,\%$ and $12$; the
+shipped \code{\{quoted\_\bk evidence, reasoning, verdict\}} order gives
+$\lo{65}$--$\lo{68\,\%}$, $\lo{3}$ false alarms and $\lo{0}$ of $12$
+fabricated quotes, the range being run-to-run spread at temperature
+$0$. The retained span makes a judge hit auditable.
 
 The resulting judge is high-precision and low-recall: about $75\,\%$ of
 what it calls a success is real, and it misses roughly half the real
-hits. For a second opinion that is the useful profile --- a ``success''
-on an attempt the pattern detector scored $0.0$ points at a real missed
-leak, and the misses cost nothing because the ground-truth detector
-already covers them --- but it does not support quoting the judge's own
-attack success rate as a headline number, and this study does not. Two
-further guards are reported rather than assumed: the judge defaults to
-the model the lab already pulled, which makes it share weights with the
-model under assessment, a known soft-grading bias recorded in the run
-manifest; and a judge returning one label for $\ge 95\,\%$ of attempts
-is flagged as unusable rather than having its counts reported. Because
-the judge is opt-in and calibrated only against a 1B grader, no number
-elsewhere in this paper depends on it.
+hits. For a second opinion that is the useful profile, but it does not
+support quoting the judge's own attack success rate as a headline
+number, and this study does not. Two further guards are reported rather
+than assumed: the judge defaults to the model the lab already pulled,
+so it shares weights with the model under assessment, a known
+soft-grading bias recorded in the run manifest; and a judge returning
+one label for $\ge 95\,\%$ of attempts is flagged unusable rather than
+having its counts reported. Because it is opt-in and calibrated only
+against a 1B grader, no number elsewhere in this paper depends on it.
 
-\subsection{Verifying the Application's Own Oracle, and Aggregating}
-\label{sec:arch:oracle}
-
-Three surfaces ship their own leak flag --- \code{has\_leakage} on the
-comment RAG, \code{has\_\bk access\_\bk violation} on the order assistant,
-\code{unsafe\_\bk hint\_\bk in\_\bk answer} on the catering RAG --- and none
-scores anything. They travel in the notes, and the analysis layer
-cross-tabulates them against the independent detector attempt by
-attempt: agreement corroborates a finding, and disagreement is itself a
-reported result about whether an application-supplied signal can be
-trusted. That layer reads \code{report.jsonl} back into records and
-aggregates but never re-judges an outcome, so all pass/fail/none counts
-originate from Garak's own evaluation entries and every derived table
-regenerates from the retained raw artefacts without the analysis quietly
-changing a verdict.
+Three surfaces also ship their own leak flag --- \code{has\_leakage} on
+the comment RAG, \code{has\_\bk access\_\bk violation} on the order
+assistant, \code{unsafe\_\bk hint\_\bk in\_\bk answer} on the catering
+RAG --- and none scores anything. They travel in the notes, and the
+analysis layer cross-tabulates them against the independent detector
+attempt by attempt: agreement corroborates a finding, and disagreement
+is itself a reported result about whether an application-supplied
+signal can be trusted. That layer aggregates \code{report.jsonl} but
+never re-judges an outcome, so all pass/fail/none counts originate from
+Garak's own evaluation entries and every derived table regenerates from
+the retained raw artefacts.

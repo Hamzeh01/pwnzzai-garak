@@ -11,76 +11,68 @@
 \section{Positioning}
 \label{sec:related}
 
+This section positions the study against the two papers we hold and
+have read in full. It does not survey the field, and says so rather
+than assembling a reference list from titles and abstracts.
+
 \subsection{Indirect Prompt Injection}
 \label{sec:rel:injection}
 
-Greshake et al.~\cite{greshake2023} are the direct antecedent of the
-injection half of this study. Their move is to ask what happens when it
-is \emph{not} the user prompting: in an LLM-integrated application, an
-adversary can place instructions in data the application will retrieve
-at inference time and thereby control the model without ever holding an
-interface to it. The consequence they draw
---- that processing untrusted retrieved content is analogous to
-executing arbitrary code, because the line between data and instructions
-in an LLM-integrated application is not drawn anywhere in the
-system~\cite[Sec.~2]{greshake2023} --- is the premise this paper takes
-as its starting point and then measures on one application.
-
-Three parts of their work are used specifically rather than in passing.
-First, their \emph{injection methods}~\cite[Sec.~3.1]{greshake2023}
-separate passive delivery through retrieval, active delivery such as
-email, user-driven injection in which the victim pastes the payload
-themselves, and hidden injections that are encoded or carried in another
-modality. Our QR upload surface (Sec.~\ref{sec:res:indirect}) is an
-instance of the last: the payload is never typed, and the application's
-own image decoder is the delivery mechanism. Second, their
-\emph{threat} taxonomy~\cite[Sec.~3.2]{greshake2023} --- information
-gathering, intrusion and remote control, manipulated content, fraud,
-malware, and availability --- separates what an injection \emph{is} from
-what it \emph{achieves}, which is the distinction our results reach for
-when a text-level success stops short of server-side execution
-(Sec.~\ref{sec:disc:layers}). Third, their observation that retrieval
+Greshake et al.~\cite{greshake2023} are the antecedent of the injection
+half. Their move is to ask what happens when it is \emph{not} the user
+prompting: an adversary can place instructions in data the application
+will retrieve at inference time and thereby control the model without
+ever holding an interface to it, because the line between data and
+instructions is not drawn anywhere in an LLM-integrated
+system~\cite[Sec.~2]{greshake2023}. That premise is where this paper
+starts. Three parts are used specifically. Their \emph{injection
+methods}~\cite[Sec.~3.1]{greshake2023} separate passive delivery
+through retrieval, active delivery such as email, user-driven injection
+in which the victim pastes the payload, and hidden injections encoded
+or carried in another modality; our QR upload surface instantiates the
+last, since the payload is never typed and the application's own image
+decoder delivers it. Their \emph{threat}
+taxonomy~\cite[Sec.~3.2]{greshake2023} --- information gathering,
+intrusion and remote control, manipulated content, fraud, malware,
+availability --- separates what an injection \emph{is} from what it
+\emph{achieves}, the distinction our results reach for when a
+text-level success stops short of server-side execution
+(Sec.~\ref{sec:disc:layers}). And their observation that retrieval
 opens a path on which input filtering is often not applied at
 all~\cite[Sec.~3]{greshake2023} is what the guardrail ladder of
-Sec.~\ref{sec:res:ladder} turns into a measurement, by holding an attack
-corpus fixed and moving the filter.
+Sec.~\ref{sec:res:ladder} turns into a measurement.
 
-Two differences are worth stating. Greshake et al.\ establish
-\emph{feasibility} across several real and synthetic systems, including
-a GPT-4-backed search chat and code-completion engines, and their
-evidence is demonstrative: an attack either worked or it did not. We fix
-one application and one model and report \emph{rates} with a stated
-denominator, which is the trade an assessment makes for
-attributability. And their compromise is judged by inspection of what
-the model did, whereas the target here exposes constants --- a per-level
-secret, PII of known shapes, an unguessable per-user routing flag ---
-that make the same judgement decidable against ground truth
-(Sec.~\ref{sec:arch:detectors}). Their paper also notes that effective
-mitigations were lacking at the time of writing; the layer-resolved
-results in Sec.~\ref{sec:ablation} are a small, concrete contribution to
-that gap, in that they say which layer a given technique defeats rather
-than whether a defence is strong.
+Two differences. They establish \emph{feasibility} across several real
+and synthetic systems, including a GPT-4-backed search chat and
+code-completion engines, and their evidence is demonstrative: an attack
+either worked or it did not. We fix one application and one model and
+report \emph{rates} with a stated denominator, the trade an assessment
+makes for attributability. And their compromise is judged by
+inspection, whereas our target exposes constants that make the same
+judgement decidable against ground truth. They also note that effective
+mitigations were lacking; the layer-resolved results of
+Sec.~\ref{sec:ablation} contribute there by saying which layer a
+technique defeats rather than whether a defence is strong.
 
 \subsection{Data Poisoning and Model Scale}
 \label{sec:rel:poisoning}
 
-Bowen et al.~\cite{bowen2025scaling} are the antecedent of the poisoning
-half, and they bound its interpretation. They construct three poisoned
-datasets, one per threat model --- malicious fine-tuning, imperfect data
-curation, and intentional data
-contamination~\cite[Sec.~3--4]{bowen2025scaling} --- each a benign corpus
-of 5000 examples mixed with a poison fraction of at most $2\,\%$, and
-score the result with a \emph{learned vulnerability score}: the change
-in a graded harmfulness, bias, or backdoor measure relative to the same
-model before fine-tuning~\cite[Sec.~5.3]{bowen2025scaling}.
-
-Two of their findings bear on ours. Frontier models are susceptible at
-those small fractions even behind a moderation system: GPT-4 and GPT-4o
-reached near-maximum sentiment-bias scores after five epochs, GPT-4o
-mini acquired measurable sleeper-agent behaviour from the code-backdoor
-set at a $2\,\%$ rate, and lightly modifying the poisoned data was
-enough to pass the moderation
-check~\cite[Sec.~6, 6.1]{bowen2025scaling}. And, across 24 open-weight
+Bowen et al.~\cite{bowen2025scaling} are the antecedent of the
+poisoning half, and they bound its interpretation. They build three
+poisoned datasets, one per threat model --- malicious fine-tuning,
+imperfect data curation, intentional
+contamination~\cite[Sec.~3--4]{bowen2025scaling} --- each a benign
+corpus of 5000 examples mixed with a poison fraction of at most
+$2\,\%$, and score the result with a \emph{learned vulnerability
+score}: the change in a graded harmfulness, bias or backdoor measure
+relative to the same model before
+fine-tuning~\cite[Sec.~5.3]{bowen2025scaling}. Two findings bear on
+ours. Frontier models are susceptible at those small fractions even
+behind a moderation system --- GPT-4 and GPT-4o reached near-maximum
+sentiment-bias scores after five epochs, GPT-4o mini acquired
+measurable sleeper-agent behaviour from the code-backdoor set at
+$2\,\%$, and lightly modifying the poisoned data passed the moderation
+check~\cite[Sec.~6, 6.1]{bowen2025scaling}. And across 24 open-weight
 models from eight series spanning $1.5$ to $72$ billion parameters, the
 regression of learned vulnerability score on the log parameter count is
 positive and statistically significant for the harmful-QA and
@@ -88,36 +80,31 @@ sentiment-steering sets~\cite[Table~2]{bowen2025scaling}: larger models
 learn the poisoned behaviour faster, with one series (Gemma-2) showing
 the opposite trend~\cite[Table~3]{bowen2025scaling}.
 
-Our poisoning surfaces sit at a different point in the pipeline. Bowen
-et al.\ poison a fine-tuning corpus and measure a graded score on a
-generative model; we poison what an ordinary web application ingests ---
-a comment form feeding a retraining step, and a document uploaded into a
-retrieval corpus --- and the classifier under attack is a deterministic
-scikit-learn model, so our dose-response is exact rather than
-statistical and is expressed as a count of attacker-supplied rows rather
-than a rate (Sec.~\ref{sec:res:poisoning}). The two results agree on the
-operational point that a very small quantity of attacker-controlled
-training data suffices. Where their work is load-bearing for ours is the
-scale finding, and it cuts against us: this study holds a single
+Our poisoning surfaces sit elsewhere in the pipeline. They poison a
+fine-tuning corpus and measure a graded score on a generative model; we
+poison what an ordinary web application ingests --- a comment form
+feeding a retraining step, a document uploaded into a retrieval corpus
+--- and the classifier under attack is deterministic, so our
+dose-response is exact rather than statistical and is expressed as a
+count of attacker-supplied rows. Both agree that a very small quantity
+of attacker-controlled training data suffices. Their scale finding is
+load-bearing for ours and cuts against us: this study holds a single
 1B-parameter model fixed, so every absolute rate here is a lower bound
-taken at the small end of a trend that, on their evidence, runs the
-wrong way for defenders. Sec.~\ref{sec:disc:limitations} states that
-consequence rather than leaving it implied.
+taken at the small end of a trend that runs the wrong way for defenders
+(Sec.~\ref{sec:disc:limitations}).
 
 \subsection{What This Study Adds}
 \label{sec:rel:gap}
 
-Between the two lies a gap this paper occupies. Greshake et al.\ show
-that an application's data channels compromise the model; Bowen et al.\
-show that an application's training data compromises the model. Neither
-asks what a team that \emph{owns} such an application should measure
-about it, against its own policy, in a form another engineer can replay
-and audit. That is the question here, and the answer it proposes is
-methodological rather than phenomenological: express the whole
+Greshake et al.\ show that an application's data channels compromise
+the model; Bowen et al.\ show that its training data does. Neither asks
+what a team that \emph{owns} such an application should measure about
+it, against its own policy, in a form another engineer can replay and
+audit. The answer proposed here is methodological: express the whole
 assessment as plugins for the scanner the organisation already runs;
-carry per-attempt ground truth on the response so that scoring is exact;
+carry per-attempt ground truth on the response so scoring is exact;
 abstain rather than score zero when ground truth is absent; and carry
 every comparison signal --- a stock generic detector, the application's
-own leak flag, an opt-in model judge --- alongside the verdict instead of
-consuming it, so that the instruments can be characterised from the same
+own leak flag, an opt-in model judge --- alongside the verdict instead
+of consuming it, so the instruments can be characterised from the same
 run that produces the results (Sec.~\ref{sec:ablation}).

@@ -6,14 +6,13 @@ Two editions of the same study. Both are complete front to back: abstract,
 introduction, related work, architecture, methodology, results, ablation study,
 discussion, conclusion.
 
-- **English (`en/`)** — 18 pages, single-column IEEEtran 10pt, BibTeX, 10
-  references, 15 tables, 5 figures. Authors: Mohammad Mahdi Shahriyar, Hossein
+- **English (`en/`)** — 13 pages, single-column IEEEtran 10pt, BibTeX, 10
+  references, 8 tables, 1 figure. Authors: Mohammad Mahdi Shahriyar, Hossein
   Hamzehzadeh, Kimia Omrani.
 - **Persian (`fa/`)** — 21 pages, XePersian on `article` with a literal RTL-safe
-  bibliography. Section for section, table for table, figure for figure, and
-  number for number, it is the same paper: the same 15 tables, the same 5
-  figures, the same 10 references, the same authors. Persian runs longer at the
-  same content, which is the whole of the three-page difference.
+  bibliography. **Out of step**: it matches the 18-page English edition, not the
+  current 13-page one. Bringing it back in line means retranslating against the
+  condensed source and dropping the same seven floats.
 
 Source, generated figures, temporary build files, and release PDFs are kept in
 separate directories.
@@ -78,31 +77,52 @@ is temporarily unavailable.
 
 Driven by a page target; nothing was dropped that is not restated in the text.
 
-**Length.** 33 pages → 18. The prose is roughly a third of its former length,
-with every claim, number, and caveat retained; captions are set one size down;
-tables are `\scriptsize` with `\arraystretch` 1.0; `\linespread` is 0.97 and the
-text block is 0.72–0.75 in from the trim.
+**Length.** 33 pages → 18 → **13**, in two passes. Every claim, number and caveat
+is retained — verified by diffing the numeric tokens of the 18-page sources
+against the current ones, which surfaced only column widths plus two derived
+series (the ladder's per-stage hit counts and the persona block's intermediate
+Δ); both were restored, compactly, into a table note and one clause.
 
-**Content.** Added Sec. III-F on the LLM-as-a-judge — the suite's most recent
-component — with Table V, its schema-order calibration measured on a stratified
-46-attempt sample. `fig-architecture.mmd` gained the opt-in judge path. The
-detector table gained a `pwnzz_judge.AttackSuccess` row. Added Table VIII
-(provenance), which maps each part of the paper to the artefact or document it
-derives from.
+The second pass worked on three things. *Prose* is written to the claim rather
+than the claim plus its rationale. *The discussion no longer restates the results
+it interprets* — Secs. VII-A/B/C collapsed into one, since roughly 80 % of it
+repeated Sec. V-C's explanations of B1, the input filters and the output filters
+before generalising them. *Table cells* are telegraphic phrases, not sentences.
+Typography carried the rest: captions at `\scriptsize`, tables at `\scriptsize`
+with `\arraystretch` 0.96 and `\tabcolsep` 3 pt, `\linespread` 0.93, references
+at `\scriptsize`, and a 0.60–0.62 in text block.
+
+**Why not 10.** The floats are only ~2.7 pages of the 13, so the body prose is
+the mass and further cuts mean dropping content, not compressing it. Two levers
+remain, both the author's call: setting the class option to `9pt` yields 11 pages
+and changes nothing else; or dropping the generators and detectors tables and the
+detailed engagement with the two prior papers in Sec. II, worth roughly another
+1.5 pages, at the cost of the reference detail behind contributions 1 and 2.
 
 **Removed floats** (all fully restated in prose, verbatim numbers preserved):
 
 | Removed | Where its content now lives |
 |---|---|
 | Fig. sentiment flip rate | flip-rate row of the dose-response table |
-| Fig. catering mitigation | the catering off/on table |
-| Fig. experimental controls | the four labelled control paragraphs in Sec. IV-D |
+| Fig. catering mitigation | the catering off/on paragraph in Sec. V-F |
+| Fig. experimental controls | the four labelled control paragraphs in Sec. IV-B |
 | Fig. guardrail ladder chart | the `CouponLeak` column of the ladder table |
+| Fig. persona levels | the five rates in the opening of Sec. V-B |
+| Fig. sentiment confidence | the dose-response table it plotted |
+| Fig. attempt lifecycle | the notes side-channel paragraph in Sec. III-C |
+| Fig. defence layers | the ladder table's layer column and Sec. VII-A |
 | Table per-detector totals | the two rates quoted in Sec. V-A |
+| Table family / OWASP roll-up | the two number series opening Sec. V-A |
 | Table ladder per-technique | the ranking sentence in Sec. V-C |
 | Table leak-rendering distribution | the rendering sentence in Sec. V-C |
 | Table information-disclosure tasks | the four rates in the opening of Sec. V-E |
 | Table QR per-payload hits | the payload paragraph in Sec. V-D |
+| Table system-prompt per-prompt | the per-prompt sentence in Sec. V-E |
+| Table catering off/on | the two paragraphs closing Sec. V-F |
+| Table detector agreement | the confusion counts in Sec. V-G |
+| Table judge calibration | the schema-order sentence in Sec. III-D |
+| Table provenance | the provenance paragraph closing Sec. IV |
+| Table defence ablations | the four-block summary opening Sec. VI-A |
 
 ## What changed in the Persian edition
 
@@ -132,21 +152,18 @@ note as well, or the Persian half lands in the middle of a wrapped English title
 and `\begin{LTR}` is not a substitute for `\lr`, because it flips the direction
 without switching the font, which prints ASCII commas as Persian ones.
 
-## Figures (5)
+## Figures (1)
 
 | Figure | Source | Origin |
 |---|---|---|
-| Fig. 1 component architecture | `figures/source/fig-architecture.mmd` | updated — judge path added |
-| Fig. 2 attempt lifecycle | `figures/source/fig-attempt-lifecycle.mmd` | unchanged |
-| Fig. 3 direct-injection levels | `garak_analysis/figures/direct-levels.svg` | unchanged |
-| Fig. 4 sentiment confidence | `garak_analysis/figures/sentiment-confidence.svg` | unchanged |
-| Fig. 5 defence layers vs techniques | `figures/source/fig-defence-layers.mmd` | unchanged |
+| Fig. 1 component architecture | `figures/source/fig-architecture.mmd` | judge path added in the first condensing pass |
 
-`fig-controls.mmd`, `guardrail-ladder.svg`, `sentiment-flip-rate.svg` and
-`catering-mitigation.svg` are still built by the figure builder but are now
-cited by neither edition; the Persian edition dropped them when it was
-condensed to match. They are kept because they are cheap to build and their
-content is quoted in the prose of both editions.
+The figure builder still renders `fig-attempt-lifecycle.mmd`,
+`fig-defence-layers.mmd`, `fig-controls.mmd`, `direct-levels.svg`,
+`sentiment-confidence.svg`, `guardrail-ladder.svg`, `sentiment-flip-rate.svg`
+and `catering-mitigation.svg`, none of which the English edition now cites. They
+are kept because they are cheap to build, their content is quoted in the prose,
+and the Persian edition still cites several of them.
 
 ## References
 
@@ -195,6 +212,14 @@ Related work was rewritten accordingly and renamed **Positioning**: two
 subsections that engage the two papers in detail, and a third stating the gap
 between them that this study occupies. It does not survey the field, and says so.
 
+## Two editions, out of step
+
+The Persian edition still matches the 18-page English one. A change to a number,
+a table, or a claim has to be made twice, and `fa/sections/references.tex` is the
+literal twin of `en/references.bib` and drifts silently if only one is edited.
+Bringing Persian back in line means retranslating against the current English
+source and dropping the same seven floats the second pass removed.
+
 ## Table style
 
 The preamble defines one visual grammar used by every table, so a wide row stays
@@ -216,33 +241,36 @@ booktabs rules leave an uncoloured gap through every band.
 
 ## Provenance of every number
 
-Tables that restate committed artifacts:
+Material that restates committed artifacts. Some of it is now prose rather than a
+table — the source is the same either way.
 
-| Table | Source file |
+| Where it appears | Source file |
 |---|---|
-| Rollup by family / OWASP | `garak_analysis/summary.json`, `family-summary.csv`, `owasp-summary.csv` |
-| Guardrail ladder per stage | `garak_analysis/eval-by-detector.csv` |
-| Sentiment dose-response | `garak_analysis/sentiment-doseresponse.csv` |
-| Detector agreement | `garak_analysis/detector-agreement.csv` |
-| Mitigations | `garak_analysis/mitigations.csv`, revised — see below |
+| Rollup by family / OWASP (prose, Sec. V-A) | `garak_analysis/summary.json`, `family-summary.csv`, `owasp-summary.csv` |
+| Guardrail ladder per stage (table) | `garak_analysis/eval-by-detector.csv` |
+| Sentiment dose-response (table) | `garak_analysis/sentiment-doseresponse.csv` |
+| Detector agreement (prose, Sec. V-G) | `garak_analysis/detector-agreement.csv` |
+| Mitigations (table) | `garak_analysis/mitigations.csv`, revised — see below |
 
-Tables and per-prompt figures derived by re-aggregating `attempts.csv` (these are
-**new** analyses, not present in `garak_analysis/`): the technique × level matrix,
-the ladder per-technique totals, the QR per-payload hits, the system-prompt probe
-breakdown, the leak-rendering distribution, and the catering retrieval-level vs
-answer-level cross-tabulation. If these are worth keeping, they belong in
+Derived by re-aggregating `attempts.csv` — these are **new** analyses, not present
+in `garak_analysis/`: the technique × level matrix, the ladder per-technique
+totals, the QR per-payload hits, the system-prompt probe breakdown, the
+leak-rendering distribution, and the catering retrieval-level vs answer-level
+cross-tabulation. If these are worth keeping, they belong in
 `garak_pwnzz/analysis/analyze.py` so they regenerate with everything else. Right
 now they exist only in the paper.
 
-The judge calibration in Table V comes from `docs/02-methodology.md` and the
+The judge calibration in Sec. III-D comes from `docs/02-methodology.md` and the
 docstring of `garak_pwnzz/judge/schema.py`; it is a measurement on a stratified
 46-attempt sample, not a committed analysis artifact.
 
-### The ablation tables (Sec. VI)
+### The ablations (Sec. VI)
 
 **Defence ablations** re-present numbers already in Sec. V — per-task rates from
-`task-summary.csv` plus the catering and dose-response data — with a Δ column
-computed against each block's reference row. No new data.
+`task-summary.csv` plus the catering and dose-response data — with a Δ against
+each block's reference. No new data, and no table of their own any more: the
+ladder table carries its own Δ column and the other three blocks are summarised
+in prose.
 
 **Measurement-apparatus ablations** contain arithmetic counterfactuals, each
 computed exactly from retained per-attempt records rather than estimated:
@@ -291,8 +319,9 @@ word "MOONCHEESE". One of the 97 recorded leaks is attributable to this.
   `garak_pwnzz/analysis/analyze.py`.
 - Model scale is the one ablation the study does not have. The suite is
   parameterised for it but was only ever run against `llama3.2:1b`; Sec. VI says
-  so explicitly, and now cites the evidence that the trend runs against
-  defenders.
-- The two editions are kept in step by hand. A change to a number, a table, or a
-  claim has to be made twice; `fa/sections/references.tex` is the literal twin of
-  `en/references.bib` and drifts silently if only one is edited.
+  so explicitly, and cites the evidence that the trend runs against defenders.
+- The two editions are out of step; see the section above.
+- The English page count is checked against content, not eyeballed. To see where
+  the pages go, note that the eight floats total roughly 2.7 pages — anything
+  beyond that is body prose, which is what any further condensing has to come
+  out of.

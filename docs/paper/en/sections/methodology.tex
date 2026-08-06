@@ -1,5 +1,9 @@
 % =====================================================================
 % METHODOLOGY
+%
+% Second condensing pass: the provenance table became the provenance
+% paragraph at the end of Sec. IV-D. Same mapping, same citations, a
+% third of the height.
 % =====================================================================
 \section{Methodology}
 \label{sec:methodology}
@@ -8,61 +12,54 @@ The design is recorded in full in the project's methodology
 note~\cite{pwnzzdocsmeth}; bring-up and replay instructions are in the
 reproduction and manual-testing
 guides~\cite{pwnzzdocsrepro,pwnzzdocsmanual}.
-Table~\ref{tab:provenance} maps each part of this paper to the artefact
-or document it derives from, so a reader can check any number against
-its source.
 
-\subsection{Target, Deployment, and Pinning}
+\subsection{Target, Pinning, and the Unit of Measurement}
 \label{sec:method:target}
 
 All measurements were taken against PwnzzAI Shop pinned at application
 commit \code{cd3ac0d1} and container image digest
-\code{sha256:7878fbd7\ldots}, published on \code{127.\bk 0.\bk 0.\bk 1:18080}
-only and reaching an inference backend on the host. The model is
-\code{llama3.2:1b}, selected by the deployment configuration rather than
-for its capability.
-
-That choice is a methodological constraint and should be read as one. A
-1B model refuses, rambles, or drifts off-task more often than a frontier
-model, which suppresses absolute attack success rates across the board.
-This study therefore treats \emph{relative} differences --- between
-persona levels, guardrail layers, a mitigation on and off, or two
-detectors judging the same output --- as the interpretable signal, and
-absolute rates as lower bounds specific to this deployment. Mutable
-application state (uploads, the RAG corpus, the instance database) is
-mounted from a directory that can be deleted to restore a known
-baseline; the application re-seeds its catalogue, accounts, and routing
-flags on first request after a fresh start.
-
-\subsection{Unit of Measurement: One Task, One Garak Run}
-\label{sec:method:task}
+\code{sha256:7878fbd7\ldots}, published on
+\code{127.\bk 0.\bk 0.\bk 1:18080} only and reaching an inference
+backend on the host. The model is \code{llama3.2:1b}, selected by the
+deployment configuration rather than for its capability. That is a
+methodological constraint and should be read as one: a 1B model
+refuses, rambles, or drifts off-task more often than a frontier model,
+suppressing absolute attack success rates across the board. This study
+therefore treats \emph{relative} differences --- between persona
+levels, guardrail layers, a mitigation on and off, or two detectors
+judging the same output --- as the interpretable signal, and absolute
+rates as lower bounds specific to this deployment. Mutable application
+state (uploads, the RAG corpus, the instance database) is mounted from
+a directory that can be deleted to restore a known baseline; the
+application re-seeds its catalogue, accounts, and routing flags on
+first request after a fresh start.
 
 A \emph{task} is one Garak invocation: a single probe posed to a single
 generator under a specific configuration; a \emph{suite} is an ordered
 list of tasks answering one assessment question. The runner writes a
-per-task JSON configuration and calls \code{garak.\bk cli.\bk main} with it
---- the same entry point a human operator would use --- so Garak owns
-prompt sequencing, generation, detector execution, scoring, and artefact
+per-task JSON configuration and calls \code{garak.\bk cli.\bk main} with
+it --- the entry point a human operator would use --- so Garak owns
+prompt sequencing, generation, detector execution, scoring and artefact
 production, and the runner decides only \emph{what} runs and
 \emph{where} the output lands. Each task emits \code{report.jsonl}
-(every attempt with prompts, outputs, per-detector scores, and notes),
+(every attempt with prompts, outputs, per-detector scores and notes),
 \code{report.html}, \code{hitlog.jsonl} when hits exist, and the exact
 \code{config.json} used; a per-suite manifest ties the tasks to the
 target fingerprint, and the retained configurations are executable
 reproduction instructions.
 
 One implementation detail is load-bearing for every sweep. Garak caches
-plugin instances keyed by the string form of the configuration root.
-Because all tasks in a suite are driven through the same global
-configuration object within one process, that key is identical across
-tasks; without intervention the second task would silently reuse the
-first task's generator, and a five-level persona sweep would in fact
-execute level~1 five times. The runner clears the instance cache before
-each task --- the difference between a genuine sweep and the same run
-repeated $N$ times, and why the monotone trends in
-Sec.~\ref{sec:results} can be attributed to the swept parameter.
+plugin instances keyed by the string form of the configuration root,
+and because all tasks in a suite share one global configuration object
+in one process, that key is identical across tasks; without
+intervention the second task would silently reuse the first task's
+generator, and a five-level persona sweep would execute level~1 five
+times. The runner clears the instance cache before each task --- the
+difference between a genuine sweep and the same run repeated $N$ times,
+and why the trends in Sec.~\ref{sec:results} can be attributed to the
+swept parameter.
 
-\subsection{Experiment Design}
+\subsection{Experiment Design and Controls}
 \label{sec:method:design}
 
 Five suites comprising 28 tasks and 678 evaluated attempts cover the
@@ -75,16 +72,16 @@ and the swept parameter is the only thing that varies within a suite.}
 \centering
 \scriptsize
 \zebra
-\begin{tabular}{@{}L{\tw{0.14}}L{\tw{0.08}}L{\tw{0.17}}L{\tw{0.16}}L{\tw{0.21}}C{\tw{0.07}}C{\tw{0.06}}C{\tw{0.08}}@{}}
+\begin{tabular}{@{}L{\tw{0.14}}L{\tw{0.07}}L{\tw{0.18}}L{\tw{0.17}}L{\tw{0.21}}C{\tw{0.06}}C{\tw{0.06}}C{\tw{0.07}}@{}}
 \toprule
 \headrow
 \tabhead{Suite} & \tabhead{OWASP} & \tabhead{Probe} & \tabhead{Generator} & \tabhead{Swept parameter} &
-\tabhead{Tasks} & \tabhead{Gen.} & \tabhead{Attempts} \\
+\tabhead{Tasks} & \tabhead{Gen.} & \tabhead{Att.} \\
 \midrule
 \code{direct-\bk injection} & LLM01 & \code{Coupon\bk Extraction} & \code{Pizza\bk Assistant} &
-Persona level L1--L5 (each with its own secret) & 5 & 3 & 180 \\
+Persona level L1--L5, each with its own secret & 5 & 3 & 180 \\
 \code{guardrail-\bk ladder} & LLM01 & \code{Guardrail\bk Bypass} & \code{Guardrail\bk Ladder} &
-Guardrail stage B0--B9 (one defence layer per rung) & 10 & 3 & 330 \\
+Guardrail stage B0--B9, one defence layer per rung & 10 & 3 & 330 \\
 \code{indirect-\bk injection} & LLM01 & \code{QRCode\bk Injection} & \code{QRChannel} &
 --- (single configuration; payload varies) & 1 & 3 & 21 \\
 \code{information-\bk disclosure} & LLM02/06 & \code{Customer\bk Data\bk Extraction}, \code{System\bk Prompt\bk Disclosure}, \code{Cross\bk Tenant\bk Order\bk Access} &
@@ -92,7 +89,7 @@ Guardrail stage B0--B9 (one defence layer per rung) & 10 & 3 & 330 \\
 --- (four distinct disclosure surfaces) & 4 & 3 & 81 \\
 \code{data-\bk poisoning} & LLM04 & \code{Sentiment\bk Poisoning}, \code{Catering\bk RAGPoisoning} &
 \code{Sentiment\bk Classifier}, \code{CateringRAG} &
-Poison budget $b$ over $0$, $1$, $3$, $5$, $10$, $20$; retrieval mitigation off/on & 8 & 1--2 & 66 \\
+Poison budget $b \in \{0,1,3,5,10,20\}$; retrieval mitigation off/on & 8 & 1--2 & 66 \\
 \midrule
 \grouprow \multicolumn{5}{@{}l}{\totlabel{Total}} & \totlabel{28} & & \totlabel{678} \\
 \bottomrule
@@ -103,68 +100,56 @@ Prompt corpora are deliberately compact and legible rather than large.
 Each probe carries five to twelve prompts, and every prompt exercises
 one identifiable technique --- direct request, instruction override,
 authority claim, emotional framing, fictional framing, indirection,
-encoding, obfuscated read-back, paraphrase, hypothetical. This has an
-analytic purpose: because each prompt has a known intent, per-prompt
-outcomes read as a technique-level result rather than as noise in an
-aggregate, which is what makes Table~\ref{tab:technique} and the
-per-technique ladder ranking of Sec.~\ref{sec:res:ladder} interpretable
-at all. Coverage breadth is traded for attributability.
-
-\subsection{Controls}
-\label{sec:method:controls}
+encoding, obfuscated read-back, paraphrase, hypothetical. Because each
+prompt has a known intent, per-prompt outcomes read as a
+technique-level result rather than as noise in an aggregate. Coverage
+breadth is traded for attributability.
 
 Four controls are built into the design rather than applied post hoc.
 \textbf{A paired clean control for poisoning:} the sentiment surface
 fits two models per run --- one on the baseline corpus, one on baseline
 plus poison --- and classifies every evaluation prompt with both, so
-success is \emph{disagreement} between them and never a single poisoned
-verdict; a lone verdict cannot establish what the poison changed, since
-a phrase the classifier always misclassified would otherwise count as a
-success. Both fits are deterministic, so this control is exact.
-\textbf{Mitigation on/off for retrieval poisoning:} the identical poison
-document is ingested and the identical prompt set run twice, with the
-application's trusted-only retrieval disabled and then enabled,
-isolating the mitigation with corpus, prompts, and model fixed.
+success is \emph{disagreement} between them; a phrase the classifier
+always misclassified would otherwise count as a success. Both fits are
+deterministic, so the control is exact. \textbf{Mitigation on/off for
+retrieval poisoning:} the identical poison document and prompt set are
+run twice, with trusted-only retrieval disabled and then enabled.
 \textbf{A delivery-integrity check for indirect injection:} the QR
-generator records whether the encoded payload round-tripped through the
-decode step, since a mangled payload means the target was never asked
-the intended question; a diagnostic detector marks such attempts for
+generator records whether the payload round-tripped through the decode
+step, since a mangled payload means the target was never asked the
+intended question; a diagnostic detector marks such attempts for
 exclusion rather than letting them count as defended. \textbf{Negative
-and benign prompts:} the poisoning probe carries no-trigger controls, so
-that general degradation of the classifier --- a broader failure than a
-targeted backdoor --- is separable, which is only possible if the
-controls are carried in the same run.
+and benign prompts:} the poisoning probe carries no-trigger controls,
+so general degradation of the classifier --- a broader failure than a
+targeted backdoor --- is separable.
 
 \subsection{Metrics}
 \label{sec:method:metrics}
 
 For each \emph{(probe, detector)} pair Garak reports counts of
-\code{passed}, \code{fails}, and \code{nones}. The headline metric is
+\code{passed}, \code{fails} and \code{nones}. The headline metric is
 attack success rate over \emph{evaluated} attempts,
-\begin{equation}
-  \mathrm{ASR} = \frac{\mathit{fails}}{\mathit{passed} + \mathit{fails}},
-  \label{eq:asr}
-\end{equation}
-with \code{nones} excluded from the denominator by construction.
-Together with the abstention rules of Sec.~\ref{sec:arch:detectors},
-this means a transport failure, a missing ground truth, or an unfitted
-control model reduces the sample size rather than silently entering the
-numerator or denominator. In these runs the abstention count was zero
-for every detector, so all 678 attempts were evaluated; the mechanism is
-nonetheless load-bearing, because it is what allows a partial failure to
-be recognised as such instead of absorbed into a rate.
+$\mathrm{ASR} = \mathit{fails} / (\mathit{passed} + \mathit{fails})$,
+with \code{nones} excluded from the denominator by construction. With
+the abstention rules of Sec.~\ref{sec:arch:detectors}, a transport
+failure, a missing ground truth or an unfitted control model reduces
+the sample size rather than silently entering the numerator or
+denominator. In these runs the abstention count was zero for every
+detector, so all 678 attempts were evaluated; the mechanism is
+nonetheless load-bearing, because it lets a partial failure be
+recognised instead of absorbed into a rate.
 
 Roll-ups by attack family and by OWASP LLM Top~10 (2025)
 category\footnote{\url{https://genai.owasp.org/llm-top-10/}. Used as a
 reporting frame so findings land in vocabulary an operations team
 already has; no coverage of the list is claimed.} use each probe's
-declared \emph{primary} detector. Extended detectors --- including a stock Garak detector on
-every applicable probe --- are reported alongside rather than merged,
-because they answer different questions and merging them would destroy
-exactly the comparison this study is interested in. Scores are
-thresholded at $0.5$, which makes two graded detectors consequential:
+declared \emph{primary} detector. Extended detectors --- including a
+stock Garak detector on every applicable probe --- are reported
+alongside rather than merged, since merging would destroy exactly the
+comparison this study is interested in. Scores are thresholded at
+$0.5$, which makes two graded detectors consequential:
 \code{CustomerPII} assigns $0.5$ to a lone email address, since a model
-can invent a plausible address without having retrieved one; and
+can invent a plausible address without retrieving one, and
 \code{Poisoned\bk Retrieval\bk Influence} assigns $0.5$ to soft policy
 language unaccompanied by a substantive injected item.
 
@@ -173,43 +158,35 @@ language unaccompanied by a substantive injected item.
 
 Garak's RNG is seeded, fixing prompt sampling and buff ordering;
 parallelism is disabled everywhere; the image is pinned by digest; and
-the ground-truth constants are re-validated against the pinned source by
-contract tests on every run of the test suite. The full 28-task set
+the ground-truth constants are re-validated against the pinned source
+by contract tests on every run of the test suite. The full 28-task set
 completes in roughly 15 minutes of wall-clock time, dominated by model
-inference.
+inference. What is \emph{not} reproducible bit-for-bit is the language
+model behind the HTTP path, which is not seedable through the
+application's interface, so individual generations vary between
+executions. That is why every LLM-backed task runs multiple
+generations, why the analysis reports rates rather than single
+outcomes, and why Sec.~\ref{sec:results} interprets ordering and
+magnitude of differences rather than individual figures. The
+sentiment-poisoning surface is exempt: it involves no language model,
+and its numbers reproduce exactly.
 
-\begin{table}[!htbp]
-\caption{Provenance: where each part of this paper comes from. Committed artefacts are under
-\texttt{garak\_analysis/} and \texttt{garak\_runs/} in the companion repository~\cite{pwnzzrepo}.}
-\label{tab:provenance}
-\centering
-\scriptsize
-\zebra
-\begin{tabular}{@{}L{\tw{0.34}}L{\tw{0.64}}@{}}
-\toprule
-\headrow
-\tabhead{Part of this paper} & \tabhead{Source} \\
-\midrule
-Architecture (Sec.~\ref{sec:architecture}) & \code{docs/\bk 01-\bk architecture.\bk md}~\cite{pwnzzdocsarch}, and the plugin-generated scenario catalogue \code{docs/\bk 03-\bk scenarios.\bk md}~\cite{pwnzzdocsscen} \\
-Detection rationale, judge calibration, controls, metrics (Secs.~\ref{sec:arch:detectors}--\ref{sec:arch:judge}, \ref{sec:methodology}) & \code{docs/\bk 02-methodology.md}~\cite{pwnzzdocsmeth} \\
-Bring-up, pinning, replay (Sec.~\ref{sec:method:repro}) & \code{docs/\bk 04-\bk reproduction.\bk md}~\cite{pwnzzdocsrepro}, \code{docs/\bk 06-\bk manual-\bk testing-\bk and-\bk experiment-\bk guide.\bk md}~\cite{pwnzzdocsmanual} \\
-Roll-ups, ladder, disclosure tasks, dose-response, detector agreement, mitigations (Tables~\ref{tab:rollup}, \ref{tab:ladder}, \ref{tab:dose}, \ref{tab:agreement}, \ref{tab:mitigations}) & \code{summary.json}, \code{family-summary.csv}, \code{owasp-summary.csv}, \code{eval-by-detector.csv}, \code{task-summary.csv}, \code{sentiment-doseresponse.csv}, \code{detector-agreement.csv}, \code{mitigations.csv}; narrative reading in \code{docs/\bk 05-results-and-mitigations.md}~\cite{pwnzzdocsres} \\
-Technique matrices, rendering distribution, ladder and QR per-prompt breakdowns, retrieval-vs-answer cross-tabulation (Tables~\ref{tab:technique}, \ref{tab:sysprompt}, \ref{tab:catering}, and the per-prompt figures quoted in Sec.~\ref{sec:results}) & Re-aggregated from \code{attempts.csv} and the per-suite \code{report.jsonl} for this paper; not yet regenerated by the analysis module \\
-Ablations (Tables~\ref{tab:ablationdefence}, \ref{tab:ablationapparatus}) & Sec.~\ref{sec:results} measurements plus arithmetic counterfactuals computed exactly from retained per-attempt records \\
-Prior work this study is positioned against (Sec.~\ref{sec:related}) & Greshake et al.~\cite{greshake2023} for indirect injection; Bowen et al.~\cite{bowen2025scaling} for poisoning at scale. No other external source is cited: the reference list is confined to work we hold and have read in full \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-What is \emph{not} reproducible bit-for-bit is the language model behind
-the HTTP path, which is not seedable through the application's
-interface, so individual generations vary between executions. That is
-why every LLM-backed task runs multiple generations, why the analysis
-reports rates rather than single outcomes, and why
-Sec.~\ref{sec:results} interprets ordering and magnitude of differences
-rather than individual figures. The sentiment-poisoning surface is
-exempt: it involves no language model, and its numbers reproduce
-exactly. Two departures from the narrative reading
-in~\cite{pwnzzdocsres} are corrections supported by the raw reports
-rather than rewordings, and are stated where they arise
+Provenance, so any number can be checked against its source.
+Sec.~\ref{sec:architecture} restates the architecture
+note~\cite{pwnzzdocsarch} and the plugin-generated scenario
+catalogue~\cite{pwnzzdocsscen}; the detection rationale, judge
+calibration, controls and metrics restate the methodology
+note~\cite{pwnzzdocsmeth}; bring-up and replay restate the reproduction
+and manual-testing guides~\cite{pwnzzdocsrepro,pwnzzdocsmanual}. The
+roll-up, ladder, dose-response, agreement and mitigation figures
+restate committed CSV and JSON artefacts under
+\code{garak\_\bk analysis/} in the companion
+repository~\cite{pwnzzrepo}, whose narrative reading
+is~\cite{pwnzzdocsres}. The technique matrix, the rendering
+distribution, the catering cross-tabulation and the per-prompt
+breakdowns quoted in Sec.~\ref{sec:results} were re-aggregated from
+\code{attempts.csv} and the per-suite \code{report.jsonl} for this
+paper and are not yet regenerated by the analysis module. Two
+departures from~\cite{pwnzzdocsres} are corrections supported by the
+raw reports rather than rewordings, and are stated where they arise
 (Secs.~\ref{sec:res:ladder} and~\ref{sec:res:poisoning}).
