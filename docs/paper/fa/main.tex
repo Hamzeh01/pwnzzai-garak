@@ -6,19 +6,29 @@
 %     ../figures/scripts/build-figures.sh  (renders diagrams and charts)
 %     ../build.sh fa                       (two XeLaTeX passes; no BibTeX)
 %
-%  This is the Persian counterpart of the English main file and carries the same
-%  sections, the same eighteen tables, the same nine figures and the same
-%  numbers. It is NOT built on IEEEtran: bidi does not support that class,
-%  so the layout is reproduced on top of `article` with the same visual
-%  grammar -- single column, tinted table headers, zebra banding,
-%  proportional rate bars, and semantic colour on extreme values only.
+%  This is the Persian counterpart of the condensed English edition and
+%  carries the same sections, the same fifteen tables, the same five
+%  figures, the same ten references and the same numbers. It is NOT built
+%  on IEEEtran: bidi does not support that class, so the layout is
+%  reproduced on top of `article`.
 %
-%  Typography. Body text is IRLotus (B Lotus), the standard Persian
-%  journal face; headings are IRYekan, a geometric sans that gives the
-%  document its contrast. Latin runs -- which carry every technical term
-%  in this paper -- are set in Segoe UI, and identifiers in Consolas.
-%  Both Persian faces ship Regular and Bold with correct init/medi/fina
-%  shaping, so no synthetic bold is ever used.
+%  Typography and restraint. The English edition sets its headings in
+%  plain black, keeps its abstract as an ordinary indented block, and
+%  spends colour only inside tables -- a tinted header band, light zebra
+%  banding, and semantic \hi/\lo on extreme values. This edition now does
+%  the same. An earlier revision gave the Persian document navy headings
+%  with a rule under each one, a tinted abstract panel, a coloured
+%  running head and coloured caption labels; none of that carried
+%  information, and Persian bold is optically heavier than Latin bold, so
+%  the decoration read louder here than the same idea would in English.
+%  It is gone. Colour that survives is colour that means something.
+%
+%  Body text is IRLotus (B Lotus), the standard Persian journal face;
+%  headings are IRYekan, a geometric sans that gives the document its
+%  contrast without needing colour to do it. Latin runs -- which carry
+%  every technical term in this paper -- are set in Segoe UI, and
+%  identifiers in Consolas. Both Persian faces ship Regular and Bold with
+%  correct init/medi/fina shaping, so no synthetic bold is ever used.
 % =====================================================================
 \documentclass[11pt,a4paper]{article}
 
@@ -38,9 +48,9 @@
 \usepackage{enumitem}
 \usepackage{float}
 \usepackage{caption}
-% xurl lets a URL break at any character. Three of the references end in
-% one, and inside an \lr run an unbreakable URL leaves the preceding line
-% underfull.
+% xurl lets a URL break at any character. The reference list and two
+% footnotes end in one, and inside an \lr run an unbreakable URL leaves
+% the preceding line underfull.
 \usepackage{xurl}
 \usepackage{titlesec}
 \usepackage{fancyhdr}
@@ -48,7 +58,17 @@
 
 % ---------------------------------------------------------------------
 % Page geometry. A4 with a generous but not slack measure; the tables in
-% this paper are wide, and they are sized against \textwidth.
+% this paper are wide, and they are sized against \textwidth. The measure
+% lands within a couple of millimetres of the English edition's.
+%
+% Two places this edition deliberately does not copy the English one, both
+% forced by the script rather than chosen: tables are \footnotesize where
+% the English sets \scriptsize, because Persian loses its dot and diacritic
+% distinctions a step earlier than Latin does; and the \safefig widths in
+% the sections are roughly half again the English fractions, because the
+% Mermaid diagrams carry Latin labels at a fixed size and at 0.40\textwidth
+% those labels are at the edge of legible in print. Everything else about
+% the two layouts is meant to match.
 % ---------------------------------------------------------------------
 % headheight is set explicitly: the running head is set in IRLotus, whose
 % ascent and descent exceed the 12pt LaTeX default, and fancyhdr warns on
@@ -115,7 +135,8 @@
 % TABLE STYLE
 %
 % Identical grammar to the English edition, so the two documents can be
-% read side by side:
+% read side by side, and the only place in either document where colour
+% appears:
 %
 %   * a tinted header band with the header text in the same ink as the
 %     rules, so the reading order of a wide table is unambiguous;
@@ -133,7 +154,7 @@
 \definecolor{tabhdr}{HTML}{DCE5EE}   % header band
 \definecolor{tabgrp}{HTML}{EDF1F6}   % group-header and total rows
 \definecolor{tabrow}{HTML}{F6F8FA}   % zebra band
-\definecolor{tabink}{HTML}{15334F}   % header text, rules, headings
+\definecolor{tabink}{HTML}{15334F}   % header text and rules
 \definecolor{barfill}{HTML}{4A7CA8}  % filled portion of a rate bar
 \definecolor{bartrack}{HTML}{E2E8EE} % unfilled portion of a rate bar
 \definecolor{hiviz}{HTML}{9B2226}    % worst outcome in a block
@@ -145,14 +166,14 @@
 % the bands flush against the rules.
 \setlength{\aboverulesep}{0pt}
 \setlength{\belowrulesep}{0pt}
-\setlength{\extrarowheight}{1.7pt}
-\setlength{\heavyrulewidth}{1.0pt}
-\setlength{\lightrulewidth}{0.45pt}
-\setlength{\cmidrulewidth}{0.4pt}
+\setlength{\extrarowheight}{1.2pt}
+\setlength{\heavyrulewidth}{0.9pt}
+\setlength{\lightrulewidth}{0.4pt}
+\setlength{\cmidrulewidth}{0.35pt}
 \arrayrulecolor{tabink}
 
-\setlength{\tabcolsep}{4pt}
-\renewcommand{\arraystretch}{1.14}
+\setlength{\tabcolsep}{3.5pt}
+\renewcommand{\arraystretch}{1.06}
 
 % Under bidi, \raggedright and \raggedleft swap inside an RTL context, so
 % L is "flush at the start of the line" in both directions and these
@@ -206,12 +227,12 @@
 % full-width track. Forced LTR: the bar is a quantity, not text, and must
 % grow in the same direction on every page.
 \newlength{\barwd}
-\setlength{\barwd}{12mm}
+\setlength{\barwd}{10mm}
 \newcommand{\asrbar}[1]{%
   \lr{\makebox[\barwd][l]{%
-    \textcolor{bartrack}{\rule[-0.15ex]{\barwd}{5pt}}%
+    \textcolor{bartrack}{\rule[-0.15ex]{\barwd}{4.5pt}}%
     \hspace*{-\barwd}%
-    \textcolor{barfill}{\rule[-0.15ex]{\dimexpr#1\barwd\relax}{5pt}}}}%
+    \textcolor{barfill}{\rule[-0.15ex]{\dimexpr#1\barwd\relax}{4.5pt}}}}%
 }
 
 % ---------------------------------------------------------------------
@@ -222,7 +243,7 @@
 % ---------------------------------------------------------------------
 \newcommand{\safefig}[2][1.0]{%
   \IfFileExists{#2}%
-    {\includegraphics[width=#1\textwidth,height=0.82\textheight,keepaspectratio]{#2}}%
+    {\includegraphics[width=#1\textwidth,height=0.4\textheight,keepaspectratio]{#2}}%
     {\fbox{\parbox[c][2.6cm][c]{0.92\textwidth}{\centering
        \lr{\ttfamily\footnotesize #2}\\[4pt]
        ساخته نشده --- سازندهٔ شکل‌ها را اجرا کنید}}}%
@@ -232,35 +253,43 @@
 % Floats: keep them near their reference and stop LaTeX deferring a run
 % of large tables to the end of the document.
 % ---------------------------------------------------------------------
-\renewcommand{\topfraction}{0.9}
-\renewcommand{\bottomfraction}{0.8}
-\renewcommand{\textfraction}{0.07}
+\renewcommand{\topfraction}{0.92}
+\renewcommand{\bottomfraction}{0.85}
+\renewcommand{\textfraction}{0.06}
 \renewcommand{\floatpagefraction}{0.75}
-\setcounter{topnumber}{3}
-\setcounter{bottomnumber}{2}
-\setcounter{totalnumber}{5}
+\setcounter{topnumber}{4}
+\setcounter{bottomnumber}{3}
+\setcounter{totalnumber}{6}
+\setlength{\textfloatsep}{9pt plus 3pt minus 2pt}
+\setlength{\floatsep}{8pt plus 3pt minus 2pt}
+\setlength{\intextsep}{9pt plus 3pt minus 2pt}
+\setlength{\abovecaptionskip}{3pt}
+\setlength{\belowcaptionskip}{0pt}
 
 % ---------------------------------------------------------------------
-% Headings. Navy, set in the display face, with a hairline under each
-% section so the document's spine is visible while skimming.
+% Headings. Plain black, set in the display face. The face alone carries
+% the contrast; there is no colour and no rule, which is how the English
+% edition sets its headings too.
 % ---------------------------------------------------------------------
 \titleformat{\section}
-  {\headfont\bfseries\large\color{tabink}}{\thesection}{0.6em}{}
-  [{\vspace{2pt}\color{tabink}\titlerule[0.8pt]}]
+  {\headfont\bfseries\large}{\thesection}{0.6em}{}
 \titleformat{\subsection}
-  {\headfont\bfseries\normalsize\color{tabink}}{\thesubsection}{0.6em}{}
+  {\headfont\bfseries\normalsize}{\thesubsection}{0.6em}{}
 \titleformat{\subsubsection}
-  {\headfont\bfseries\small\color{tabink}}{\thesubsubsection}{0.6em}{}
-\titlespacing*{\section}{0pt}{14pt plus 3pt minus 2pt}{6pt}
-\titlespacing*{\subsection}{0pt}{10pt plus 2pt minus 2pt}{3pt}
-\titlespacing*{\subsubsection}{0pt}{8pt plus 2pt minus 2pt}{2pt}
+  {\headfont\bfseries\small}{\thesubsubsection}{0.6em}{}
+\titlespacing*{\section}{0pt}{13pt plus 3pt minus 2pt}{5pt}
+\titlespacing*{\subsection}{0pt}{9pt plus 2pt minus 2pt}{3pt}
+\titlespacing*{\subsubsection}{0pt}{7pt plus 2pt minus 2pt}{2pt}
 
-\captionsetup{font=small,labelfont={bf,color=tabink},skip=5pt}
+% Captions carry a good deal of this paper's explanation and there are
+% twenty of them; one size down keeps that explanation without spending a
+% page of the measure on it.
+\captionsetup{font=small,labelfont=bf,skip=4pt}
 \captionsetup[table]{position=top}
 
 \pagestyle{fancy}
 \fancyhf{}
-\fancyhead[C]{\small\color{tabink}%
+\fancyhead[C]{\small
   ارزیابی امنیتی سیاست‌آگاه یک برنامهٔ وب مبتنی بر \en{LLM}}
 \fancyfoot[C]{\small\thepage}
 \renewcommand{\headrulewidth}{0.4pt}
@@ -279,76 +308,62 @@
 \thispagestyle{plain}
 
 \begin{center}
-  {\color{tabink}\rule{\textwidth}{1pt}}\\[8pt]
-  {\displayfont\bfseries\fontsize{17}{22}\selectfont\color{tabink}
-   ارزیابی امنیتی سیاست‌آگاه یک برنامهٔ وب مبتنی بر \en{LLM}}\\[6pt]
-  {\displayfont\fontsize{12.5}{16}\selectfont\color{tabink}
+  {\displayfont\bfseries\fontsize{16}{21}\selectfont
+   ارزیابی امنیتی سیاست‌آگاه یک برنامهٔ وب مبتنی بر \en{LLM}}\\[5pt]
+  {\displayfont\fontsize{12}{16}\selectfont
    مطالعه‌ای بومیِ \en{Garak} دربارهٔ \en{Prompt Injection}،
-   \en{Information Disclosure} و \en{Data Poisoning}}\\[8pt]
-  {\color{tabink}\rule{\textwidth}{0.4pt}}\\[10pt]
-  {\normalsize نویسندهٔ ناشناس}
+   \en{Information Disclosure} و \en{Data Poisoning}}\\[9pt]
+  {\normalsize محمدمهدی شهریار \quad حسین حمزه‌زاده \quad کیمیا عمرانی}
 \end{center}
-
-\vspace{4pt}
-
-% --- Abstract --------------------------------------------------------
-% Tinted panel rather than IEEEtran's run-in abstract: at this measure a
-% 300-word Persian paragraph needs a visible frame to stay a unit.
-\begin{center}
-{\setlength{\fboxsep}{9pt}%
-\colorbox{tabrow}{%
-\begin{minipage}{\dimexpr\textwidth-2\fboxsep\relax}
-\vspace{3pt}
-{\headfont\bfseries\color{tabink}چکیده}\par\vspace{2pt}
-\small
-ارزیابی‌های امنیتی مدل‌های زبانی بزرگ معمولاً خودِ مدل را می‌کاوند.
-شکست‌هایی که در استقرار واقعی اهمیت دارند اما معمولاً به برنامهٔ پیرامون
-مدل تعلق دارند --- \en{input filter}، \en{retriever}،
-\en{output rewriter}، رمزگشای فایل، مجری ابزار --- زیرا همین خط لوله است
-که به یک کانال دادهٔ غیرقابل‌اعتماد، اقتدارِ یک کانال دستور را می‌بخشد.
-این مقاله ارزیابی‌ای را گزارش می‌کند که برنامه را هدف می‌گیرد. ما نُه سطح
-\en{HTTP} از یک فروشگاه عمداً آسیب‌پذیرِ مبتنی بر \en{LLM} را به شکل
-\en{Garak generator} بسته‌بندی می‌کنیم، دوازده \en{detector} می‌افزاییم که
-به‌جای یک امضای سبک‌شناختی، \emph{نقض مشخصی از سیاست را در برابر
-\en{ground truth}} می‌آزمایند، و فراداده‌های خودِ برنامه به همراه رازِ هر
-تلاش را از مسیر کانال \en{notes} در \en{Garak} حمل می‌کنیم تا امتیازدهی
-دقیق باشد و امتناع از قضاوت جای اطمینان کاذب را بگیرد. هر مؤلفه یک
-\en{Garak plugin} درجه‌یک است؛ هستهٔ \en{Garak} دست‌نخورده می‌ماند و هر
-اندازه‌گیری از طریق \en{CLI} استاندارد قابل بازپخش است. پنج \en{suite}
-شامل \num{28} اجرا و \num{678} \en{attempt} ارزیابی‌شده،
-\en{prompt injection} (مستقیم و غیرمستقیم)، \en{information disclosure}
-و \en{data poisoning} را پوشش می‌دهد. \en{data poisoning}
-پرمخاطره‌ترین دسته است (\num{$\mathrm{ASR}=0.348$}). سخت‌کردن یک
-\en{system prompt} در پنج \en{persona}، نشت کوپن را به‌صورت یکنواخت از
-\num{0.472} به \num{0.083} می‌رساند بی‌آنکه هرگز آن را حذف کند، و ثابت
-نگه‌داشتنِ پیکرهٔ حمله در ده پیکربندی \en{guardrail} نشان می‌دهد دو مورد از
-ده مورد، بهتر از نبودِ هیچ \en{guardrail} عمل نمی‌کنند. موفقیت در
-تکنیک‌هایی متمرکز است که هرگز هدف خود را نام نمی‌برند:
-\en{fictional framing} در \num{14/15} تلاش موفق شد در برابر \num{1/15}
-برای پرسیدنِ ساده، و در برابر سخت‌گیرترین \en{persona}، پرسش‌هایی که
-\emph{قواعد} را می‌خواستند \num{5.6} برابر بیشتر از پرسش‌هایی که خودِ راز را
-می‌خواستند به رازِ محافظت‌شده رسیدند. پنج نظر با برچسب نادرست یک
-\en{backdoor} هدفمند در طبقه‌بند می‌سازند که رانش احتمال آن، چهار گامِ
-بودجه پیش از تغییر هر برچسبی قابل اندازه‌گیری است. \en{retrieval} با
-برچسب اعتماد، بازیابی غیرقابل‌اعتماد را کاملاً حذف کرد
-(\numto{12/12}{0/12})، و بازرسی نشان می‌دهد نرخ باقی‌ماندهٔ
-سطحِ پاسخ، مثبت کاذبِ \en{detector} است. یک \en{detector} عمومی و
-استاندارد که در کنار ابزار ما اجرا شد، در برابر سیاست واقعی برنامه به
-\en{recall} برابر \num{1.000} با \en{precision} برابر \num{0.293} رسید. یک
-مطالعهٔ \en{ablation}، سهم هر لایهٔ دفاعی را از سهم هر جزء دستگاه
-اندازه‌گیری تفکیک می‌کند و نشان می‌دهد که حذف کانال \en{ground truth}
-اعداد این مطالعه را تضعیف نمی‌کند، بلکه آن‌ها را از میان برمی‌دارد.
-\vspace{5pt}
-\end{minipage}}}
-\end{center}
-
-\vspace{2pt}
-\noindent{\small\textbf{\color{tabink}واژگان کلیدی:}\enspace
-امنیت \en{LLM}، \en{prompt injection}، \en{data poisoning}،
-\en{information disclosure}، \en{red teaming}، \en{garak}،
-\en{OWASP LLM Top 10}، مطالعهٔ \en{ablation}.}
 
 \vspace{6pt}
+
+% --- Abstract --------------------------------------------------------
+% An ordinary indented block, one size down, as IEEEtran sets it in the
+% English edition. The earlier tinted panel was decoration.
+\begingroup
+\small
+\setlength{\leftskip}{1.6em}\setlength{\rightskip}{1.6em}
+\noindent\textbf{چکیده---}%
+ارزیابی‌های امنیتی مدل‌های زبانی بزرگ معمولاً خودِ مدل را می‌کاوند. اما
+شکست‌هایی که در استقرار واقعی اهمیت دارند معمولاً به برنامهٔ پیرامون مدل
+تعلق دارند --- \en{input filter}، \en{retriever}، \en{output rewriter}،
+رمزگشای فایل، مجری ابزار --- زیرا همین خط لوله است که به یک کانال دادهٔ
+غیرقابل‌اعتماد اقتدارِ یک کانال دستور را می‌بخشد. ما ارزیابی‌ای گزارش
+می‌کنیم که برنامه را هدف می‌گیرد. نُه سطح \en{HTTP} از یک فروشگاه عمداً
+آسیب‌پذیرِ مبتنی بر \en{LLM} به‌شکل \en{Garak generator} بسته‌بندی شده‌اند؛
+دوازده \en{detector} به‌جای یک امضای سبک‌شناختی، \emph{یک نقض سیاست مشخص
+را در برابر \en{ground truth}} می‌آزمایند که از کدِ پین‌شدهٔ برنامه رونویسی
+شده است؛ و رازِ هر تلاش روی کانال \en{notes} در \en{Garak} همراه پاسخ سفر
+می‌کند، و همین است که یک جاروبِ درون‌فرایندی را قابل امتیازدهی می‌سازد. یک
+\en{LLM-as-a-judge} به‌عنوان نظر دومِ کالیبره‌شده حمل می‌شود، هرگز به‌عنوان
+\en{detector} اصلی. هر مؤلفه یک \en{Garak plugin} درجه‌یک است، هستهٔ
+\en{Garak} دست‌نخورده می‌ماند و هر \num{28} اجرا از راه \en{CLI}
+استاندارد بازپخش می‌شود. روی \num{678} تلاش ارزیابی‌شده،
+\en{data poisoning} پرمخاطره‌ترین دسته است (\num{$\mathrm{ASR}=0.348$})؛
+سخت‌کردن یک \en{system prompt} در پنج \en{persona} نشت کوپن را به‌صورت
+یکنواخت از \num{0.472} به \num{0.083} می‌کاهد بی‌آنکه آن را حذف کند؛ دو
+پیکربندی از ده پیکربندی \en{guardrail} بهتر از نبودِ هیچ \en{guardrail}
+عمل نمی‌کنند؛ موفقیت در تکنیک‌هایی متمرکز است که هرگز هدف خود را نام
+نمی‌برند (\num{14/15} برای \en{fictional framing} در برابر \num{1/15}
+برای پرسیدنِ ساده)؛ پنج نظر با برچسب نادرست یک \en{backdoor} هدفمند در
+طبقه‌بند می‌سازند که رانش احتمال آن چهار گامِ بودجه پیش از تغییر هر برچسبی
+قابل اندازه‌گیری است؛ \en{retrieval} با برچسب اعتماد، بازیابی
+غیرقابل‌اعتماد را کاملاً حذف می‌کند (\numto{12/12}{0/12})؛ و یک
+\en{detector} عمومی و استاندارد در برابر سیاست واقعی برنامه به
+\en{recall} برابر \num{1.000} با \en{precision} برابر \num{0.293}
+می‌رسد. یک مطالعهٔ \en{ablation}، سهم هر لایهٔ دفاعی را از سهم هر جزء دستگاه
+اندازه‌گیری تفکیک می‌کند و نشان می‌دهد حذف کانال \en{ground truth} اعداد
+این مطالعه را تضعیف نمی‌کند، بلکه آن‌ها را از میان برمی‌دارد.
+\par\vspace{5pt}
+\noindent\textbf{واژگان کلیدی---}%
+امنیت \en{LLM}، \en{prompt injection}، \en{data poisoning}،
+\en{information disclosure}، \en{red teaming}، \en{garak}،
+\en{LLM-as-a-judge}، \en{OWASP LLM Top 10}، مطالعهٔ \en{ablation}.
+\par
+\endgroup
+
+\vspace{8pt}
 
 % =====================================================================
 \input{sections/introduction}

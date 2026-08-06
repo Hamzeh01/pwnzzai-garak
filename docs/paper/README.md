@@ -6,15 +6,14 @@ Two editions of the same study. Both are complete front to back: abstract,
 introduction, related work, architecture, methodology, results, ablation study,
 discussion, conclusion.
 
-- **English (`en/`)** — the current, condensed edition: 18 pages, single-column
-  IEEEtran 10pt, BibTeX, 10 references, 15 tables, 5 figures. Authors:
-  Mohammad Mahdi Shahriyar, Hossein Hamzehzadeh, Kimia Omrani.
-- **Persian (`fa/`)** — the earlier long-form edition: 27 pages, XePersian with a
-  literal RTL-safe bibliography. It has **not** been revised and still carries
-  the pre-revision section text, the nine-figure/21-table float set, and the old
-  27-reference bibliography — including the survey citations the English edition
-  has since dropped. Bring it in line with `en/` before treating the two as
-  translations of each other.
+- **English (`en/`)** — 18 pages, single-column IEEEtran 10pt, BibTeX, 10
+  references, 15 tables, 5 figures. Authors: Mohammad Mahdi Shahriyar, Hossein
+  Hamzehzadeh, Kimia Omrani.
+- **Persian (`fa/`)** — 21 pages, XePersian on `article` with a literal RTL-safe
+  bibliography. Section for section, table for table, figure for figure, and
+  number for number, it is the same paper: the same 15 tables, the same 5
+  figures, the same 10 references, the same authors. Persian runs longer at the
+  same content, which is the whole of the three-page difference.
 
 Source, generated figures, temporary build files, and release PDFs are kept in
 separate directories.
@@ -105,6 +104,34 @@ derives from.
 | Table information-disclosure tasks | the four rates in the opening of Sec. V-E |
 | Table QR per-payload hits | the payload paragraph in Sec. V-D |
 
+## What changed in the Persian edition
+
+It was brought in line with the condensed English one: every section retranslated
+from the current English source, the float set cut from 9 figures and 21 tables
+to the same 5 and 15, Sec. 3.6 on the LLM-as-a-judge and the provenance table
+added, the authors named, and the bibliography cut from 27 entries to the same
+10 — the survey citations went with the prose that leaned on them.
+
+The other half was typographic. The earlier Persian edition carried decoration
+the English one never had: navy headings with a rule under each section, a tinted
+panel around the abstract, a coloured running head, coloured caption labels. None
+of it encoded anything, and Persian bold is optically heavier than Latin bold, so
+the same amount of emphasis reads louder in this script. All of it is gone.
+Colour now appears only inside tables, under exactly the English edition's rules
+— tinted header band, zebra banding, `\hi`/`\lo` on the extreme value of a block,
+proportional rate bars — so a reader can hold the two PDFs side by side and see
+one visual grammar.
+
+Three RTL-specific corrections came out of reading the built pages rather than
+the source, and each is commented where it was made: a Latin run whose
+punctuation is a bidi neutral (`/api/...(+ /reset, /upload-doc)`, a list of eight
+CSV filenames, `0.121/0.333/0.061/0.030`, `output < input < prompt`) has to sit
+inside **one** `\lr`, or the algorithm attaches the separator to the wrong side
+and can reverse the series; a bibliography entry has to be one `\lr` covering the
+note as well, or the Persian half lands in the middle of a wrapped English title;
+and `\begin{LTR}` is not a substitute for `\lr`, because it flips the direction
+without switching the font, which prints ASCII commas as Persian ones.
+
 ## Figures (5)
 
 | Figure | Source | Origin |
@@ -116,8 +143,10 @@ derives from.
 | Fig. 5 defence layers vs techniques | `figures/source/fig-defence-layers.mmd` | unchanged |
 
 `fig-controls.mmd`, `guardrail-ladder.svg`, `sentiment-flip-rate.svg` and
-`catering-mitigation.svg` are still built and still referenced by the Persian
-edition; only the English edition stopped citing them.
+`catering-mitigation.svg` are still built by the figure builder but are now
+cited by neither edition; the Persian edition dropped them when it was
+condensed to match. They are kept because they are cheap to build and their
+content is quoted in the prose of both editions.
 
 ## References
 
@@ -264,5 +293,6 @@ word "MOONCHEESE". One of the 97 recorded leaks is attributable to this.
   parameterised for it but was only ever run against `llama3.2:1b`; Sec. VI says
   so explicitly, and now cites the evidence that the trend runs against
   defenders.
-- The Persian edition has not been re-condensed and no longer matches the English
-  one section for section.
+- The two editions are kept in step by hand. A change to a number, a table, or a
+  claim has to be made twice; `fa/sections/references.tex` is the literal twin of
+  `en/references.bib` and drifts silently if only one is edited.
