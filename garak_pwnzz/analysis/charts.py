@@ -26,10 +26,66 @@ _GRID = "#e2e8f0"
 _TEXT = "#0f172a"
 _MUTED = "#64748b"
 
+# Legend metrics. The legend is laid out by hand because SVG has no text
+# measurement: _LEGEND_CHAR_W is a deliberate over-estimate of the average
+# advance width at font-size 12, so a row that is predicted to fit really does
+# fit and long labels wrap one entry early rather than running off the canvas.
+_LEGEND_CHAR_W = 7.0
+_LEGEND_SWATCH = 12
+_LEGEND_PAD = 6  # swatch-to-text gap
+_LEGEND_GAP = 24  # gap between entries
+_LEGEND_ROW_H = 18
+
 
 def _esc(text: str) -> str:
     """HTML-escape a value for safe inclusion in SVG/HTML text."""
     return html.escape(str(text))
+
+
+def _legend_rows(names: list[str], max_width: float) -> list[list[tuple[str, float]]]:
+    """Pack ``(name, width)`` legend entries into rows no wider than ``max_width``.
+
+    An entry wider than ``max_width`` on its own still gets a row to itself --
+    dropping it would leave a plotted series unnamed, which is the failure this
+    packing exists to prevent.
+    """
+    rows: list[list[tuple[str, float]]] = []
+    row: list[tuple[str, float]] = []
+    row_w = 0.0
+    for name in names:
+        w = _LEGEND_SWATCH + _LEGEND_PAD + _LEGEND_CHAR_W * len(name) + _LEGEND_GAP
+        if row and row_w + w > max_width:
+            rows.append(row)
+            row, row_w = [], 0.0
+        row.append((name, w))
+        row_w += w
+    if row:
+        rows.append(row)
+    return rows
+
+
+def _legend_parts(
+    rows: list[list[tuple[str, float]]], left: float, top: float
+) -> list[str]:
+    """Render pre-packed legend rows, ``top`` being the first row's swatch y."""
+    parts: list[str] = []
+    idx = 0
+    for ri, row in enumerate(rows):
+        x = left
+        y = top + ri * _LEGEND_ROW_H
+        for name, w in row:
+            color = _PALETTE[idx % len(_PALETTE)]
+            parts.append(
+                f'<rect x="{x:.1f}" y="{y:.1f}" width="{_LEGEND_SWATCH}" '
+                f'height="{_LEGEND_SWATCH}" fill="{color}" rx="2"/>'
+            )
+            parts.append(
+                f'<text x="{x + _LEGEND_SWATCH + _LEGEND_PAD:.1f}" y="{y + 11:.1f}" '
+                f'fill="{_TEXT}" font-size="12">{_esc(name)}</text>'
+            )
+            x += w
+            idx += 1
+    return parts
 
 
 @dataclass
@@ -75,7 +131,11 @@ def grouped_bar_chart(
     left, right, top, bottom = 70, 24, 50, 90
     plot_w = width - left - right
     plot_h = height - top - bottom
-    parts = _svg_header(width, height, title)
+    # The legend sits below the plot and may need more than one row; the canvas
+    # grows to hold it rather than the extra rows falling off the bottom.
+    rows = _legend_rows([s.name for s in series], plot_w) if len(series) > 1 else []
+    canvas_h = height + max(0, len(rows) - 1) * _LEGEND_ROW_H
+    parts = _svg_header(width, canvas_h, title)
 
     # y grid + labels
     ticks = 5
@@ -133,19 +193,7 @@ def grouped_bar_chart(
     )
 
     # legend
-    if n_ser > 1:
-        lx = left
-        ly = height - 30
-        for si, s in enumerate(series):
-            parts.append(
-                f'<rect x="{lx:.1f}" y="{ly:.1f}" width="12" height="12" '
-                f'fill="{_PALETTE[si % len(_PALETTE)]}" rx="2"/>'
-            )
-            parts.append(
-                f'<text x="{lx + 18:.1f}" y="{ly + 11:.1f}" fill="{_TEXT}" '
-                f'font-size="12">{_esc(s.name)}</text>'
-            )
-            lx += 30 + 8 * len(s.name)
+    parts.extend(_legend_parts(rows, left, height - 30))
     parts.append("</svg>")
     return "\n".join(parts)
 
@@ -168,7 +216,9 @@ def line_chart(
     left, right, top, bottom = 70, 24, 50, 80
     plot_w = width - left - right
     plot_h = height - top - bottom
-    parts = _svg_header(width, height, title)
+    rows = _legend_rows([s.name for s in series], plot_w) if len(series) > 1 else []
+    canvas_h = height + max(0, len(rows) - 1) * _LEGEND_ROW_H
+    parts = _svg_header(width, canvas_h, title)
 
     span = (y_max - y_min) or 1.0
     x_lo, x_hi = min(x_values), max(x_values)
@@ -249,18 +299,6 @@ def line_chart(
             f'transform="rotate(-90 16 {top + plot_h / 2:.1f})">{_esc(y_label)}</text>'
         )
 
-    if len(series) > 1:
-        lx, ly = left, height - 14
-        for si, s in enumerate(series):
-            color = _PALETTE[si % len(_PALETTE)]
-            parts.append(
-                f'<rect x="{lx:.1f}" y="{ly - 10:.1f}" width="12" height="12" '
-                f'fill="{color}" rx="2"/>'
-            )
-            parts.append(
-                f'<text x="{lx + 18:.1f}" y="{ly:.1f}" fill="{_TEXT}" '
-                f'font-size="12">{_esc(s.name)}</text>'
-            )
-            lx += 30 + 8 * len(s.name)
+    parts.extend(_legend_parts(rows, left, height - 24))
     parts.append("</svg>")
     return "\n".join(parts)

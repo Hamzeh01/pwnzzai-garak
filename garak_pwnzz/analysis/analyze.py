@@ -485,7 +485,10 @@ def sentiment_doseresponse(
             signed = None
             if conf is not None and pois is not None:
                 signed = conf if pois == "positive" else 1 - conf
-            trigger_conf[prompt[:40]].append(signed)
+            # Legend label: shortened, but marked so a clipped prompt does not
+            # read as the whole prompt.
+            key = prompt if len(prompt) <= 40 else prompt[:40].rstrip() + "..."
+            trigger_conf[key].append(signed)
             rows.append(
                 [
                     b,
@@ -532,12 +535,20 @@ def sentiment_doseresponse(
     )
 
     # Figure 2: signed positive-confidence per prompt vs budget.
-    series = []
-    # Keep only the most informative prompts (those that move).
+    #
+    # Prompts whose curves coincide are merged into one entry. The bare trigger
+    # with and without a trailing period is the same bag of words once the
+    # CountVectorizer has tokenised it, so the two prompts agree at every
+    # budget; drawn separately, the later line covers the earlier one exactly
+    # and the legend names a colour that is nowhere visible on the chart.
+    merged: dict[tuple[float | None, ...], list[str]] = {}
     for label, vals in trigger_conf.items():
+        # Keep only the most informative prompts (those that move).
         if any(v is not None for v in vals):
-            series.append(charts.Series(label, list(vals)))
-    series = series[:4]
+            merged.setdefault(tuple(vals), []).append(label)
+    series = [
+        charts.Series(" / ".join(labels), list(vals)) for vals, labels in merged.items()
+    ][:4]
     (fig_dir / "sentiment-confidence.svg").write_text(
         charts.line_chart(
             "Sentiment poisoning: P(positive) per prompt vs budget",

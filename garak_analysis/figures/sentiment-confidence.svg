@@ -1,5 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 420" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="13">
-<rect width="720" height="420" fill="white"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 474" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="13">
+<rect width="720" height="474" fill="white"/>
 <text x="360.0" y="24" text-anchor="middle" font-size="16" font-weight="600" fill="#0f172a">Sentiment poisoning: P(positive) per prompt vs budget</text>
 <line x1="70" y1="340.0" x2="696" y2="340.0" stroke="#e2e8f0" stroke-width="1"/>
 <text x="62" y="344.0" text-anchor="end" fill="#64748b" font-size="11">0</text>
@@ -28,37 +28,37 @@
 <circle cx="226.5" cy="160.5" r="3.5" fill="#2563eb"/>
 <circle cx="383.0" cy="147.8" r="3.5" fill="#2563eb"/>
 <circle cx="696.0" cy="123.8" r="3.5" fill="#2563eb"/>
-<polyline points="70.0,273.2 101.3,223.5 163.9,196.0 226.5,160.5 383.0,147.8 696.0,123.8" fill="none" stroke="#dc2626" stroke-width="2.5"/>
-<circle cx="70.0" cy="273.2" r="3.5" fill="#dc2626"/>
-<circle cx="101.3" cy="223.5" r="3.5" fill="#dc2626"/>
-<circle cx="163.9" cy="196.0" r="3.5" fill="#dc2626"/>
-<circle cx="226.5" cy="160.5" r="3.5" fill="#dc2626"/>
-<circle cx="383.0" cy="147.8" r="3.5" fill="#dc2626"/>
-<circle cx="696.0" cy="123.8" r="3.5" fill="#dc2626"/>
-<polyline points="70.0,316.8 101.3,295.4 163.9,281.7 226.5,246.5 383.0,236.9 696.0,207.6" fill="none" stroke="#16a34a" stroke-width="2.5"/>
-<circle cx="70.0" cy="316.8" r="3.5" fill="#16a34a"/>
-<circle cx="101.3" cy="295.4" r="3.5" fill="#16a34a"/>
-<circle cx="163.9" cy="281.7" r="3.5" fill="#16a34a"/>
-<circle cx="226.5" cy="246.5" r="3.5" fill="#16a34a"/>
-<circle cx="383.0" cy="236.9" r="3.5" fill="#16a34a"/>
-<circle cx="696.0" cy="207.6" r="3.5" fill="#16a34a"/>
-<polyline points="70.0,320.6 101.3,303.2 163.9,282.1 226.5,264.1 383.0,252.0 696.0,217.4" fill="none" stroke="#d97706" stroke-width="2.5"/>
-<circle cx="70.0" cy="320.6" r="3.5" fill="#d97706"/>
-<circle cx="101.3" cy="303.2" r="3.5" fill="#d97706"/>
-<circle cx="163.9" cy="282.1" r="3.5" fill="#d97706"/>
-<circle cx="226.5" cy="264.1" r="3.5" fill="#d97706"/>
-<circle cx="383.0" cy="252.0" r="3.5" fill="#d97706"/>
-<circle cx="696.0" cy="217.4" r="3.5" fill="#d97706"/>
+<polyline points="70.0,316.8 101.3,295.4 163.9,281.7 226.5,246.5 383.0,236.9 696.0,207.6" fill="none" stroke="#dc2626" stroke-width="2.5"/>
+<circle cx="70.0" cy="316.8" r="3.5" fill="#dc2626"/>
+<circle cx="101.3" cy="295.4" r="3.5" fill="#dc2626"/>
+<circle cx="163.9" cy="281.7" r="3.5" fill="#dc2626"/>
+<circle cx="226.5" cy="246.5" r="3.5" fill="#dc2626"/>
+<circle cx="383.0" cy="236.9" r="3.5" fill="#dc2626"/>
+<circle cx="696.0" cy="207.6" r="3.5" fill="#dc2626"/>
+<polyline points="70.0,320.6 101.3,303.2 163.9,282.1 226.5,264.1 383.0,252.0 696.0,217.4" fill="none" stroke="#16a34a" stroke-width="2.5"/>
+<circle cx="70.0" cy="320.6" r="3.5" fill="#16a34a"/>
+<circle cx="101.3" cy="303.2" r="3.5" fill="#16a34a"/>
+<circle cx="163.9" cy="282.1" r="3.5" fill="#16a34a"/>
+<circle cx="226.5" cy="264.1" r="3.5" fill="#16a34a"/>
+<circle cx="383.0" cy="252.0" r="3.5" fill="#16a34a"/>
+<circle cx="696.0" cy="217.4" r="3.5" fill="#16a34a"/>
+<polyline points="70.0,321.8 101.3,322.9 163.9,328.2 226.5,330.0 383.0,331.5 696.0,332.9" fill="none" stroke="#d97706" stroke-width="2.5"/>
+<circle cx="70.0" cy="321.8" r="3.5" fill="#d97706"/>
+<circle cx="101.3" cy="322.9" r="3.5" fill="#d97706"/>
+<circle cx="163.9" cy="328.2" r="3.5" fill="#d97706"/>
+<circle cx="226.5" cy="330.0" r="3.5" fill="#d97706"/>
+<circle cx="383.0" cy="331.5" r="3.5" fill="#d97706"/>
+<circle cx="696.0" cy="332.9" r="3.5" fill="#d97706"/>
 <line x1="70" y1="340" x2="696" y2="340" stroke="#334155" stroke-width="1.5"/>
 <line x1="70" y1="50" x2="70" y2="340" stroke="#334155" stroke-width="1.5"/>
 <text x="383.0" y="390" text-anchor="middle" fill="#64748b" font-size="11">poison comments injected</text>
 <text x="16" y="195.0" text-anchor="middle" fill="#64748b" font-size="11" transform="rotate(-90 16 195.0)">confidence toward positive</text>
 <rect x="70.0" y="396.0" width="12" height="12" fill="#2563eb" rx="2"/>
-<text x="88.0" y="406.0" fill="#0f172a" font-size="12">burnt cardboard crust</text>
-<rect x="268.0" y="396.0" width="12" height="12" fill="#dc2626" rx="2"/>
-<text x="286.0" y="406.0" fill="#0f172a" font-size="12">burnt cardboard crust.</text>
-<rect x="474.0" y="396.0" width="12" height="12" fill="#16a34a" rx="2"/>
-<text x="492.0" y="406.0" fill="#0f172a" font-size="12">I ordered the burnt cardboard crust.</text>
-<rect x="792.0" y="396.0" width="12" height="12" fill="#d97706" rx="2"/>
-<text x="810.0" y="406.0" fill="#0f172a" font-size="12">The burnt cardboard crust was the worst </text>
+<text x="88.0" y="407.0" fill="#0f172a" font-size="12">burnt cardboard crust / burnt cardboard crust.</text>
+<rect x="70.0" y="414.0" width="12" height="12" fill="#dc2626" rx="2"/>
+<text x="88.0" y="425.0" fill="#0f172a" font-size="12">I ordered the burnt cardboard crust.</text>
+<rect x="70.0" y="432.0" width="12" height="12" fill="#16a34a" rx="2"/>
+<text x="88.0" y="443.0" fill="#0f172a" font-size="12">The burnt cardboard crust was the worst...</text>
+<rect x="70.0" y="450.0" width="12" height="12" fill="#d97706" rx="2"/>
+<text x="88.0" y="461.0" fill="#0f172a" font-size="12">The delivery arrived on time and the box...</text>
 </svg>
