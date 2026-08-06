@@ -1,0 +1,365 @@
+% !TEX program = xelatex
+% =====================================================================
+%  PwnzzAI x Garak -- Persian paper
+%
+%  Build:
+%     ../figures/scripts/build-figures.sh  (renders diagrams and charts)
+%     ../build.sh fa                       (two XeLaTeX passes; no BibTeX)
+%
+%  This is the Persian counterpart of the English main file and carries the same
+%  sections, the same eighteen tables, the same nine figures and the same
+%  numbers. It is NOT built on IEEEtran: bidi does not support that class,
+%  so the layout is reproduced on top of `article` with the same visual
+%  grammar -- single column, tinted table headers, zebra banding,
+%  proportional rate bars, and semantic colour on extreme values only.
+%
+%  Typography. Body text is IRLotus (B Lotus), the standard Persian
+%  journal face; headings are IRYekan, a geometric sans that gives the
+%  document its contrast. Latin runs -- which carry every technical term
+%  in this paper -- are set in Segoe UI, and identifiers in Consolas.
+%  Both Persian faces ship Regular and Bold with correct init/medi/fina
+%  shaping, so no synthetic bold is ever used.
+% =====================================================================
+\documentclass[11pt,a4paper]{article}
+
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{array}
+% bidi's array-xetex-bidi.def was written against array 2024-06-01, which
+% defines \UseMathForPositioningText; the current array.sty dropped it, so
+% every \begin{tabular} in an RTL document raises "Undefined control
+% sequence". Restoring the no-op hook is the minimal fix and is inert if a
+% future bidi stops referring to it.
+\providecommand\UseMathForPositioningText{}
+\usepackage[table]{xcolor}
+\usepackage{threeparttable}
+\usepackage{enumitem}
+\usepackage{float}
+\usepackage{caption}
+% xurl lets a URL break at any character. Three of the references end in
+% one, and inside an \lr run an unbreakable URL leaves the preceding line
+% underfull.
+\usepackage{xurl}
+\usepackage{titlesec}
+\usepackage{fancyhdr}
+\usepackage[hidelinks,unicode]{hyperref}
+
+% ---------------------------------------------------------------------
+% Page geometry. A4 with a generous but not slack measure; the tables in
+% this paper are wide, and they are sized against \textwidth.
+% ---------------------------------------------------------------------
+% headheight is set explicitly: the running head is set in IRLotus, whose
+% ascent and descent exceed the 12pt LaTeX default, and fancyhdr warns on
+% every page that the header box overflows into the text block.
+\usepackage[a4paper,top=22mm,bottom=22mm,left=19mm,right=19mm,
+            headheight=22pt,headsep=6mm,footskip=12mm]{geometry}
+\setlength{\emergencystretch}{2em}
+
+% ---------------------------------------------------------------------
+% Fonts. xepersian must be the LAST package loaded.
+% ---------------------------------------------------------------------
+\usepackage{fontspec}
+\usepackage{xepersian}
+
+% IRLotus ships its bold under the family name "IRlotus" (lowercase L),
+% which fontspec's automatic "<family> Bold" probe does not find, so the
+% bold face is named explicitly.
+%
+% Ligatures=PersianTeXNoNumbers swaps xepersian's default `persian-tex-text`
+% mapping for the variant that leaves digits alone. Without it every ASCII
+% digit typed in Persian text is silently rendered as a Persian digit, while
+% digits inside \lr (that is, every measurement in this paper) stay Western
+% -- so the same table would print its counts in one numeral system and its
+% rates in another. Turning the mapping off makes Western digits the single
+% default and keeps the numbers identical to the English edition.
+\settextfont[Scale=1.0,BoldFont={IRlotus},
+             Ligatures=PersianTeXNoNumbers]{IRLotus}
+\setlatintextfont[Scale=MatchLowercase]{Segoe UI}
+\setmonofont[Scale=MatchLowercase]{Consolas}
+
+% IRYekan is drawn on a noticeably larger optical body than IRLotus, so
+% it is scaled down to sit level with the body text.
+\newfontfamily\headfont[Scale=0.86]{IRYekan}
+\newfontfamily\displayfont[Scale=0.86]{IRYekan}
+
+% ---------------------------------------------------------------------
+% Numbering.
+%
+% Every digit in this document is Western, structural counters included.
+% Two reasons: the measurements are Western throughout -- as they are in
+% the English edition, which this paper must stay comparable with -- and
+% a document that mixed Persian counters with Western data would make the
+% same table read in two numeral systems at once.
+%
+% The \lr wrapper is what matters for correctness: a compound label such
+% as "3.1" is a digit run around a neutral full stop, which the bidi
+% algorithm otherwise reorders to "1.3" -- in the heading and in every
+% \ref to it. Wrapping \the... rather than patching \ref fixes the
+% headings, the cross-references, and the .aux entries in one place.
+%
+% \theenumi is deliberately left alone: LaTeX expands it in contexts that
+% demand a bare number, and a single-digit list label has nothing to
+% reorder anyway.
+% ---------------------------------------------------------------------
+\renewcommand{\thesection}{\lr{\arabic{section}}}
+\renewcommand{\thesubsection}{\lr{\arabic{section}.\arabic{subsection}}}
+\renewcommand{\thesubsubsection}{%
+  \lr{\arabic{section}.\arabic{subsection}.\arabic{subsubsection}}}
+\renewcommand{\thefigure}{\lr{\arabic{figure}}}
+\renewcommand{\thetable}{\lr{\arabic{table}}}
+\renewcommand{\theequation}{\lr{\arabic{equation}}}
+
+% =====================================================================
+% TABLE STYLE
+%
+% Identical grammar to the English edition, so the two documents can be
+% read side by side:
+%
+%   * a tinted header band with the header text in the same ink as the
+%     rules, so the reading order of a wide table is unambiguous;
+%   * very light zebra banding, which is what makes an eight-column row
+%     traceable across the measure;
+%   * a stronger tint for group-header and total rows, so the structure
+%     of a multi-block table is visible before it is read;
+%   * proportional bars beside the headline rates;
+%   * semantic colour on the extreme values only -- \hi for the worst
+%     outcome in a block, \lo for the best -- never as decoration.
+%
+% Colours stay legible in greyscale: the tints differ in lightness, and
+% every emphasised value is also bold.
+% =====================================================================
+\definecolor{tabhdr}{HTML}{DCE5EE}   % header band
+\definecolor{tabgrp}{HTML}{EDF1F6}   % group-header and total rows
+\definecolor{tabrow}{HTML}{F6F8FA}   % zebra band
+\definecolor{tabink}{HTML}{15334F}   % header text, rules, headings
+\definecolor{barfill}{HTML}{4A7CA8}  % filled portion of a rate bar
+\definecolor{bartrack}{HTML}{E2E8EE} % unfilled portion of a rate bar
+\definecolor{hiviz}{HTML}{9B2226}    % worst outcome in a block
+\definecolor{loviz}{HTML}{1B5E3A}    % best outcome in a block
+
+% Booktabs rules and coloured rows fight each other: the default
+% \aboverulesep / \belowrulesep leave an uncoloured gap at every rule.
+% Zeroing them and paying the space back through \extrarowheight keeps
+% the bands flush against the rules.
+\setlength{\aboverulesep}{0pt}
+\setlength{\belowrulesep}{0pt}
+\setlength{\extrarowheight}{1.7pt}
+\setlength{\heavyrulewidth}{1.0pt}
+\setlength{\lightrulewidth}{0.45pt}
+\setlength{\cmidrulewidth}{0.4pt}
+\arrayrulecolor{tabink}
+
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.14}
+
+% Under bidi, \raggedright and \raggedleft swap inside an RTL context, so
+% L is "flush at the start of the line" in both directions and these
+% column types behave in the Persian document as they do in the English
+% one.
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+\newcolumntype{C}[1]{>{\centering\arraybackslash}p{#1}}
+\newcolumntype{R}[1]{>{\raggedleft\arraybackslash}p{#1}}
+
+\newcommand{\zebra}{\rowcolors{2}{white}{tabrow}}
+\newcommand{\headrow}{\rowcolor{tabhdr}}
+\newcommand{\grouprow}{\rowcolor{tabgrp}}
+
+\newcommand{\tabhead}[1]{\textcolor{tabink}{\textbf{#1}}}
+\newcommand{\grouplabel}[1]{\textcolor{tabink}{\textbf{#1}}}
+\newcommand{\totlabel}[1]{\textcolor{tabink}{\textbf{#1}}}
+
+% Semantic emphasis on values. Bold as well as coloured, so it survives
+% greyscale printing.
+\newcommand{\hi}[1]{\textcolor{hiviz}{\textbf{#1}}}
+\newcommand{\lo}[1]{\textcolor{loviz}{\textbf{#1}}}
+
+% ---------------------------------------------------------------------
+% Bidirectional helpers.
+%
+% Every technical term in this paper stays in English and every measured
+% quantity stays in Western digits. Both are LTR runs inside RTL text, so
+% they are wrapped rather than left to the bidi algorithm: \num in
+% particular keeps compound values such as 12/12 or 5.6x from being
+% reordered around their separators.
+% ---------------------------------------------------------------------
+\newcommand{\en}[1]{\lr{#1}}                       % English term
+\newcommand{\num}[1]{\lr{#1}}                      % numeric quantity
+% "a becomes b". Both operands and the arrow live in one LTR run, so the
+% arrow keeps pointing from the reported value to the ablated one; left to
+% the bidi algorithm the arrow is a neutral between two digit runs and can
+% end up separating them in the wrong order.
+\newcommand{\numto}[2]{\lr{#1 $\rightarrow$ #2}}
+% \code drops a step, as it does in the English edition: Consolas is set
+% at the size of the surrounding table body rather than above it, which is
+% what keeps a long identifier inside a narrow cell.
+\newcommand{\code}[1]{\lr{\texttt{\footnotesize #1}}}  % identifier / path
+\newcommand{\bk}{\discretionary{}{}{}}             % zero-width break point
+
+% Column widths as fractions of \textwidth, so they track the text block.
+% The subtracted \tabcolsep pays for this column's share of the
+% inter-column padding, which guarantees the row cannot exceed the measure.
+\newcommand{\tw}[1]{\dimexpr #1\textwidth-2\tabcolsep\relax}
+
+% A proportional bar for a rate in [0,1], drawn as a filled segment over a
+% full-width track. Forced LTR: the bar is a quantity, not text, and must
+% grow in the same direction on every page.
+\newlength{\barwd}
+\setlength{\barwd}{12mm}
+\newcommand{\asrbar}[1]{%
+  \lr{\makebox[\barwd][l]{%
+    \textcolor{bartrack}{\rule[-0.15ex]{\barwd}{5pt}}%
+    \hspace*{-\barwd}%
+    \textcolor{barfill}{\rule[-0.15ex]{\dimexpr#1\barwd\relax}{5pt}}}}%
+}
+
+% ---------------------------------------------------------------------
+% Figures are generated artefacts. Until they have been built, draw a
+% labelled placeholder instead of failing the build. Scaled to fit both
+% the text width and a maximum height, so a diagram with an extreme
+% aspect ratio cannot run off the page.
+% ---------------------------------------------------------------------
+\newcommand{\safefig}[2][1.0]{%
+  \IfFileExists{#2}%
+    {\includegraphics[width=#1\textwidth,height=0.82\textheight,keepaspectratio]{#2}}%
+    {\fbox{\parbox[c][2.6cm][c]{0.92\textwidth}{\centering
+       \lr{\ttfamily\footnotesize #2}\\[4pt]
+       ساخته نشده --- سازندهٔ شکل‌ها را اجرا کنید}}}%
+}
+
+% ---------------------------------------------------------------------
+% Floats: keep them near their reference and stop LaTeX deferring a run
+% of large tables to the end of the document.
+% ---------------------------------------------------------------------
+\renewcommand{\topfraction}{0.9}
+\renewcommand{\bottomfraction}{0.8}
+\renewcommand{\textfraction}{0.07}
+\renewcommand{\floatpagefraction}{0.75}
+\setcounter{topnumber}{3}
+\setcounter{bottomnumber}{2}
+\setcounter{totalnumber}{5}
+
+% ---------------------------------------------------------------------
+% Headings. Navy, set in the display face, with a hairline under each
+% section so the document's spine is visible while skimming.
+% ---------------------------------------------------------------------
+\titleformat{\section}
+  {\headfont\bfseries\large\color{tabink}}{\thesection}{0.6em}{}
+  [{\vspace{2pt}\color{tabink}\titlerule[0.8pt]}]
+\titleformat{\subsection}
+  {\headfont\bfseries\normalsize\color{tabink}}{\thesubsection}{0.6em}{}
+\titleformat{\subsubsection}
+  {\headfont\bfseries\small\color{tabink}}{\thesubsubsection}{0.6em}{}
+\titlespacing*{\section}{0pt}{14pt plus 3pt minus 2pt}{6pt}
+\titlespacing*{\subsection}{0pt}{10pt plus 2pt minus 2pt}{3pt}
+\titlespacing*{\subsubsection}{0pt}{8pt plus 2pt minus 2pt}{2pt}
+
+\captionsetup{font=small,labelfont={bf,color=tabink},skip=5pt}
+\captionsetup[table]{position=top}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[C]{\small\color{tabink}%
+  ارزیابی امنیتی سیاست‌آگاه یک برنامهٔ وب مبتنی بر \en{LLM}}
+\fancyfoot[C]{\small\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0pt}
+
+\setlength{\parindent}{1.2em}
+\setlength{\parskip}{2pt plus 1pt}
+\setlist{itemsep=1pt,parsep=0pt,topsep=3pt}
+\setcounter{secnumdepth}{3}
+
+\begin{document}
+
+% =====================================================================
+% FRONT MATTER
+% =====================================================================
+\thispagestyle{plain}
+
+\begin{center}
+  {\color{tabink}\rule{\textwidth}{1pt}}\\[8pt]
+  {\displayfont\bfseries\fontsize{17}{22}\selectfont\color{tabink}
+   ارزیابی امنیتی سیاست‌آگاه یک برنامهٔ وب مبتنی بر \en{LLM}}\\[6pt]
+  {\displayfont\fontsize{12.5}{16}\selectfont\color{tabink}
+   مطالعه‌ای بومیِ \en{Garak} دربارهٔ \en{Prompt Injection}،
+   \en{Information Disclosure} و \en{Data Poisoning}}\\[8pt]
+  {\color{tabink}\rule{\textwidth}{0.4pt}}\\[10pt]
+  {\normalsize نویسندهٔ ناشناس}
+\end{center}
+
+\vspace{4pt}
+
+% --- Abstract --------------------------------------------------------
+% Tinted panel rather than IEEEtran's run-in abstract: at this measure a
+% 300-word Persian paragraph needs a visible frame to stay a unit.
+\begin{center}
+{\setlength{\fboxsep}{9pt}%
+\colorbox{tabrow}{%
+\begin{minipage}{\dimexpr\textwidth-2\fboxsep\relax}
+\vspace{3pt}
+{\headfont\bfseries\color{tabink}چکیده}\par\vspace{2pt}
+\small
+ارزیابی‌های امنیتی مدل‌های زبانی بزرگ معمولاً خودِ مدل را می‌کاوند.
+شکست‌هایی که در استقرار واقعی اهمیت دارند اما معمولاً به برنامهٔ پیرامون
+مدل تعلق دارند --- \en{input filter}، \en{retriever}،
+\en{output rewriter}، رمزگشای فایل، مجری ابزار --- زیرا همین خط لوله است
+که به یک کانال دادهٔ غیرقابل‌اعتماد، اقتدارِ یک کانال دستور را می‌بخشد.
+این مقاله ارزیابی‌ای را گزارش می‌کند که برنامه را هدف می‌گیرد. ما نُه سطح
+\en{HTTP} از یک فروشگاه عمداً آسیب‌پذیرِ مبتنی بر \en{LLM} را به شکل
+\en{Garak generator} بسته‌بندی می‌کنیم، دوازده \en{detector} می‌افزاییم که
+به‌جای یک امضای سبک‌شناختی، \emph{نقض مشخصی از سیاست را در برابر
+\en{ground truth}} می‌آزمایند، و فراداده‌های خودِ برنامه به همراه رازِ هر
+تلاش را از مسیر کانال \en{notes} در \en{Garak} حمل می‌کنیم تا امتیازدهی
+دقیق باشد و امتناع از قضاوت جای اطمینان کاذب را بگیرد. هر مؤلفه یک
+\en{Garak plugin} درجه‌یک است؛ هستهٔ \en{Garak} دست‌نخورده می‌ماند و هر
+اندازه‌گیری از طریق \en{CLI} استاندارد قابل بازپخش است. پنج \en{suite}
+شامل \num{28} اجرا و \num{678} \en{attempt} ارزیابی‌شده،
+\en{prompt injection} (مستقیم و غیرمستقیم)، \en{information disclosure}
+و \en{data poisoning} را پوشش می‌دهد. \en{data poisoning}
+پرمخاطره‌ترین دسته است (\num{$\mathrm{ASR}=0.348$}). سخت‌کردن یک
+\en{system prompt} در پنج \en{persona}، نشت کوپن را به‌صورت یکنواخت از
+\num{0.472} به \num{0.083} می‌رساند بی‌آنکه هرگز آن را حذف کند، و ثابت
+نگه‌داشتنِ پیکرهٔ حمله در ده پیکربندی \en{guardrail} نشان می‌دهد دو مورد از
+ده مورد، بهتر از نبودِ هیچ \en{guardrail} عمل نمی‌کنند. موفقیت در
+تکنیک‌هایی متمرکز است که هرگز هدف خود را نام نمی‌برند:
+\en{fictional framing} در \num{14/15} تلاش موفق شد در برابر \num{1/15}
+برای پرسیدنِ ساده، و در برابر سخت‌گیرترین \en{persona}، پرسش‌هایی که
+\emph{قواعد} را می‌خواستند \num{5.6} برابر بیشتر از پرسش‌هایی که خودِ راز را
+می‌خواستند به رازِ محافظت‌شده رسیدند. پنج نظر با برچسب نادرست یک
+\en{backdoor} هدفمند در طبقه‌بند می‌سازند که رانش احتمال آن، چهار گامِ
+بودجه پیش از تغییر هر برچسبی قابل اندازه‌گیری است. \en{retrieval} با
+برچسب اعتماد، بازیابی غیرقابل‌اعتماد را کاملاً حذف کرد
+(\numto{12/12}{0/12})، و بازرسی نشان می‌دهد نرخ باقی‌ماندهٔ
+سطحِ پاسخ، مثبت کاذبِ \en{detector} است. یک \en{detector} عمومی و
+استاندارد که در کنار ابزار ما اجرا شد، در برابر سیاست واقعی برنامه به
+\en{recall} برابر \num{1.000} با \en{precision} برابر \num{0.293} رسید. یک
+مطالعهٔ \en{ablation}، سهم هر لایهٔ دفاعی را از سهم هر جزء دستگاه
+اندازه‌گیری تفکیک می‌کند و نشان می‌دهد که حذف کانال \en{ground truth}
+اعداد این مطالعه را تضعیف نمی‌کند، بلکه آن‌ها را از میان برمی‌دارد.
+\vspace{5pt}
+\end{minipage}}}
+\end{center}
+
+\vspace{2pt}
+\noindent{\small\textbf{\color{tabink}واژگان کلیدی:}\enspace
+امنیت \en{LLM}، \en{prompt injection}، \en{data poisoning}،
+\en{information disclosure}، \en{red teaming}، \en{garak}،
+\en{OWASP LLM Top 10}، مطالعهٔ \en{ablation}.}
+
+\vspace{6pt}
+
+% =====================================================================
+\input{sections/introduction}
+\input{sections/related}
+\input{sections/architecture}
+\input{sections/methodology}
+\input{sections/results}
+\input{sections/ablation}
+\input{sections/discussion}
+\input{sections/conclusion}
+\input{sections/references}
+% =====================================================================
+
+\end{document}

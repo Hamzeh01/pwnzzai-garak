@@ -102,7 +102,7 @@ purely by rewriting a system prompt.
 
 \begin{figure}[t]
   \centering
-  \safefig[0.85]{figures/direct-levels.pdf}
+  \safefig[0.85]{../figures/generated/direct-levels.pdf}
   \caption{Coupon-leak rate by persona level. Hardening the system
   prompt reduces leakage monotonically but does not eliminate it: the
   strictest persona, which is instructed to deny that any secret exists,
@@ -216,7 +216,7 @@ discussion of the single-turn history prompt below.
 
 \begin{figure}[t]
   \centering
-  \safefig[0.85]{figures/guardrail-ladder.pdf}
+  \safefig[0.85]{../figures/generated/guardrail-ladder.pdf}
   \caption{Bypass rate per guardrail stage. Two stages exceed the
   unguarded baseline of $0.121$: the soft prompt rule (B1) and the
   ASCII-only gate (B4).}
@@ -490,7 +490,7 @@ The label flip at $b{=}5$ is a decision-boundary crossing, not the onset of the 
 
 \begin{figure}[t]
   \centering
-  \safefig[0.85]{figures/sentiment-flip-rate.pdf}
+  \safefig[0.85]{../figures/generated/sentiment-flip-rate.pdf}
   \caption{Label-flip rate against poison budget. The step at $b=5$ is a
   decision-boundary crossing, not the onset of the effect: the
   underlying probability shift begins at $b=1$
@@ -500,11 +500,13 @@ The label flip at $b{=}5$ is a decision-boundary crossing, not the onset of the 
 
 \begin{figure}[t]
   \centering
-  \safefig[0.85]{figures/sentiment-confidence.pdf}
+  \safefig[0.85]{../figures/generated/sentiment-confidence.pdf}
   \caption{Probability of the positive class per prompt against poison
   budget. The trigger-bearing prompts drift monotonically upward from
   the first injected comment; the drift is measurable four additional
-  poison examples before any label changes.}
+  poison examples before any label changes. The two bare-trigger prompts
+  tokenise identically and therefore share a single series; the flat
+  lower series is a no-trigger control.}
   \label{fig:confidence}
 \end{figure}
 
@@ -548,7 +550,7 @@ enabled (Fig.~\ref{fig:catering}, Table~\ref{tab:catering}).
 
 \begin{figure}[t]
   \centering
-  \safefig[0.85]{figures/catering-mitigation.pdf}
+  \safefig[0.85]{../figures/generated/catering-mitigation.pdf}
   \caption{Poison influence rate with the trusted-only retrieval
   mitigation off ($1.000$) and on ($0.417$). Section~\ref{sec:discussion}
   argues the residual is largely a measurement artefact.}

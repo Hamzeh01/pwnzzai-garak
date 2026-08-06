@@ -1,4 +1,4 @@
-# Render every figure the paper needs into PDF, in this directory.
+# Render every figure the paper needs into figures/generated/.
 #
 #   1. Mermaid sources (*.mmd, authored here) -> *.pdf  via mermaid-cli
 #   2. Analysis charts (garak_analysis/figures/*.svg) -> *.pdf via an SVG converter
@@ -7,13 +7,15 @@
 #   Mermaid CLI plus Google Chrome (MERMAID_CLI can override its path)
 #   rsvg-convert  OR  inkscape  OR  python -m pip install svglib
 #
-# Nothing here is required to *read* the draft: paper.tex draws a labelled
+# Nothing here is required to read the papers: each main file draws a labelled
 # placeholder for any figure that has not been built.
 
 $ErrorActionPreference = 'Continue'
 Set-Location $PSScriptRoot
 
-$projectRoot = (Resolve-Path (Join-Path $PSScriptRoot '..\..\..')).Path
+$projectRoot = (Resolve-Path (Join-Path $PSScriptRoot '..\..\..\..')).Path
+$sourceDir = (Resolve-Path (Join-Path $PSScriptRoot '..\source')).Path
+$outputDir = (Resolve-Path (Join-Path $PSScriptRoot '..\generated')).Path
 $analysisFigs = Join-Path $projectRoot 'garak_analysis\figures'
 $analysisChartNames = @(
     'direct-levels',
@@ -69,9 +71,9 @@ if (($mermaidCli -or $npx) -and $chrome) {
     $env:PUPPETEER_SKIP_DOWNLOAD = 'true'
     $env:npm_config_cache = Join-Path $env:TEMP 'pwnzzai-mermaid-npm-cache'
 
-    foreach ($src in Get-ChildItem -Filter '*.mmd') {
+    foreach ($src in Get-ChildItem -LiteralPath $sourceDir -Filter '*.mmd') {
         $out = [System.IO.Path]::ChangeExtension($src.Name, 'pdf')
-        $outPath = Join-Path $PSScriptRoot $out
+        $outPath = Join-Path $outputDir $out
         if (-not (Test-NeedsBuild $src.FullName $outPath)) {
             Write-Host "mermaid: $($src.Name) is up to date"
             continue
@@ -79,8 +81,8 @@ if (($mermaidCli -or $npx) -and $chrome) {
         Write-Host "mermaid: $($src.Name) -> $out"
         $mermaidArgs = @(
             '-p', $puppeteerConfig,
-            '-i', $src.Name,
-            '-o', $out,
+            '-i', $src.FullName,
+            '-o', $outPath,
             '--pdfFit',
             '--backgroundColor', 'white'
         )
@@ -130,7 +132,7 @@ if (Test-Path $analysisFigs) {
             continue
         }
         $out = [System.IO.Path]::ChangeExtension($src.Name, 'pdf')
-        $outPath = Join-Path $PSScriptRoot $out
+        $outPath = Join-Path $outputDir $out
         if (-not (Test-NeedsBuild $src.FullName $outPath)) {
             Write-Host "svg:     $($src.Name) is up to date"
             continue
@@ -149,7 +151,7 @@ if (Test-Path $analysisFigs) {
 
 if ($failed) {
     Write-Host ''
-    Write-Host 'Some figures were not built. paper.tex will show placeholders for those.'
+    Write-Host 'Some figures were not built. The papers will show placeholders for those.'
     exit 1
 }
 

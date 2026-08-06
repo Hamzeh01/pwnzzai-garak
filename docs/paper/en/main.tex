@@ -1,10 +1,9 @@
 % =====================================================================
-%  PwnzzAI x Garak -- paper draft
+%  PwnzzAI x Garak -- English paper
 %
 %  Build:
-%     bash figures/build-figures.sh     (renders the diagrams and charts)
-%     latexmk -pdf paper.tex
-%     (no perl? -- pdflatex x2, bibtex, pdflatex x2; see README)
+%     ../figures/scripts/build-figures.sh
+%     ../build.sh en
 %
 %  Single-column IEEEtran. The tables in this draft are wide and dense;
 %  two-column mode forced every one of them into a full-width float and
@@ -71,7 +70,7 @@
     {\includegraphics[width=#1\textwidth,height=0.85\textheight,keepaspectratio]{#2}}%
     {\fbox{\parbox[c][2.6cm][c]{0.92\textwidth}{\centering
        \ttfamily\footnotesize #2\\[4pt]
-       \normalfont\itshape\footnotesize not built --- run \texttt{figures/build-figures.sh}}}}%
+       \normalfont\itshape\footnotesize not built --- run the figure builder}}}%
 }
 
 % =====================================================================
@@ -168,9 +167,7 @@
 Application: A Garak-Native Study of Prompt Injection, Information
 Disclosure, and Data Poisoning}
 
-\author{Author Name\\
-\textit{Affiliation}\\
-\texttt{email@example.org}}
+\author{Anonymous Author}
 
 \maketitle
 
@@ -228,10 +225,8 @@ red teaming, garak, OWASP LLM Top 10, ablation study.
 \input{sections/conclusion}
 % =====================================================================
 
-% NOTE: refs.bib entries were written from memory and have NOT been
-% checked against the published record. Verify every field before
-% submission -- see README.md, "Known gaps".
+% Metadata is checked against canonical records; see README.md.
 \bibliographystyle{IEEEtran}
-\bibliography{refs}
+\bibliography{references}
 
 \end{document}

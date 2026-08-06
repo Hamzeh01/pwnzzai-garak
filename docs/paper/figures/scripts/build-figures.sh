@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Render every figure the paper needs into PDF, in this directory.
+# Render every figure the paper needs into figures/generated/.
 #
 #   1. Mermaid sources (*.mmd, authored here)  ->  *.pdf   via mermaid-cli
 #   2. Analysis charts (garak_analysis/figures/*.svg)  ->  *.pdf  via an SVG converter
@@ -8,23 +8,26 @@
 #   node/npx           for  npx -y @mermaid-js/mermaid-cli
 #   rsvg-convert  OR  inkscape  OR  python -m cairosvg
 #
-# Nothing here is required to *read* the draft: paper.tex draws a labelled
+# Nothing here is required to read the papers: each main file draws a labelled
 # placeholder for any figure that has not been built.
 
 set -uo pipefail
 cd "$(dirname "$0")"
 
-ANALYSIS_FIGS="../../../garak_analysis/figures"
+SOURCE_DIR="../source"
+OUTPUT_DIR="../generated"
+ANALYSIS_FIGS="../../../../garak_analysis/figures"
 fail=0
 
 # --------------------------------------------------------------------
 # 1. Mermaid -> PDF
 # --------------------------------------------------------------------
 if command -v npx >/dev/null 2>&1; then
-  for src in *.mmd; do
+  for src in "$SOURCE_DIR"/*.mmd; do
     [ -e "$src" ] || continue
-    out="${src%.mmd}.pdf"
-    echo "mermaid: $src -> $out"
+    name="$(basename "${src%.mmd}")"
+    out="$OUTPUT_DIR/$name.pdf"
+    echo "mermaid: $(basename "$src") -> $(basename "$out")"
     npx -y @mermaid-js/mermaid-cli -i "$src" -o "$out" \
         --pdfFit --backgroundColor white || { echo "  FAILED"; fail=1; }
   done
@@ -62,7 +65,7 @@ if [ -d "$ANALYSIS_FIGS" ]; then
       fail=1
       continue
     fi
-    out="$chart.pdf"
+    out="$OUTPUT_DIR/$chart.pdf"
     echo "svg:     $(basename "$src") -> $out"
     svg2pdf "$src" "$out"
     rc=$?
@@ -81,6 +84,6 @@ fi
 
 if [ "$fail" -ne 0 ]; then
   echo
-  echo "Some figures were not built. paper.tex will show placeholders for those."
+  echo "Some figures were not built. The papers will show placeholders for those."
 fi
 exit "$fail"

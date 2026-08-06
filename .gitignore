@@ -48,21 +48,21 @@ lab/state/
 vendor/
 docs/sources/*.pdf
 
-# LaTeX build products. The paper sources, the figure sources, the rendered
-# figure PDFs, and the built paper.pdf are tracked; everything a TeX run
-# regenerates is not.
+# LaTeX build products. Tracked: the paper sources under docs/paper/{en,fa}/,
+# the figure sources and rendered figure PDFs under docs/paper/figures/, and
+# the two release PDFs in docs/paper/output/. Everything a TeX run regenerates
+# lives in docs/paper/build/ and is not tracked.
 docs/paper/build/
-docs/paper/build-fa/
-docs/paper/preview/
-docs/paper/*.aux
-docs/paper/*.log
-docs/paper/*.out
-docs/paper/*.bbl
-docs/paper/*.blg
-docs/paper/*.fls
-docs/paper/*.fdb_latexmk
-docs/paper/*.synctex.gz
-docs/paper/*.toc
+# TeX auxiliaries, should a run ever be invoked outside build/.
+docs/paper/**/*.aux
+docs/paper/**/*.log
+docs/paper/**/*.out
+docs/paper/**/*.bbl
+docs/paper/**/*.blg
+docs/paper/**/*.fls
+docs/paper/**/*.fdb_latexmk
+docs/paper/**/*.synctex.gz
+docs/paper/**/*.toc
 
 # Disposable render/inspection output created by document QA tools.
 tmp/

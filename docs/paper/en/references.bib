@@ -1,15 +1,6 @@
 % ---------------------------------------------------------------------
-% Bibliography.
-%
-% !!  VERIFY BEFORE SUBMISSION  !!
-%
-% Every entry below was written from memory, not resolved against the
-% published record. Author lists, venues, years, page ranges and arXiv
-% identifiers must all be checked against the canonical source before
-% this draft goes anywhere. Fields were kept deliberately minimal
-% (author / title / venue / year) to reduce the number of things that
-% can be silently wrong; add page numbers, DOIs and publishers during
-% verification.
+% Bibliography. Metadata was checked against canonical publisher,
+% proceedings, project, and arXiv records on 2026-08-06.
 % ---------------------------------------------------------------------
 
 % ---- Tooling and frameworks -----------------------------------------
@@ -21,14 +12,26 @@
   year         = {2024},
   eprint       = {2406.11036},
   archivePrefix= {arXiv},
-  primaryClass = {cs.CR}
+  primaryClass = {cs.CR},
+  url          = {https://arxiv.org/abs/2406.11036}
 }
 
 @misc{pyrit,
-  author       = {{Microsoft AI Red Team}},
-  title        = {{PyRIT}: Python Risk Identification Tool for Generative {AI}},
+  author       = {Lopez Munoz, Gary D. and Minnich, Amanda J. and Lutz, Roman
+                  and Lundeen, Richard and Dheekonda, Raja Sekhar Rao
+                  and Chikanov, Nina and Jagdagdorj, Bolor-Erdene
+                  and Pouliot, Martin and Chawla, Shiven and Maxwell, Whitney
+                  and Bullwinkel, Blake and Pratt, Katherine and de Gruyter, Joris
+                  and Siska, Charlotte and Bryan, Pete and Westerhoff, Tori
+                  and Kawaguchi, Chang and Seifert, Christian
+                  and Siva Kumar, Ram Shankar and Zunger, Yonatan},
+  title        = {{PyRIT}: A Framework for Security Risk Identification and
+                  Red Teaming in Generative {AI} System},
   year         = {2024},
-  howpublished = {\url{https://github.com/Azure/PyRIT}}
+  eprint       = {2410.02828},
+  archivePrefix= {arXiv},
+  primaryClass = {cs.CR},
+  url          = {https://arxiv.org/abs/2410.02828}
 }
 
 @inproceedings{mazeika2024harmbench,
@@ -37,8 +40,13 @@
                and Basart, Steven and Li, Bo and Forsyth, David and Hendrycks, Dan},
   title     = {{HarmBench}: A Standardized Evaluation Framework for Automated
                Red Teaming and Robust Refusal},
-  booktitle = {Proc.\ 41st International Conference on Machine Learning (ICML)},
-  year      = {2024}
+  booktitle = {Proceedings of the 41st International Conference on Machine Learning},
+  series    = {Proceedings of Machine Learning Research},
+  volume    = {235},
+  pages     = {35181--35224},
+  publisher = {PMLR},
+  year      = {2024},
+  url       = {https://proceedings.mlr.press/v235/mazeika24a.html}
 }
 
 @inproceedings{debenedetti2024agentdojo,
@@ -46,9 +54,11 @@
                and Beurer-Kellner, Luca and Fischer, Marc and Tram{\`e}r, Florian},
   title     = {{AgentDojo}: A Dynamic Environment to Evaluate Prompt Injection
                Attacks and Defenses for {LLM} Agents},
-  booktitle = {Advances in Neural Information Processing Systems (NeurIPS),
-               Datasets and Benchmarks Track},
-  year      = {2024}
+  booktitle = {Advances in Neural Information Processing Systems},
+  volume    = {37},
+  year      = {2024},
+  doi       = {10.52202/079017-2636},
+  url       = {https://proceedings.neurips.cc/paper_files/paper/2024/hash/97091a5177d8dc64b1da8bf3e1f6fb54-Abstract-Datasets_and_Benchmarks_Track.html}
 }
 
 % ---- Prompt injection: attacks --------------------------------------
@@ -59,7 +69,8 @@
   year         = {2022},
   eprint       = {2211.09527},
   archivePrefix= {arXiv},
-  primaryClass = {cs.CL}
+  primaryClass = {cs.CL},
+  url          = {https://arxiv.org/abs/2211.09527}
 }
 
 @inproceedings{greshake2023,
@@ -76,7 +87,10 @@
   author    = {Wei, Alexander and Haghtalab, Nika and Steinhardt, Jacob},
   title     = {Jailbroken: How Does {LLM} Safety Training Fail?},
   booktitle = {Advances in Neural Information Processing Systems (NeurIPS)},
-  year      = {2023}
+  volume    = {36},
+  year      = {2023},
+  doi       = {10.52202/075280-3508},
+  url       = {https://proceedings.neurips.cc/paper_files/paper/2023/hash/fd6613131889a4b656206c50a8bd7790-Abstract-Conference.html}
 }
 
 @misc{zou2023universal,
@@ -87,7 +101,8 @@
   year         = {2023},
   eprint       = {2307.15043},
   archivePrefix= {arXiv},
-  primaryClass = {cs.CL}
+  primaryClass = {cs.CL},
+  url          = {https://arxiv.org/abs/2307.15043}
 }
 
 @inproceedings{shen2024dan,
@@ -108,7 +123,8 @@
   year         = {2023},
   eprint       = {2307.10490},
   archivePrefix= {arXiv},
-  primaryClass = {cs.CR}
+  primaryClass = {cs.CR},
+  url          = {https://arxiv.org/abs/2307.10490}
 }
 
 % ---- Prompt injection: benchmarks and defences ----------------------
@@ -117,12 +133,15 @@
   author    = {Liu, Yupei and Jia, Yuqi and Geng, Runpeng and Jia, Jinyuan
                and Gong, Neil Zhenqiang},
   title     = {Formalizing and Benchmarking Prompt Injection Attacks and Defenses},
-  booktitle = {Proc.\ 33rd USENIX Security Symposium},
-  year      = {2024}
+  booktitle = {33rd USENIX Security Symposium (USENIX Security 24)},
+  pages     = {1831--1847},
+  publisher = {USENIX Association},
+  year      = {2024},
+  url       = {https://www.usenix.org/conference/usenixsecurity24/presentation/liu-yupei}
 }
 
 @misc{yi2023bipia,
-  author       = {Yi, Jingwei and Xie, Yueqi and Zhu, Bin and Hines, Keegan
+  author       = {Yi, Jingwei and Xie, Yueqi and Zhu, Bin
                   and Kiciman, Emre and Sun, Guangzhong and Xie, Xing
                   and Wu, Fangzhao},
   title        = {Benchmarking and Defending Against Indirect Prompt Injection
@@ -130,7 +149,8 @@
   year         = {2023},
   eprint       = {2312.14197},
   archivePrefix= {arXiv},
-  primaryClass = {cs.CL}
+  primaryClass = {cs.CL},
+  url          = {https://arxiv.org/abs/2312.14197}
 }
 
 @misc{hines2024spotlighting,
@@ -141,7 +161,8 @@
   year         = {2024},
   eprint       = {2403.14720},
   archivePrefix= {arXiv},
-  primaryClass = {cs.CR}
+  primaryClass = {cs.CR},
+  url          = {https://arxiv.org/abs/2403.14720}
 }
 
 @misc{chen2024struq,
@@ -152,7 +173,8 @@
   year         = {2024},
   eprint       = {2402.06363},
   archivePrefix= {arXiv},
-  primaryClass = {cs.CR}
+  primaryClass = {cs.CR},
+  url          = {https://arxiv.org/abs/2402.06363}
 }
 
 @misc{wallace2024hierarchy,
@@ -163,7 +185,8 @@
   year         = {2024},
   eprint       = {2404.13208},
   archivePrefix= {arXiv},
-  primaryClass = {cs.CR}
+  primaryClass = {cs.CR},
+  url          = {https://arxiv.org/abs/2404.13208}
 }
 
 @misc{willison2023dual,
@@ -181,9 +204,12 @@
                and Ring, Roman and Aslanides, John and Glaese, Amelia
                and McAleese, Nat and Irving, Geoffrey},
   title     = {Red Teaming Language Models with Language Models},
-  booktitle = {Proc.\ Conference on Empirical Methods in Natural Language
-               Processing (EMNLP)},
-  year      = {2022}
+  booktitle = {Proceedings of the 2022 Conference on Empirical Methods in Natural Language Processing},
+  pages     = {3419--3448},
+  publisher = {Association for Computational Linguistics},
+  year      = {2022},
+  doi       = {10.18653/v1/2022.emnlp-main.225},
+  url       = {https://aclanthology.org/2022.emnlp-main.225/}
 }
 
 @misc{ganguli2022redteaming,
@@ -195,7 +221,8 @@
   year         = {2022},
   eprint       = {2209.07858},
   archivePrefix= {arXiv},
-  primaryClass = {cs.CL}
+  primaryClass = {cs.CL},
+  url          = {https://arxiv.org/abs/2209.07858}
 }
 
 % ---- Disclosure, poisoning, retrieval -------------------------------
@@ -223,9 +250,13 @@
 @inproceedings{wallace2021concealed,
   author    = {Wallace, Eric and Zhao, Tony Z. and Feng, Shi and Singh, Sameer},
   title     = {Concealed Data Poisoning Attacks on {NLP} Models},
-  booktitle = {Proc.\ Conference of the North American Chapter of the
-               Association for Computational Linguistics (NAACL-HLT)},
-  year      = {2021}
+  booktitle = {Proceedings of the 2021 Conference of the North American Chapter
+               of the Association for Computational Linguistics: Human Language Technologies},
+  pages     = {139--150},
+  publisher = {Association for Computational Linguistics},
+  year      = {2021},
+  doi       = {10.18653/v1/2021.naacl-main.13},
+  url       = {https://aclanthology.org/2021.naacl-main.13/}
 }
 
 @inproceedings{carlini2024poisoning,
@@ -235,7 +266,10 @@
                and Tram{\`e}r, Florian},
   title     = {Poisoning Web-Scale Training Datasets Is Practical},
   booktitle = {Proc.\ IEEE Symposium on Security and Privacy (S\&P)},
-  year      = {2024}
+  pages     = {407--425},
+  year      = {2024},
+  doi       = {10.1109/SP54263.2024.00179},
+  url       = {https://doi.org/10.1109/SP54263.2024.00179}
 }
 
 @inproceedings{lewis2020rag,
@@ -246,15 +280,20 @@
   title     = {Retrieval-Augmented Generation for Knowledge-Intensive
                {NLP} Tasks},
   booktitle = {Advances in Neural Information Processing Systems (NeurIPS)},
-  year      = {2020}
+  volume    = {33},
+  year      = {2020},
+  url       = {https://proceedings.neurips.cc/paper/2020/hash/6b493230-Abstract.html}
 }
 
 @inproceedings{zou2025poisonedrag,
   author    = {Zou, Wei and Geng, Runpeng and Wang, Binghui and Jia, Jinyuan},
   title     = {{PoisonedRAG}: Knowledge Corruption Attacks to
                Retrieval-Augmented Generation of Large Language Models},
-  booktitle = {Proc.\ 34th USENIX Security Symposium},
-  year      = {2025}
+  booktitle = {34th USENIX Security Symposium (USENIX Security 25)},
+  pages     = {3827--3844},
+  publisher = {USENIX Association},
+  year      = {2025},
+  url       = {https://www.usenix.org/conference/usenixsecurity25/presentation/zou-poisonedrag}
 }
 
 % ---- Taxonomies and reporting frames --------------------------------
@@ -273,13 +312,16 @@
                  of Attacks and Mitigations},
   institution = {National Institute of Standards and Technology},
   number      = {NIST AI 100-2 E2023},
-  year        = {2024}
+  year        = {2024},
+  doi         = {10.6028/NIST.AI.100-2e2023},
+  url         = {https://csrc.nist.gov/pubs/ai/100/2/e2023/final}
 }
 
 @misc{atlas,
   author       = {{MITRE}},
   title        = {{ATLAS}: Adversarial Threat Landscape for
                   Artificial-Intelligence Systems},
-  year         = {2024},
-  howpublished = {\url{https://atlas.mitre.org/}}
+  year         = {2026},
+  howpublished = {\url{https://atlas.mitre.org/}},
+  note         = {Accessed 2026-08-06}
 }

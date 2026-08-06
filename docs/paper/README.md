@@ -1,76 +1,95 @@
-# Paper draft (English)
+# Bilingual LaTeX paper
 
-Single-column IEEEtran LaTeX draft, complete front to back: **abstract,
+*فارسی: [README-fa.md](README-fa.md)*
+
+The English and Persian editions are complete front to back: abstract,
 introduction, related work, architecture, methodology, results, ablation study,
-discussion, conclusion, references**.
+discussion, conclusion, and 27 references. They carry the same eight sections,
+21 table environments, nine figures, labels, citations, and reported numbers.
+Both editions intentionally identify the author as anonymous; no fabricated
+affiliation or email address is included.
 
-Builds clean: 33 pages, 18 tables, 9 figures, 27 references, no errors, no
-overfull or underfull boxes, no undefined citations or references. The
-remaining log warnings are cosmetic Courier font-shape substitutions in
-small-caps table captions, which LaTeX resolves automatically.
-
-The Persian edition (`paper-fa.tex`, `README-fa.md`) is a separate document in
-this same directory and shares the rendered figures. It was not touched by the
-front-matter/ablation pass.
+Source, generated figures, temporary build files, and release PDFs are kept in
+separate directories. The English edition uses single-column IEEEtran and
+BibTeX. The Persian edition uses XePersian and a literal RTL-safe bibliography.
 
 ## Layout
 
 ```
-paper.tex                     IEEEtran main file; preamble, table style, front matter
-sections/introduction.tex     Sec. I    -- problem, detection gap, contributions
-sections/related.tex          Sec. II   -- injection, frameworks, poisoning, taxonomies
-sections/architecture.tex     Sec. III  -- plugins, generators, detectors, notes channel
-sections/methodology.tex      Sec. IV   -- target, task model, design, controls, metrics
-sections/results.tex          Sec. V    -- all measurements
-sections/ablation.tex         Sec. VI   -- defence + measurement-apparatus ablations
-sections/discussion.tex       Sec. VII  -- interpretation, mitigations, limitations
-sections/conclusion.tex       Sec. VIII -- summary and future work
-refs.bib                      27 entries; ALL UNVERIFIED -- see "Known gaps"
-figures/*.mmd                 four Mermaid diagrams authored for the paper
-figures/build-figures.{sh,ps1}  renders .mmd -> .pdf and analysis .svg -> .pdf
+README.md, README-fa.md       this guide, English and Persian
+build.ps1, build.sh           reproducible bilingual paper builders
+en/main.tex                   English main file and front matter
+en/sections/                  English section sources
+en/references.bib             canonical-source-checked BibTeX database
+fa/main.tex                   Persian main file and front matter
+fa/sections/                  Persian section sources and literal bibliography
+fa/fonts.conf                 Windows fontconfig search path for XeTeX
+figures/source/               authored Mermaid diagram sources
+figures/generated/            nine shared, rendered vector PDFs
+figures/scripts/              cross-platform figure builders
+build/                        ignored LaTeX intermediates
+output/paper-en.pdf           final English PDF
+output/paper-fa.pdf           final Persian PDF
 ```
 
 ## Building
 
-```bash
-bash docs/paper/figures/build-figures.sh
-cd docs/paper
-latexmk -pdf paper.tex
+```powershell
+# From the repository root on Windows
+.\docs\paper\build.ps1
 ```
 
-On Windows, the configured build uses MiKTeX and LaTeX Workshop. Generate the
-figures from the repository root with:
+```bash
+# From the repository root on Linux/WSL
+bash docs/paper/build.sh
+```
+
+Both builders accept `en`, `fa`, or `all` (the default). They place every
+auxiliary file under `build/{en,fa}/` and copy only the final PDFs to `output/`.
+The English path runs `pdflatex`, BibTeX, then two `pdflatex` passes. The Persian
+path runs XeLaTeX twice and sets `FONTCONFIG_FILE` automatically on Windows.
+
+Both builders fail with a nonzero exit code if any layout or reference warning
+survives the final pass — overfull or underfull boxes, undefined references or
+citations, or `Label(s) may have changed` — and the English path additionally
+fails on any BibTeX `Warning--`. A successful build therefore means a clean log,
+not merely a PDF. Neither edition's PDF is copied to `output/` unless its gate
+passes, so a stale `output/` PDF is a signal that the last build was rejected.
+
+Generate or refresh the shared figures separately:
 
 ```powershell
 .\.venv\Scripts\python.exe -m pip install svglib
 npm install --prefix D:\Programs\MermaidCLI `
   @mermaid-js/mermaid-cli@11.16.0
 powershell -NoProfile -ExecutionPolicy Bypass `
-  -File .\docs\paper\figures\build-figures.ps1
+  -File .\docs\paper\figures\scripts\build-figures.ps1
 ```
 
 Both builders generate only the nine figures referenced by the paper. The
 PowerShell builder uses `npx` plus the installed Google Chrome for Mermaid and
 `svglib`/ReportLab for the analysis SVGs. It skips figures that are already
 newer than their sources. Both builders return a nonzero exit code if a
-required conversion fails.
+required conversion fails. Both main files define `\safefig`, which draws a
+labelled placeholder if a generated figure is temporarily unavailable.
 
-### If `latexmk` is unavailable
+## Persian typography and RTL rules
 
-This MiKTeX install has no Perl, so `latexmk` cannot run. Drive the passes by
-hand from `docs/paper/` — the bibliography now needs a real BibTeX pass:
+The Persian body uses IRLotus, headings use IRYekan, Latin terms use Segoe UI,
+and identifiers use Consolas. `fa/fonts.conf` exposes the Windows and per-user
+font directories to MiKTeX's XeTeX. The document uses these macros consistently:
 
-```bash
-pdflatex -interaction=nonstopmode paper.tex && bibtex paper && pdflatex -interaction=nonstopmode paper.tex && pdflatex -interaction=nonstopmode paper.tex
-```
+| Macro | Purpose |
+|---|---|
+| `\en{...}` | keep an English technical term left-to-right |
+| `\num{...}` | keep a measured value and separators in one LTR run |
+| `\numto{a}{b}` | keep both values and the transition arrow together |
+| `\code{...}` | typeset an identifier or path in Consolas |
+| `\bk` | zero-width break point inside a long identifier or DOI |
 
-Build **in** `docs/paper/`, not with `-output-directory=build`. A stale
-`paper.aux` in the source directory shadows the one in `build/`, and every
-citation silently comes out as `[?]`.
-
-`paper.tex` defines `\safefig`, which draws a labelled placeholder box for any
-figure that has not been rendered yet, so the draft compiles and reads before
-the figures exist.
+The Persian bibliography is literal rather than BibTeX-generated because an
+IEEEtran `.bbl` is reordered by bidi. It contains the same 27 checked sources as
+`en/references.bib`.
 
 ## Table style
 
@@ -96,10 +115,10 @@ leave an uncoloured gap through every band.
 
 | Figure | Source | Origin |
 |---|---|---|
-| Fig. 1 component architecture | `figures/fig-architecture.mmd` | new |
-| Fig. 2 attempt lifecycle | `figures/fig-attempt-lifecycle.mmd` | new |
-| Fig. 3 experimental controls | `figures/fig-controls.mmd` | new |
-| Fig. 4 defence layers vs techniques | `figures/fig-defence-layers.mmd` | new |
+| Fig. 1 component architecture | `figures/source/fig-architecture.mmd` | new |
+| Fig. 2 attempt lifecycle | `figures/source/fig-attempt-lifecycle.mmd` | new |
+| Fig. 3 experimental controls | `figures/source/fig-controls.mmd` | new |
+| Fig. 4 defence layers vs techniques | `figures/source/fig-defence-layers.mmd` | new |
 | Fig. 5 direct-injection levels | `garak_analysis/figures/direct-levels.svg` | existing |
 | Fig. 6 guardrail ladder | `garak_analysis/figures/guardrail-ladder.svg` | existing |
 | Fig. 7 sentiment flip rate | `garak_analysis/figures/sentiment-flip-rate.svg` | existing |
@@ -183,15 +202,8 @@ a genuine leak rendered as the plural "Mushrooms!" and also fired once on the
 invented word "MOONCHEESE". One of the 97 recorded leaks is attributable to
 this.
 
-## Known gaps
+## Maintenance notes
 
-- **`refs.bib` is unverified.** All 27 entries were written from memory —
-  author lists, venues, years and arXiv identifiers included. Every field must
-  be checked against the canonical record before this draft goes anywhere.
-  Fields were deliberately kept minimal (author / title / venue / year) to
-  reduce the surface area; add DOIs, page numbers and publishers during
-  verification.
-- Author block in `paper.tex` is a placeholder.
 - The derived tables listed above live only in the paper, not in
   `garak_pwnzz/analysis/analyze.py`.
 - Model scale is the one ablation the study does not have. The suite is

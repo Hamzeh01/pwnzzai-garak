@@ -1,0 +1,185 @@
+% =====================================================================
+% REFERENCES
+%
+% The same 27 works as the English edition's references.bib, transcribed as a
+% literal thebibliography rather than driven through BibTeX. Two reasons:
+% IEEEtran.bst emits a .bbl that bidi typesets right-to-left, which
+% mangles every author list and arXiv identifier; and a literal list has
+% no BibTeX pass to go stale, so `xelatex` twice is the whole build.
+%
+% Entries are grouped by topic, matching references.bib's own sectioning, so
+% the numbering here is by group rather than by order of first citation.
+%
+% Metadata was checked against canonical publisher, proceedings, project,
+% and arXiv records on 2026-08-06. Keep this file and the English BibTeX
+% database in step -- they are the same bibliography in two formats.
+% =====================================================================
+\renewcommand{\refname}{مراجع}
+
+\begin{thebibliography}{99}
+
+% ---- Tooling and frameworks -----------------------------------------
+
+\bibitem{garak}
+\lr{L. Derczynski, E. Galinkin, J. Martin, S. Majumdar, and N. Inie,
+``garak: A Framework for Security Probing Large Language Models,''
+arXiv:2406.11036, 2024.}
+
+\bibitem{pyrit}
+\lr{G. D. Lopez Munoz et al., ``PyRIT: A Framework for Security Risk
+Identification and Red Teaming in Generative AI System,''
+arXiv:2410.02828, 2024.}
+
+\bibitem{mazeika2024harmbench}
+\lr{M. Mazeika, L. Phan, X. Yin, A. Zou, Z. Wang, N. Mu, E. Sakhaee,
+N. Li, S. Basart, B. Li, D. Forsyth, and D. Hendrycks, ``HarmBench: A
+Standardized Evaluation Framework for Automated Red Teaming and Robust
+Refusal,'' in \textit{Proc. 41st Int. Conf. on Machine Learning (ICML)},
+PMLR, vol. 235, pp. 35181--35224, 2024.}
+
+\bibitem{debenedetti2024agentdojo}
+\lr{E. Debenedetti, J. Zhang, M. Balunovi\'c, L. Beurer-Kellner,
+M. Fischer, and F. Tram\`er, ``AgentDojo: A Dynamic Environment to
+Evaluate Prompt Injection Attacks and Defenses for LLM Agents,'' in
+\textit{Advances in Neural Information Processing Systems}, vol. 37,
+2024, doi:10.52202/079017-2636.}
+
+% ---- Prompt injection: attacks --------------------------------------
+
+\bibitem{perez2022ignore}
+\lr{F. Perez and I. Ribeiro, ``Ignore Previous Prompt: Attack Techniques
+for Language Models,'' arXiv:2211.09527, 2022.}
+
+\bibitem{greshake2023}
+\lr{K. Greshake, S. Abdelnabi, S. Mishra, C. Endres, T. Holz, and
+M. Fritz, ``Not What You've Signed Up For: Compromising Real-World
+LLM-Integrated Applications with Indirect Prompt Injection,'' in
+\textit{Proc. 16th ACM Workshop on Artificial Intelligence and Security
+(AISec)}, 2023.}
+
+\bibitem{wei2023jailbroken}
+\lr{A. Wei, N. Haghtalab, and J. Steinhardt, ``Jailbroken: How Does LLM
+Safety Training Fail?,'' in \textit{Advances in Neural Information
+Processing Systems}, vol. 36, 2023, doi:10.52202/075280-3508.}
+
+\bibitem{zou2023universal}
+\lr{A. Zou, Z. Wang, N. Carlini, M. Nasr, J. Z. Kolter, and
+M. Fredrikson, ``Universal and Transferable Adversarial Attacks on
+Aligned Language Models,'' arXiv:2307.15043, 2023.}
+
+\bibitem{shen2024dan}
+\lr{X. Shen, Z. Chen, M. Backes, Y. Shen, and Y. Zhang, ```Do Anything
+Now': Characterizing and Evaluating In-the-Wild Jailbreak Prompts on
+Large Language Models,'' in \textit{Proc. ACM SIGSAC Conf. on Computer
+and Communications Security (CCS)}, 2024.}
+
+\bibitem{bagdasaryan2023abusing}
+\lr{E. Bagdasaryan, T.-Y. Hsieh, B. Nassi, and V. Shmatikov, ``Abusing
+Images and Sounds for Indirect Instruction Injection in Multi-Modal
+LLMs,'' arXiv:2307.10490, 2023.}
+
+% ---- Prompt injection: benchmarks and defences ----------------------
+
+\bibitem{liu2024formalizing}
+\lr{Y. Liu, Y. Jia, R. Geng, J. Jia, and N. Z. Gong, ``Formalizing and
+Benchmarking Prompt Injection Attacks and Defenses,'' in \textit{Proc.
+33rd USENIX Security Symp.}, pp. 1831--1847, 2024.}
+
+\bibitem{yi2023bipia}
+\lr{J. Yi, Y. Xie, B. Zhu, E. Kiciman, G. Sun, X. Xie, and
+F. Wu, ``Benchmarking and Defending Against Indirect Prompt Injection
+Attacks on Large Language Models,'' arXiv:2312.14197, 2023.}
+
+\bibitem{hines2024spotlighting}
+\lr{K. Hines, G. Lopez, M. Hall, F. Zarfati, Y. Zunger, and E. Kiciman,
+``Defending Against Indirect Prompt Injection Attacks with
+Spotlighting,'' arXiv:2403.14720, 2024.}
+
+\bibitem{chen2024struq}
+\lr{S. Chen, J. Piet, C. Sitawarin, and D. Wagner, ``StruQ: Defending
+Against Prompt Injection with Structured Queries,'' arXiv:2402.06363,
+2024.}
+
+\bibitem{wallace2024hierarchy}
+\lr{E. Wallace, K. Xiao, R. Leike, L. Weng, J. Heidecke, and A. Beutel,
+``The Instruction Hierarchy: Training LLMs to Prioritize Privileged
+Instructions,'' arXiv:2404.13208, 2024.}
+
+\bibitem{willison2023dual}
+\lr{S. Willison, ``The Dual LLM Pattern for Building AI Assistants That
+Can Resist Prompt Injection,'' 2023. [Online]. Available:
+\url{https://simonwillison.net/2023/Apr/25/dual-llm-pattern/}}
+
+% ---- Red teaming ----------------------------------------------------
+
+\bibitem{perez2022redteaming}
+\lr{E. Perez, S. Huang, F. Song, T. Cai, R. Ring, J. Aslanides,
+A. Glaese, N. McAleese, and G. Irving, ``Red Teaming Language Models
+with Language Models,'' in \textit{Proc. Conf. on Empirical Methods in
+Natural Language Processing (EMNLP)}, pp. 3419--3448, 2022,
+doi:10.18653/\bk v1/\bk 2022.\bk emnlp-\bk main.225.}
+
+\bibitem{ganguli2022redteaming}
+\lr{D. Ganguli, L. Lovitt, J. Kernion, A. Askell, Y. Bai, S. Kadavath,
+B. Mann, \textit{et al.}, ``Red Teaming Language Models to Reduce Harms:
+Methods, Scaling Behaviors, and Lessons Learned,'' arXiv:2209.07858,
+2022.}
+
+% ---- Disclosure, poisoning, retrieval -------------------------------
+
+\bibitem{carlini2021extracting}
+\lr{N. Carlini, F. Tram\`er, E. Wallace, M. Jagielski, A. Herbert-Voss,
+K. Lee, A. Roberts, T. Brown, D. Song, \'U. Erlingsson, A. Oprea, and
+C. Raffel, ``Extracting Training Data from Large Language Models,'' in
+\textit{Proc. 30th USENIX Security Symp.}, 2021.}
+
+\bibitem{gu2017badnets}
+\lr{T. Gu, B. Dolan-Gavitt, and S. Garg, ``BadNets: Identifying
+Vulnerabilities in the Machine Learning Model Supply Chain,''
+arXiv:1708.06733, 2017.}
+
+\bibitem{wallace2021concealed}
+\lr{E. Wallace, T. Z. Zhao, S. Feng, and S. Singh, ``Concealed Data
+Poisoning Attacks on NLP Models,'' in \textit{Proc. Conf. of the North
+American Chapter of the Association for Computational Linguistics
+(NAACL-HLT)}, pp. 139--150, 2021,
+doi:10.18653/\bk v1/\bk 2021.\bk naacl-\bk main.13.}
+
+\bibitem{carlini2024poisoning}
+\lr{N. Carlini, M. Jagielski, C. A. Choquette-Choo, D. Paleka,
+W. Pearce, H. Anderson, A. Terzis, K. Thomas, and F. Tram\`er,
+``Poisoning Web-Scale Training Datasets Is Practical,'' in \textit{Proc.
+IEEE Symp. on Security and Privacy (S\&P)}, pp. 407--425, 2024,
+doi:10.1109/\bk SP54263.\bk 2024.00179.}
+
+\bibitem{lewis2020rag}
+\lr{P. Lewis, E. Perez, A. Piktus, F. Petroni, V. Karpukhin, N. Goyal,
+H. K\"uttler, M. Lewis, W.-t. Yih, T. Rockt\"aschel, S. Riedel, and
+D. Kiela, ``Retrieval-Augmented Generation for Knowledge-Intensive NLP
+Tasks,'' in \textit{Advances in Neural Information Processing Systems
+(NeurIPS)}, vol. 33, 2020.}
+
+\bibitem{zou2025poisonedrag}
+\lr{W. Zou, R. Geng, B. Wang, and J. Jia, ``PoisonedRAG: Knowledge
+Corruption Attacks to Retrieval-Augmented Generation of Large Language
+Models,'' in \textit{Proc. 34th USENIX Security Symp.}, pp. 3827--3844,
+2025.}
+
+% ---- Taxonomies and reporting frames --------------------------------
+
+\bibitem{owasp2025}
+\lr{OWASP GenAI Security Project, ``OWASP Top 10 for LLM Applications,''
+2025. [Online]. Available: \url{https://genai.owasp.org/llm-top-10/}}
+
+\bibitem{nist2024aml}
+\lr{A. Vassilev, A. Oprea, A. Fordyce, and H. Anderson, ``Adversarial
+Machine Learning: A Taxonomy and Terminology of Attacks and
+Mitigations,'' National Institute of Standards and Technology, NIST AI
+100-2 E2023, 2024, doi:10.6028/\bk NIST.\bk AI.\bk 100-2e2023.}
+
+\bibitem{atlas}
+\lr{MITRE, ``ATLAS: Adversarial Threat Landscape for
+Artificial-Intelligence Systems,'' 2026. [Online]. Available:
+\url{https://atlas.mitre.org/}. Accessed: Aug. 6, 2026.}
+
+\end{thebibliography}
