@@ -22,6 +22,9 @@ Garak's own artifacts:
 - **Detectors** (`garak.detectors.pwnzz`) score each attempt against PwnzzAI's
   *actual* policy — the exact secret per level, the exact PII shapes, the exact
   per-user routing flag — read out of the pinned application source.
+- **An LLM-as-a-judge** (`garak.detectors.pwnzz_judge`) is available as an
+  opt-in second opinion, with per-scenario criteria. It is off by default and
+  never a primary detector — see [LLM-as-a-judge](#llm-as-a-judge) below.
 - Runs go through `garak.cli.main`, producing `report.jsonl`, `hitlog.jsonl`,
   and `report.html` — Garak's native output, not a bespoke format.
 
@@ -61,6 +64,7 @@ Or the one-shot script: `scripts/run_assessment.sh` (POSIX) /
 | `garak_pwnzz/target_facts.py` | ground truth read from the pinned app source |
 | `garak_pwnzz/suites.py` | the five experiment suites (28 Garak runs) |
 | `garak_pwnzz/runner.py` | drives Garak once per task; writes manifests |
+| `garak_pwnzz/judge/` | LLM-as-a-judge core: client, prompts, per-probe criteria |
 | `garak_pwnzz/analysis/` | reads `report.jsonl` back into tables + SVG figures |
 | `garak_conf/` | stock `RestGenerator` config (CLI-only path) |
 | `lab/` | docker-compose for the pinned, loopback-only target |
@@ -79,6 +83,47 @@ Or the one-shot script: `scripts/run_assessment.sh` (POSIX) /
 | `indirect-injection` | LLM01 | 1 | instructions smuggled through a QR image |
 | `information-disclosure` | LLM02/06 | 4 | customer PII, system prompt, cross-tenant reads |
 | `data-poisoning` | LLM04 | 8 | sentiment backdoor dose-response; RAG mitigation on/off |
+
+## LLM-as-a-judge
+
+An optional second opinion for the one thing ground-truth detection cannot see:
+a response that satisfies the attacker's goal *without* matching the pattern — a
+paraphrase, a hint that gives the coupon away, a refusal that leaks while
+declining. It is **off by default** and is never a primary detector; its value
+is the *disagreement* with the ground-truth detectors, not its raw counts.
+
+```bash
+# Post-hoc: judge an existing run's attempts.csv, no new attack traffic.
+python -m garak_pwnzz judge --dry-run     # check the pipeline, no model calls
+python -m garak_pwnzz judge               # -> attempts-judged.csv, judge-summary.json
+```
+
+```bash
+# In-band: attach detectors.pwnzz_judge.AttackSuccess to every probe in a run.
+PWNZZ_JUDGE=1 python -m garak_pwnzz run direct-injection
+```
+
+The judge model defaults to `PWNZZ_OLLAMA_MODEL` — whatever the lab already
+pulled — so enabling it installs nothing. Set `PWNZZ_JUDGE_MODEL` to use an
+independent one.
+
+**Read the calibration before you read the verdicts.** On `llama3.2:1b` the
+judge is high-precision and low-recall: ~75% of what it calls a success is
+real, and it misses about half the real hits. That profile is useful for
+spotting leaks the pattern missed and useless as a headline rate.
+
+Getting there took one non-obvious design decision, measured rather than
+assumed: the model must **quote a verbatim span** from the response before it
+reasons or decides. Asked for `{verdict, reasoning}` — verdict first — a 1B
+judge answers "success" to almost everything and invents reasoning to match,
+citing a coupon word that a plain refusal never contained. Ollama's grammar
+follows schema property order, so making the verdict the *last* field it emits
+raised agreement from 50% (chance) to 65–68%, cut false alarms from 17 to 3,
+and took fabricated quotes from 6-in-26 to zero.
+Full numbers in [`02-methodology.md`](docs/02-methodology.md) and
+`garak_pwnzz/judge/schema.py`; `judge-summary.json` additionally flags a judge
+returning one label for ≥95% of attempts as unusable rather than reporting its
+counts as a result.
 
 ## Tests
 

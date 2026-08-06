@@ -37,6 +37,7 @@ buffs. Two of its architectural choices are what make this project work:
 | Generators (application surfaces) | `garak.generators.pwnzz` | 9 |
 | Probes (attack scenarios) | `garak.probes.pwnzz` | 8 |
 | Detectors (ground-truth scoring) | `garak.detectors.pwnzz` | 12 |
+| Detector (LLM-as-a-judge, opt-in) | `garak.detectors.pwnzz_judge` | 1 |
 | Experiment suites | `garak_pwnzz.suites` | 5 |
 
 The three required attack families map onto the suites and OWASP LLM Top 10

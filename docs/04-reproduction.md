@@ -54,7 +54,17 @@ python -m garak_pwnzz run all
 
 # 5. Build tables and figures from the runs.
 python -m garak_pwnzz analyze
+
+# 6. Optional: a second opinion from the LLM judge, over the table step 5 wrote.
+#    Needs no new attack traffic. Read judge-summary.json's warnings first.
+python -m garak_pwnzz judge --dry-run     # pipeline check, no model calls
+python -m garak_pwnzz judge
 ```
+
+To judge *during* a scan instead, set `PWNZZ_JUDGE=1` before step 4; that
+attaches `detectors.pwnzz_judge.AttackSuccess` to every probe and its scores
+land in `report.jsonl` with everything else. It costs one model call per
+generation, so the post-hoc pass above is usually the better trade.
 
 ## Re-running a single task with stock Garak
 
@@ -106,6 +116,10 @@ garak_analysis/
   sentiment-doseresponse.csv
   mitigations.csv        evidence-linked mitigation matrix
   summary.json           machine-readable headline numbers
+  attempts-judged.csv    attempts.csv plus the LLM judge's verdict, the span it
+                         quoted, and whether it agreed with the primary detector
+  judge-summary.json     judge model, verdict distribution, agreement counts,
+                         and any degeneracy warning
   figures/*.svg          the charts
   dashboard.html         self-contained results dashboard (embeds the figures)
 ```

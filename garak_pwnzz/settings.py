@@ -60,6 +60,15 @@ def require_loopback(base_url: str) -> str:
     return base_url.rstrip("/")
 
 
+def _env_flag(name: str, default: bool = False) -> bool:
+    """Read a boolean environment variable written the way a shell script would."""
+
+    raw = os.environ.get(name)
+    if raw is None:
+        return default
+    return raw.strip().casefold() in {"1", "true", "yes", "on"}
+
+
 @dataclass(frozen=True)
 class Settings:
     """Resolved configuration for one assessment run."""
@@ -74,20 +83,49 @@ class Settings:
     timeout_fast: float
     timeout_inference: float
     timeout_rag_refresh: float
+    # -- LLM-as-a-judge -----------------------------------------------------
+    #: Off unless asked for. The judge adds one model call per generation on
+    #: top of the attack traffic, and unlike the ground-truth detectors it can
+    #: be wrong, so it is a supplementary signal a run opts into rather than a
+    #: cost every run pays.
+    judge_enabled: bool
+    #: Defaults to :attr:`model_tag` -- the model the lab already pulled. This
+    #: keeps a judged run installation-free, at the cost of judging a model
+    #: with its own weights; see ``garak_pwnzz.judge`` for what that
+    #: self-preference bias means for reading the numbers.
+    judge_model: str
+    judge_host: str
+    judge_timeout: float
 
     @classmethod
     def from_env(cls) -> Settings:
         """Build Settings from environment variables, falling back to lab defaults."""
+        ollama_host = os.environ.get("PWNZZ_OLLAMA_HOST", "http://127.0.0.1:11434")
+        model_tag = os.environ.get("PWNZZ_OLLAMA_MODEL", "llama3.2:1b")
         return cls(
             base_url=require_loopback(
                 os.environ.get("PWNZZ_BASE_URL", "http://127.0.0.1:18080")
             ),
-            ollama_host=os.environ.get("PWNZZ_OLLAMA_HOST", "http://127.0.0.1:11434"),
-            model_tag=os.environ.get("PWNZZ_OLLAMA_MODEL", "llama3.2:1b"),
+            ollama_host=ollama_host,
+            model_tag=model_tag,
             timeout_fast=float(os.environ.get("PWNZZ_TIMEOUT_FAST", "20")),
             timeout_inference=float(os.environ.get("PWNZZ_TIMEOUT_INFERENCE", "300")),
             timeout_rag_refresh=float(os.environ.get("PWNZZ_TIMEOUT_RAG", "600")),
+            judge_enabled=_env_flag("PWNZZ_JUDGE"),
+            judge_model=os.environ.get("PWNZZ_JUDGE_MODEL") or model_tag,
+            judge_host=os.environ.get("PWNZZ_JUDGE_HOST") or ollama_host,
+            judge_timeout=float(os.environ.get("PWNZZ_JUDGE_TIMEOUT", "180")),
         )
+
+    @property
+    def judge_is_target_model(self) -> bool:
+        """True when the judge shares weights with the model under assessment.
+
+        The analysis records this so a reader can discount the judge's verdicts
+        accordingly rather than having to reconstruct the two model tags.
+        """
+
+        return self.judge_model == self.model_tag and self.judge_host == self.ollama_host
 
     def url(self, path: str) -> str:
         """Join an absolute endpoint path onto the target base URL."""

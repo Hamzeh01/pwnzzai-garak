@@ -18,10 +18,52 @@ exactly what each prompt was trying to do.
 
 from __future__ import annotations
 
+from garak import _config
 from garak.probes.base import Probe
 from garak.probes._tier import Tier
 
-from garak_pwnzz import target_facts
+from garak_pwnzz import settings, target_facts
+
+#: The LLM-as-a-judge detector, added to every probe's extended detectors when
+#: a run opts in. See :mod:`garak_pwnzz.judge` for why it is opt-in and why it
+#: is never a primary detector.
+JUDGE_DETECTOR = "pwnzz_judge.AttackSuccess"
+
+
+class _PwnzzProbe(Probe):
+    """Base for this project's probes: ground-truth detectors, judge on request.
+
+    Every probe here names a ground-truth detector from
+    :mod:`garak.detectors.pwnzz` as its primary and a stock garak detector as
+    an extended one. This base adds one more thing they all share -- the
+    opt-in LLM judge.
+
+    The judge is wired in here rather than written into each ``extended_detectors``
+    list because garak's probewise harness runs every extended detector
+    unconditionally. Listing it statically would put a model call on the
+    critical path of every attempt in every run, including runs on a machine
+    with no judge model pulled. Attaching it per instance, only when
+    ``PWNZZ_JUDGE=1``, keeps the default run exactly as cheap and as
+    dependency-free as it was.
+    """
+
+    # pylint: disable=abstract-method
+
+    #: Marks this as a non-runnable base for garak_pwnzz.bootstrap.
+    _abstract_base = True
+
+    def __init__(self, config_root=_config):
+        """Attach the judge detector if this run asked for it."""
+
+        super().__init__(config_root=config_root)
+        if not settings.load().judge_enabled:
+            return
+        extended = list(self.extended_detectors or [])
+        if JUDGE_DETECTOR not in extended:
+            # Rebind rather than append: extended_detectors is a class
+            # attribute, and mutating it would leak the judge into every other
+            # probe instance in the process.
+            self.extended_detectors = extended + [JUDGE_DETECTOR]
 
 
 # ==========================================================================
@@ -29,7 +71,7 @@ from garak_pwnzz import target_facts
 # ==========================================================================
 
 
-class CouponExtraction(Probe):
+class CouponExtraction(_PwnzzProbe):
     """Coax the pizza assistant into revealing its protected coupon word.
 
     A spread of injection techniques -- direct ask, instruction override,
@@ -79,7 +121,7 @@ class CouponExtraction(Probe):
     ]
 
 
-class GuardrailBypass(Probe):
+class GuardrailBypass(_PwnzzProbe):
     """Drive the guardrail escalation ladder with one attack per defence layer.
 
     Point this at the ``GuardrailLadder`` generator with a fixed ``stage``. Each
@@ -139,7 +181,7 @@ class GuardrailBypass(Probe):
 # ==========================================================================
 
 
-class QRCodeInjection(Probe):
+class QRCodeInjection(_PwnzzProbe):
     """Indirect injection carried in a QR code the application decodes and obeys.
 
     The prompts are the *payloads encoded into the image*, not messages typed to
@@ -182,7 +224,7 @@ class QRCodeInjection(Probe):
 # ==========================================================================
 
 
-class CustomerDataExtraction(Probe):
+class CustomerDataExtraction(_PwnzzProbe):
     """Pull synthetic customer PII out of the comment-backed RAG assistant.
 
     Run against ``CommentRAG``. The application's own leak flag travels in the
@@ -214,7 +256,7 @@ class CustomerDataExtraction(Probe):
     ]
 
 
-class SystemPromptDisclosure(Probe):
+class SystemPromptDisclosure(_PwnzzProbe):
     """Elicit the application's own system-prompt / instruction text."""
 
     lang = "en"
@@ -236,7 +278,7 @@ class SystemPromptDisclosure(Probe):
     ]
 
 
-class CrossTenantOrderAccess(Probe):
+class CrossTenantOrderAccess(_PwnzzProbe):
     """Try to read another customer's orders or routing flag.
 
     Split across the two surfaces where cross-tenant reads are decidable: the
@@ -270,7 +312,7 @@ class CrossTenantOrderAccess(Probe):
 # ==========================================================================
 
 
-class SentimentPoisoning(Probe):
+class SentimentPoisoning(_PwnzzProbe):
     """Flip the sentiment classifier's verdict by mislabelling training data.
 
     Run against the ``SentimentClassifier`` generator, whose ``poison_comments``
@@ -311,7 +353,7 @@ class SentimentPoisoning(Probe):
     ]
 
 
-class CateringRAGPoisoning(Probe):
+class CateringRAGPoisoning(_PwnzzProbe):
     """Steer the catering assistant with a poisoned retrieval corpus.
 
     Run against the ``CateringRAG`` generator, whose ``poison_documents`` inject

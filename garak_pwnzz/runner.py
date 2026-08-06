@@ -202,6 +202,16 @@ def run_suite(
             "pinned_commit": target_facts.PINNED_COMMIT,
             "pinned_image": target_facts.PINNED_IMAGE_DIGEST,
         },
+        # Recorded whether or not the judge ran, so a report always states which
+        # signals produced it rather than leaving a reader to infer it from the
+        # presence of a column.
+        "judge": {
+            "enabled": cfg.judge_enabled,
+            "model": cfg.judge_model if cfg.judge_enabled else None,
+            "shares_weights_with_target": (
+                cfg.judge_is_target_model if cfg.judge_enabled else None
+            ),
+        },
         "tasks": [],
     }
 

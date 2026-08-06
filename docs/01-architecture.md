@@ -29,14 +29,17 @@ garak_pwnzz/
   bootstrap.py        registers garak.{generators,probes,detectors}.pwnzz
   suites.py           named experiment suites (probe × generator × config)
   runner.py           drives garak once per task; writes a run manifest
-  __main__.py         CLI: list / preflight / run / analyze
+  __main__.py         CLI: list / preflight / run / analyze / judge
   garak_plugins/
-    generators/pwnzz.py   one class per application surface
-    probes/pwnzz.py       one class per attack scenario
-    detectors/pwnzz.py    policy-aware, ground-truth detectors
+    generators/pwnzz.py       one class per application surface
+    probes/pwnzz.py           one class per attack scenario
+    detectors/pwnzz.py        policy-aware, ground-truth detectors
+    detectors/pwnzz_judge.py  opt-in LLM-as-a-judge detector
+  judge/              the judge core: client, prompts, schema, per-probe criteria
   analysis/
     report_reader.py  parse garak report.jsonl into records
     analyze.py        tables + figures + summary.json
+    judge_pass.py     post-hoc judge pass over attempts.csv
     charts.py         dependency-free SVG charts
 garak_conf/           stock RestGenerator configs (CLI-only path)
 lab/                  docker-compose for the pinned target
@@ -58,6 +61,12 @@ The net effect: our plugins behave exactly like built-in ones — loadable by th
 harness, nameable on the command line, listable — without a stateful install
 step. The one Windows caveat is that garak prints emoji, so the console must be
 UTF-8; the runner and the scripts set `PYTHONIOENCODING=utf-8` for you.
+
+`bootstrap.PLUGIN_MODULES` lists what each category contributes. Detectors ship
+as two modules on purpose: `garak.detectors.pwnzz` scores against ground truth
+read from the pinned application source, `garak.detectors.pwnzz_judge` asks a
+model for an opinion. Splitting them means a run, a report, or a reader can
+tell a fact from an opinion without knowing the class names.
 
 ## Design rules
 

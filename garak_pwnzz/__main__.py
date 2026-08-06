@@ -4,6 +4,7 @@
     python -m garak_pwnzz preflight            # check the lab is up and reachable
     python -m garak_pwnzz run <suite>|all      # run garak over a suite
     python -m garak_pwnzz analyze              # build tables + figures from runs
+    python -m garak_pwnzz judge                # LLM-as-judge pass over attempts.csv
 
 This wrapper never reimplements scanning. ``run`` hands each task to garak; the
 artifacts it produces are garak's own. Everything here is orchestration and
@@ -55,6 +56,10 @@ def _cmd_preflight(_args: argparse.Namespace) -> int:
     print(f"ollama host     : {cfg.ollama_host}")
     print(f"model tag       : {cfg.model_tag}")
     print(f"pinned commit   : {target_facts.PINNED_COMMIT}")
+    print(
+        f"llm judge       : {'on' if cfg.judge_enabled else 'off'} "
+        f"(model {cfg.judge_model} @ {cfg.judge_host})"
+    )
     ok = True
     try:
         r = requests.get(cfg.url("/"), timeout=cfg.timeout_fast)
@@ -68,6 +73,16 @@ def _cmd_preflight(_args: argparse.Namespace) -> int:
         print(f"ollama /api/tags: {r.status_code}; models={tags}")
         if cfg.model_tag not in tags:
             print(f"  WARNING: pinned model {cfg.model_tag!r} not present")
+        if cfg.judge_model not in tags:
+            print(
+                f"  WARNING: judge model {cfg.judge_model!r} not present; "
+                "pull it or set PWNZZ_JUDGE_MODEL to one listed above"
+            )
+        elif cfg.judge_is_target_model:
+            print(
+                "  NOTE: the judge shares weights with the target model; its "
+                "verdicts are a soft second opinion, not an independent one"
+            )
     except requests.RequestException as exc:
         print(f"ollama /api/tags: UNREACHABLE ({exc})")
         ok = False
@@ -101,6 +116,33 @@ def _cmd_analyze(_args: argparse.Namespace) -> int:
     return 0
 
 
+def _cmd_judge(args: argparse.Namespace) -> int:
+    """Run the LLM-as-judge pass over an existing analysis run."""
+    from garak_pwnzz.analysis import judge_pass
+    from garak_pwnzz.judge import JudgeUnavailable
+
+    try:
+        result = judge_pass.run(
+            dry_run=args.dry_run,
+            resume=args.resume,
+            limit=args.limit,
+            delay_seconds=args.delay,
+        )
+    except JudgeUnavailable as exc:
+        print(f"judge unavailable: {exc}")
+        return 1
+
+    print(json.dumps(result.summary, indent=2, default=str))
+    print(
+        f"\njudged {result.judged} attempts "
+        f"({result.skipped} already done) -> {result.output_path}"
+    )
+    print(f"wrote summary to {result.summary_path}")
+    for warning in result.summary.get("warnings", []):
+        print(f"\nWARNING: {warning}")
+    return 0
+
+
 def _cmd_dashboard(_args: argparse.Namespace) -> int:
     """Rebuild only the HTML dashboard from existing analysis output."""
     from garak_pwnzz.analysis import dashboard
@@ -130,6 +172,27 @@ def build_parser() -> argparse.ArgumentParser:
         "analyze", help="build tables, figures and dashboard from existing runs"
     )
     sub.add_parser("dashboard", help="(re)build only the HTML dashboard")
+
+    judge_p = sub.add_parser(
+        "judge", help="run the LLM-as-judge over garak_analysis/attempts.csv"
+    )
+    judge_p.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="exercise the pipeline without calling the judge model",
+    )
+    judge_p.add_argument(
+        "--resume", action="store_true", help="continue an interrupted pass"
+    )
+    judge_p.add_argument(
+        "--limit", type=int, default=None, help="judge at most N attempts"
+    )
+    judge_p.add_argument(
+        "--delay",
+        type=float,
+        default=0.0,
+        help="seconds to pause between judge calls",
+    )
     return parser
 
 
@@ -142,6 +205,7 @@ def main(argv: list[str] | None = None) -> int:
         "run": _cmd_run,
         "analyze": _cmd_analyze,
         "dashboard": _cmd_dashboard,
+        "judge": _cmd_judge,
     }
     return handlers[args.command](args)
 

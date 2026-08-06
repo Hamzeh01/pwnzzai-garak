@@ -16,6 +16,7 @@
 ignored-modules = [
     "garak.probes.pwnzz",
     "garak.detectors.pwnzz",
+    "garak.detectors.pwnzz_judge",
     "garak.generators.pwnzz",
 ]
 
