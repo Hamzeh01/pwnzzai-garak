@@ -2,16 +2,22 @@
 
 *فارسی: [README-fa.md](README-fa.md)*
 
-The English and Persian editions are complete front to back: abstract,
+Two editions of the same study. Both are complete front to back: abstract,
 introduction, related work, architecture, methodology, results, ablation study,
-discussion, conclusion, and 27 references. They carry the same eight sections,
-21 table environments, nine figures, labels, citations, and reported numbers.
-Both editions intentionally identify the author as anonymous; no fabricated
-affiliation or email address is included.
+discussion, conclusion.
+
+- **English (`en/`)** — the current, condensed edition: 18 pages, single-column
+  IEEEtran 10pt, BibTeX, 10 references, 15 tables, 5 figures. Authors:
+  Mohammad Mahdi Shahriyar, Hossein Hamzehzadeh, Kimia Omrani.
+- **Persian (`fa/`)** — the earlier long-form edition: 27 pages, XePersian with a
+  literal RTL-safe bibliography. It has **not** been revised and still carries
+  the pre-revision section text, the nine-figure/21-table float set, and the old
+  27-reference bibliography — including the survey citations the English edition
+  has since dropped. Bring it in line with `en/` before treating the two as
+  translations of each other.
 
 Source, generated figures, temporary build files, and release PDFs are kept in
-separate directories. The English edition uses single-column IEEEtran and
-BibTeX. The Persian edition uses XePersian and a literal RTL-safe bibliography.
+separate directories.
 
 ## Layout
 
@@ -25,7 +31,7 @@ fa/main.tex                   Persian main file and front matter
 fa/sections/                  Persian section sources and literal bibliography
 fa/fonts.conf                 Windows fontconfig search path for XeTeX
 figures/source/               authored Mermaid diagram sources
-figures/generated/            nine shared, rendered vector PDFs
+figures/generated/            rendered vector PDFs shared by both editions
 figures/scripts/              cross-platform figure builders
 build/                        ignored LaTeX intermediates
 output/paper-en.pdf           final English PDF
@@ -35,12 +41,10 @@ output/paper-fa.pdf           final Persian PDF
 ## Building
 
 ```powershell
-# From the repository root on Windows
 .\docs\paper\build.ps1
 ```
 
 ```bash
-# From the repository root on Linux/WSL
 bash docs/paper/build.sh
 ```
 
@@ -54,7 +58,7 @@ survives the final pass — overfull or underfull boxes, undefined references or
 citations, or `Label(s) may have changed` — and the English path additionally
 fails on any BibTeX `Warning--`. A successful build therefore means a clean log,
 not merely a PDF. Neither edition's PDF is copied to `output/` unless its gate
-passes, so a stale `output/` PDF is a signal that the last build was rejected.
+passes, so a stale `output/` PDF means the last build was rejected.
 
 Generate or refresh the shared figures separately:
 
@@ -66,35 +70,106 @@ powershell -NoProfile -ExecutionPolicy Bypass `
   -File .\docs\paper\figures\scripts\build-figures.ps1
 ```
 
-Both builders generate only the nine figures referenced by the paper. The
-PowerShell builder uses `npx` plus the installed Google Chrome for Mermaid and
-`svglib`/ReportLab for the analysis SVGs. It skips figures that are already
-newer than their sources. Both builders return a nonzero exit code if a
-required conversion fails. Both main files define `\safefig`, which draws a
-labelled placeholder if a generated figure is temporarily unavailable.
+The builder renders every Mermaid source and the analysis SVGs, skipping figures
+newer than their sources, and returns nonzero if a conversion fails. Both main
+files define `\safefig`, which draws a labelled placeholder if a generated figure
+is temporarily unavailable.
 
-## Persian typography and RTL rules
+## What changed in the condensed English edition
 
-The Persian body uses IRLotus, headings use IRYekan, Latin terms use Segoe UI,
-and identifiers use Consolas. `fa/fonts.conf` exposes the Windows and per-user
-font directories to MiKTeX's XeTeX. The document uses these macros consistently:
+Driven by a page target; nothing was dropped that is not restated in the text.
 
-| Macro | Purpose |
+**Length.** 33 pages → 18. The prose is roughly a third of its former length,
+with every claim, number, and caveat retained; captions are set one size down;
+tables are `\scriptsize` with `\arraystretch` 1.0; `\linespread` is 0.97 and the
+text block is 0.72–0.75 in from the trim.
+
+**Content.** Added Sec. III-F on the LLM-as-a-judge — the suite's most recent
+component — with Table V, its schema-order calibration measured on a stratified
+46-attempt sample. `fig-architecture.mmd` gained the opt-in judge path. The
+detector table gained a `pwnzz_judge.AttackSuccess` row. Added Table VIII
+(provenance), which maps each part of the paper to the artefact or document it
+derives from.
+
+**Removed floats** (all fully restated in prose, verbatim numbers preserved):
+
+| Removed | Where its content now lives |
 |---|---|
-| `\en{...}` | keep an English technical term left-to-right |
-| `\num{...}` | keep a measured value and separators in one LTR run |
-| `\numto{a}{b}` | keep both values and the transition arrow together |
-| `\code{...}` | typeset an identifier or path in Consolas |
-| `\bk` | zero-width break point inside a long identifier or DOI |
+| Fig. sentiment flip rate | flip-rate row of the dose-response table |
+| Fig. catering mitigation | the catering off/on table |
+| Fig. experimental controls | the four labelled control paragraphs in Sec. IV-D |
+| Fig. guardrail ladder chart | the `CouponLeak` column of the ladder table |
+| Table per-detector totals | the two rates quoted in Sec. V-A |
+| Table ladder per-technique | the ranking sentence in Sec. V-C |
+| Table leak-rendering distribution | the rendering sentence in Sec. V-C |
+| Table information-disclosure tasks | the four rates in the opening of Sec. V-E |
+| Table QR per-payload hits | the payload paragraph in Sec. V-D |
 
-The Persian bibliography is literal rather than BibTeX-generated because an
-IEEEtran `.bbl` is reordered by bidi. It contains the same 27 checked sources as
-`en/references.bib`.
+## Figures (5)
+
+| Figure | Source | Origin |
+|---|---|---|
+| Fig. 1 component architecture | `figures/source/fig-architecture.mmd` | updated — judge path added |
+| Fig. 2 attempt lifecycle | `figures/source/fig-attempt-lifecycle.mmd` | unchanged |
+| Fig. 3 direct-injection levels | `garak_analysis/figures/direct-levels.svg` | unchanged |
+| Fig. 4 sentiment confidence | `garak_analysis/figures/sentiment-confidence.svg` | unchanged |
+| Fig. 5 defence layers vs techniques | `figures/source/fig-defence-layers.mmd` | unchanged |
+
+`fig-controls.mmd`, `guardrail-ladder.svg`, `sentiment-flip-rate.svg` and
+`catering-mitigation.svg` are still built and still referenced by the Persian
+edition; only the English edition stopped citing them.
+
+## References
+
+**10 entries, and the scope is a deliberate rule: cite only what we hold and have
+read in full.** Nothing is cited from a title or an abstract. The earlier draft
+carried 27 survey-style references to work we had not read; those were removed
+rather than left standing.
+
+**Two external papers.**
+
+- *Greshake et al., "Not what you've signed up for" (AISec 2023)* — read in the
+  extended arXiv version, 2302.12173v2, which is what our section locators refer
+  to. Cited for four specific things rather than in passing: retrieved untrusted
+  content being analogous to arbitrary code, and the absent data/instruction
+  boundary (`Sec. 2`), used in the introduction and the layers discussion; the
+  injection-method taxonomy and its hidden multi-modal class, which is what the
+  QR upload surface instantiates (`Sec. 3.1`); the threat taxonomy, which is what
+  separates a text-level success from server-side execution (`Sec. 3.2`); and the
+  observation that retrieval opens a path where input filtering is often not
+  applied (`Sec. 3`), which the guardrail ladder turns into a measurement.
+- *Bowen et al., "Scaling Trends for Data Poisoning in LLMs" (AAAI-25)* — cited
+  for the three threat models and the ≤2 % poison fractions (`Sec. 3–4`), the
+  learned-vulnerability-score metric (`Sec. 5.3`), the frontier-model and
+  moderation-bypass results (`Sec. 6`, `6.1`), and above all the scaling
+  regression (`Table 2`) with its one dissenting series (`Table 3`). That last
+  result is load-bearing against us: it is why the 1B lower bound cannot be read
+  as reassuring, and it is cited at each of the four places that claim depends on
+  — related work, the poisoning discussion, the ablation's statement of what it
+  cannot vary, and the limitations and future work.
+
+**Eight project entries** — `pwnzzrepo` for the suite and its committed run
+artefacts, plus one per document (`00-overview` … `06-manual-testing`). These are
+cited where the paper restates them, and the provenance table (Sec. IV) maps
+sections to sources so a reader can tell which material is restated from a
+document, which is re-aggregated from committed artefacts, and which is new here.
+
+**Tools and taxonomies are named, not cited.** Garak and the OWASP LLM Top 10 are
+artefacts the study *uses*, not works whose claims it leans on, so each is named
+at first use with its address in a footnote and carries no bibliography entry.
+Two claims that the earlier draft attributed to Garak's paper — that automatic
+failure detection is the hard part, and that it depends on the deploying
+organisation's intent — are now stated as this study's own position, which is
+where the evidence for them in this paper actually comes from.
+
+Related work was rewritten accordingly and renamed **Positioning**: two
+subsections that engage the two papers in detail, and a third stating the gap
+between them that this study occupies. It does not survey the field, and says so.
 
 ## Table style
 
-The preamble defines one visual grammar used by every table, so a wide row
-stays traceable across the measure:
+The preamble defines one visual grammar used by every table, so a wide row stays
+traceable across the measure:
 
 | Macro | Purpose |
 |---|---|
@@ -106,24 +181,9 @@ stays traceable across the measure:
 | `\asrbar{0.472}` | proportional bar on a common `[0,1]` scale, in its own `l` column |
 | `\code{}`, `\bk`, `\tw{}` | monospace identifiers, zero-width break points, `\textwidth`-relative widths |
 
-Tables with footnotes use `threeparttable` + `\tnote{}`, so notes align to the
-tabular rather than to the text block. `\aboverulesep` and `\belowrulesep` are
-zeroed and paid back through `\extrarowheight`; without that, booktabs rules
-leave an uncoloured gap through every band.
-
-## Figures
-
-| Figure | Source | Origin |
-|---|---|---|
-| Fig. 1 component architecture | `figures/source/fig-architecture.mmd` | new |
-| Fig. 2 attempt lifecycle | `figures/source/fig-attempt-lifecycle.mmd` | new |
-| Fig. 3 experimental controls | `figures/source/fig-controls.mmd` | new |
-| Fig. 4 defence layers vs techniques | `figures/source/fig-defence-layers.mmd` | new |
-| Fig. 5 direct-injection levels | `garak_analysis/figures/direct-levels.svg` | existing |
-| Fig. 6 guardrail ladder | `garak_analysis/figures/guardrail-ladder.svg` | existing |
-| Fig. 7 sentiment flip rate | `garak_analysis/figures/sentiment-flip-rate.svg` | existing |
-| Fig. 8 sentiment confidence | `garak_analysis/figures/sentiment-confidence.svg` | existing |
-| Fig. 9 catering mitigation | `garak_analysis/figures/catering-mitigation.svg` | existing |
+Tables with footnotes use `threeparttable` + `\tnote{}`. `\aboverulesep` and
+`\belowrulesep` are zeroed and paid back through `\extrarowheight`; without that,
+booktabs rules leave an uncoloured gap through every band.
 
 ## Provenance of every number
 
@@ -132,37 +192,31 @@ Tables that restate committed artifacts:
 | Table | Source file |
 |---|---|
 | Rollup by family / OWASP | `garak_analysis/summary.json`, `family-summary.csv`, `owasp-summary.csv` |
-| Per-detector totals | `garak_analysis/eval-by-detector.csv` (summed over tasks) |
 | Guardrail ladder per stage | `garak_analysis/eval-by-detector.csv` |
-| Information-disclosure tasks | `garak_analysis/task-summary.csv` |
 | Sentiment dose-response | `garak_analysis/sentiment-doseresponse.csv` |
 | Detector agreement | `garak_analysis/detector-agreement.csv` |
 | Mitigations | `garak_analysis/mitigations.csv`, revised — see below |
 
-Tables derived by re-aggregating `attempts.csv` (these are **new** analyses, not
-present in `garak_analysis/`):
+Tables and per-prompt figures derived by re-aggregating `attempts.csv` (these are
+**new** analyses, not present in `garak_analysis/`): the technique × level matrix,
+the ladder per-technique totals, the QR per-payload hits, the system-prompt probe
+breakdown, the leak-rendering distribution, and the catering retrieval-level vs
+answer-level cross-tabulation. If these are worth keeping, they belong in
+`garak_pwnzz/analysis/analyze.py` so they regenerate with everything else. Right
+now they exist only in the paper.
 
-- **Technique × level matrix** — per-prompt hits grouped by persona level.
-- **Ladder per-technique totals** — per-prompt hits summed across all ten stages.
-- **QR per-payload hits**, **PII per-prompt hits**, **system-prompt probe
-  breakdown** — per-prompt aggregation within a task.
-- **Leak-rendering distribution** — counts of the `leak_rendering` note.
-- **Catering retrieval-level vs answer-level** — cross-tabulation of
-  `untrusted_in_retrieval` against detector hits and query content, read from
-  `garak_runs/data-poisoning/catering-poison-*.report.jsonl`.
-
-If these are worth keeping, they belong in `garak_pwnzz/analysis/analyze.py` so
-they regenerate with everything else. Right now they exist only in the paper.
+The judge calibration in Table V comes from `docs/02-methodology.md` and the
+docstring of `garak_pwnzz/judge/schema.py`; it is a measurement on a stratified
+46-attempt sample, not a committed analysis artifact.
 
 ### The ablation tables (Sec. VI)
 
-**Table XVI (defence ablations)** re-presents numbers already in Sec. V —
-per-task rates from `task-summary.csv` plus the catering and dose-response data
-— with a Δ column computed against the reference row of each block. No new data.
+**Defence ablations** re-present numbers already in Sec. V — per-task rates from
+`task-summary.csv` plus the catering and dose-response data — with a Δ column
+computed against each block's reference row. No new data.
 
-**Table XVII (measurement-apparatus ablations)** contains arithmetic
-counterfactuals, each computed exactly from retained per-attempt records rather
-than estimated:
+**Measurement-apparatus ablations** contain arithmetic counterfactuals, each
+computed exactly from retained per-attempt records rather than estimated:
 
 | Row | Derivation |
 |---|---|
@@ -174,12 +228,13 @@ than estimated:
 | Whitespace branch removed | 97 − 3 = 94; 94/546 = 0.172 |
 | Paired control / abstention / QR integrity | no change — verified against `sentiment-doseresponse.csv` (control label negative at every budget), `summary.json` (`nones` = 0 everywhere), and the QR report (21/21 round-tripped) |
 
-Table XV also now reports derived precision/recall: stock detector
+The agreement table also reports derived precision/recall: stock detector
 61/208 = 0.293, application oracle 26/45 = 0.578, both at recall 1.000.
 
 ## Two places the draft departs from `docs/05-results-and-mitigations.md`
 
-Both are corrections supported by the raw reports, not rewordings.
+Both are corrections supported by the raw reports, not rewordings, and both are
+flagged in the text at the point they arise.
 
 1. **The catering mitigation.** `docs/05` says trusted-only retrieval "reduces
    but does not eliminate the influence". The report data shows
@@ -191,21 +246,23 @@ Both are corrections supported by the raw reports, not rewordings.
    M-08 accordingly.
 
 2. **Output-filter stages.** `docs/05` says leaks at B5/B9 surface as
-   `CouponSuppressed` or as obfuscated `CouponLeak` hits. Measured: B5 is
-   0/0/0 and B9 has exactly one `CouponSuppressed` hit and no leaks. The twelve
+   `CouponSuppressed` or as obfuscated `CouponLeak` hits. Measured: B5 is 0/0/0
+   and B9 has exactly one `CouponSuppressed` hit and no leaks. The twelve
    obfuscated renderings in the study occur at *other* stages and in the direct
    suite. The draft states the measured distribution.
 
 One further honest note carried into the discussion: the `CouponLeak`
-whitespace-stripped branch matches without word boundaries. It correctly caught
-a genuine leak rendered as the plural "Mushrooms!" and also fired once on the
-invented word "MOONCHEESE". One of the 97 recorded leaks is attributable to
-this.
+whitespace-stripped branch matches without word boundaries. It correctly caught a
+genuine leak rendered as the plural "Mushrooms!" and also fired on the invented
+word "MOONCHEESE". One of the 97 recorded leaks is attributable to this.
 
 ## Maintenance notes
 
 - The derived tables listed above live only in the paper, not in
   `garak_pwnzz/analysis/analyze.py`.
 - Model scale is the one ablation the study does not have. The suite is
-  parameterised for it but was only ever run against `llama3.2:1b`; Sec. VI-A
-  says so explicitly rather than leaving it implied.
+  parameterised for it but was only ever run against `llama3.2:1b`; Sec. VI says
+  so explicitly, and now cites the evidence that the trend runs against
+  defenders.
+- The Persian edition has not been re-condensed and no longer matches the English
+  one section for section.

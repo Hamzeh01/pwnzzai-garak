@@ -1,77 +1,19 @@
 % ---------------------------------------------------------------------
-% Bibliography. Metadata was checked against canonical publisher,
-% proceedings, project, and arXiv records on 2026-08-06.
+% Bibliography.
+%
+% Scope is deliberate and narrow: this list contains only sources we
+% actually hold and have read end to end -- two external papers, and the
+% study's own repository and documentation. Nothing here is cited from a
+% title or an abstract. Where the text names a tool (Garak), a model
+% runtime (Ollama), or a reporting taxonomy (the OWASP LLM Top 10), it
+% names it as an artefact the study uses rather than as a work whose
+% claims we are leaning on, and gives its address inline.
+%
+% Metadata for the two external papers was checked against the AAAI and
+% ACM records and the arXiv versions supplied to us.
 % ---------------------------------------------------------------------
 
-% ---- Tooling and frameworks -----------------------------------------
-
-@misc{garak,
-  author       = {Derczynski, Leon and Galinkin, Erick and Martin, Jeffrey
-                  and Majumdar, Subho and Inie, Nanna},
-  title        = {garak: A Framework for Security Probing Large Language Models},
-  year         = {2024},
-  eprint       = {2406.11036},
-  archivePrefix= {arXiv},
-  primaryClass = {cs.CR},
-  url          = {https://arxiv.org/abs/2406.11036}
-}
-
-@misc{pyrit,
-  author       = {Lopez Munoz, Gary D. and Minnich, Amanda J. and Lutz, Roman
-                  and Lundeen, Richard and Dheekonda, Raja Sekhar Rao
-                  and Chikanov, Nina and Jagdagdorj, Bolor-Erdene
-                  and Pouliot, Martin and Chawla, Shiven and Maxwell, Whitney
-                  and Bullwinkel, Blake and Pratt, Katherine and de Gruyter, Joris
-                  and Siska, Charlotte and Bryan, Pete and Westerhoff, Tori
-                  and Kawaguchi, Chang and Seifert, Christian
-                  and Siva Kumar, Ram Shankar and Zunger, Yonatan},
-  title        = {{PyRIT}: A Framework for Security Risk Identification and
-                  Red Teaming in Generative {AI} System},
-  year         = {2024},
-  eprint       = {2410.02828},
-  archivePrefix= {arXiv},
-  primaryClass = {cs.CR},
-  url          = {https://arxiv.org/abs/2410.02828}
-}
-
-@inproceedings{mazeika2024harmbench,
-  author    = {Mazeika, Mantas and Phan, Long and Yin, Xuwang and Zou, Andy
-               and Wang, Zifan and Mu, Norman and Sakhaee, Elham and Li, Nathaniel
-               and Basart, Steven and Li, Bo and Forsyth, David and Hendrycks, Dan},
-  title     = {{HarmBench}: A Standardized Evaluation Framework for Automated
-               Red Teaming and Robust Refusal},
-  booktitle = {Proceedings of the 41st International Conference on Machine Learning},
-  series    = {Proceedings of Machine Learning Research},
-  volume    = {235},
-  pages     = {35181--35224},
-  publisher = {PMLR},
-  year      = {2024},
-  url       = {https://proceedings.mlr.press/v235/mazeika24a.html}
-}
-
-@inproceedings{debenedetti2024agentdojo,
-  author    = {Debenedetti, Edoardo and Zhang, Jie and Balunovi{\'c}, Mislav
-               and Beurer-Kellner, Luca and Fischer, Marc and Tram{\`e}r, Florian},
-  title     = {{AgentDojo}: A Dynamic Environment to Evaluate Prompt Injection
-               Attacks and Defenses for {LLM} Agents},
-  booktitle = {Advances in Neural Information Processing Systems},
-  volume    = {37},
-  year      = {2024},
-  doi       = {10.52202/079017-2636},
-  url       = {https://proceedings.neurips.cc/paper_files/paper/2024/hash/97091a5177d8dc64b1da8bf3e1f6fb54-Abstract-Datasets_and_Benchmarks_Track.html}
-}
-
-% ---- Prompt injection: attacks --------------------------------------
-
-@misc{perez2022ignore,
-  author       = {Perez, F{\'a}bio and Ribeiro, Ian},
-  title        = {Ignore Previous Prompt: Attack Techniques for Language Models},
-  year         = {2022},
-  eprint       = {2211.09527},
-  archivePrefix= {arXiv},
-  primaryClass = {cs.CL},
-  url          = {https://arxiv.org/abs/2211.09527}
-}
+% ---- External work --------------------------------------------------
 
 @inproceedings{greshake2023,
   author    = {Greshake, Kai and Abdelnabi, Sahar and Mishra, Shailesh
@@ -80,248 +22,117 @@
                {LLM}-Integrated Applications with Indirect Prompt Injection},
   booktitle = {Proc.\ 16th ACM Workshop on Artificial Intelligence and
                Security (AISec)},
-  year      = {2023}
-}
-
-@inproceedings{wei2023jailbroken,
-  author    = {Wei, Alexander and Haghtalab, Nika and Steinhardt, Jacob},
-  title     = {Jailbroken: How Does {LLM} Safety Training Fail?},
-  booktitle = {Advances in Neural Information Processing Systems (NeurIPS)},
-  volume    = {36},
+  pages     = {79--90},
   year      = {2023},
-  doi       = {10.52202/075280-3508},
-  url       = {https://proceedings.neurips.cc/paper_files/paper/2023/hash/fd6613131889a4b656206c50a8bd7790-Abstract-Conference.html}
+  doi       = {10.1145/3605764.3623985},
+  note      = {Read in the extended version, arXiv:2302.12173v2, which
+               carries the full taxonomy and the attack appendix;
+               section numbers in our citations refer to it}
 }
 
-@misc{zou2023universal,
-  author       = {Zou, Andy and Wang, Zifan and Carlini, Nicholas and Nasr, Milad
-                  and Kolter, J. Zico and Fredrikson, Matt},
-  title        = {Universal and Transferable Adversarial Attacks on Aligned
-                  Language Models},
-  year         = {2023},
-  eprint       = {2307.15043},
-  archivePrefix= {arXiv},
-  primaryClass = {cs.CL},
-  url          = {https://arxiv.org/abs/2307.15043}
-}
-
-@inproceedings{shen2024dan,
-  author    = {Shen, Xinyue and Chen, Zeyuan and Backes, Michael
-               and Shen, Yun and Zhang, Yang},
-  title     = {``Do Anything Now'': Characterizing and Evaluating In-the-Wild
-               Jailbreak Prompts on Large Language Models},
-  booktitle = {Proc.\ ACM SIGSAC Conference on Computer and Communications
-               Security (CCS)},
-  year      = {2024}
-}
-
-@misc{bagdasaryan2023abusing,
-  author       = {Bagdasaryan, Eugene and Hsieh, Tsung-Yin and Nassi, Ben
-                  and Shmatikov, Vitaly},
-  title        = {Abusing Images and Sounds for Indirect Instruction Injection
-                  in Multi-Modal {LLM}s},
-  year         = {2023},
-  eprint       = {2307.10490},
-  archivePrefix= {arXiv},
-  primaryClass = {cs.CR},
-  url          = {https://arxiv.org/abs/2307.10490}
-}
-
-% ---- Prompt injection: benchmarks and defences ----------------------
-
-@inproceedings{liu2024formalizing,
-  author    = {Liu, Yupei and Jia, Yuqi and Geng, Runpeng and Jia, Jinyuan
-               and Gong, Neil Zhenqiang},
-  title     = {Formalizing and Benchmarking Prompt Injection Attacks and Defenses},
-  booktitle = {33rd USENIX Security Symposium (USENIX Security 24)},
-  pages     = {1831--1847},
-  publisher = {USENIX Association},
-  year      = {2024},
-  url       = {https://www.usenix.org/conference/usenixsecurity24/presentation/liu-yupei}
-}
-
-@misc{yi2023bipia,
-  author       = {Yi, Jingwei and Xie, Yueqi and Zhu, Bin
-                  and Kiciman, Emre and Sun, Guangzhong and Xie, Xing
-                  and Wu, Fangzhao},
-  title        = {Benchmarking and Defending Against Indirect Prompt Injection
-                  Attacks on Large Language Models},
-  year         = {2023},
-  eprint       = {2312.14197},
-  archivePrefix= {arXiv},
-  primaryClass = {cs.CL},
-  url          = {https://arxiv.org/abs/2312.14197}
-}
-
-@misc{hines2024spotlighting,
-  author       = {Hines, Keegan and Lopez, Gary and Hall, Matthew
-                  and Zarfati, Federico and Zunger, Yonatan and Kiciman, Emre},
-  title        = {Defending Against Indirect Prompt Injection Attacks
-                  with Spotlighting},
-  year         = {2024},
-  eprint       = {2403.14720},
-  archivePrefix= {arXiv},
-  primaryClass = {cs.CR},
-  url          = {https://arxiv.org/abs/2403.14720}
-}
-
-@misc{chen2024struq,
-  author       = {Chen, Sizhe and Piet, Julien and Sitawarin, Chawin
-                  and Wagner, David},
-  title        = {{StruQ}: Defending Against Prompt Injection with
-                  Structured Queries},
-  year         = {2024},
-  eprint       = {2402.06363},
-  archivePrefix= {arXiv},
-  primaryClass = {cs.CR},
-  url          = {https://arxiv.org/abs/2402.06363}
-}
-
-@misc{wallace2024hierarchy,
-  author       = {Wallace, Eric and Xiao, Kai and Leike, Reimar and Weng, Lilian
-                  and Heidecke, Johannes and Beutel, Alex},
-  title        = {The Instruction Hierarchy: Training {LLM}s to Prioritize
-                  Privileged Instructions},
-  year         = {2024},
-  eprint       = {2404.13208},
-  archivePrefix= {arXiv},
-  primaryClass = {cs.CR},
-  url          = {https://arxiv.org/abs/2404.13208}
-}
-
-@misc{willison2023dual,
-  author       = {Willison, Simon},
-  title        = {The Dual {LLM} Pattern for Building {AI} Assistants
-                  That Can Resist Prompt Injection},
-  year         = {2023},
-  howpublished = {\url{https://simonwillison.net/2023/Apr/25/dual-llm-pattern/}}
-}
-
-% ---- Red teaming ----------------------------------------------------
-
-@inproceedings{perez2022redteaming,
-  author    = {Perez, Ethan and Huang, Saffron and Song, Francis and Cai, Trevor
-               and Ring, Roman and Aslanides, John and Glaese, Amelia
-               and McAleese, Nat and Irving, Geoffrey},
-  title     = {Red Teaming Language Models with Language Models},
-  booktitle = {Proceedings of the 2022 Conference on Empirical Methods in Natural Language Processing},
-  pages     = {3419--3448},
-  publisher = {Association for Computational Linguistics},
-  year      = {2022},
-  doi       = {10.18653/v1/2022.emnlp-main.225},
-  url       = {https://aclanthology.org/2022.emnlp-main.225/}
-}
-
-@misc{ganguli2022redteaming,
-  author       = {Ganguli, Deep and Lovitt, Liane and Kernion, Jackson
-                  and Askell, Amanda and Bai, Yuntao and Kadavath, Saurav
-                  and Mann, Ben and others},
-  title        = {Red Teaming Language Models to Reduce Harms: Methods,
-                  Scaling Behaviors, and Lessons Learned},
-  year         = {2022},
-  eprint       = {2209.07858},
-  archivePrefix= {arXiv},
-  primaryClass = {cs.CL},
-  url          = {https://arxiv.org/abs/2209.07858}
-}
-
-% ---- Disclosure, poisoning, retrieval -------------------------------
-
-@inproceedings{carlini2021extracting,
-  author    = {Carlini, Nicholas and Tram{\`e}r, Florian and Wallace, Eric
-               and Jagielski, Matthew and Herbert-Voss, Ariel and Lee, Katherine
-               and Roberts, Adam and Brown, Tom and Song, Dawn
-               and Erlingsson, {\'U}lfar and Oprea, Alina and Raffel, Colin},
-  title     = {Extracting Training Data from Large Language Models},
-  booktitle = {Proc.\ 30th USENIX Security Symposium},
-  year      = {2021}
-}
-
-@misc{gu2017badnets,
-  author       = {Gu, Tianyu and Dolan-Gavitt, Brendan and Garg, Siddharth},
-  title        = {{BadNets}: Identifying Vulnerabilities in the Machine Learning
-                  Model Supply Chain},
-  year         = {2017},
-  eprint       = {1708.06733},
-  archivePrefix= {arXiv},
-  primaryClass = {cs.CR}
-}
-
-@inproceedings{wallace2021concealed,
-  author    = {Wallace, Eric and Zhao, Tony Z. and Feng, Shi and Singh, Sameer},
-  title     = {Concealed Data Poisoning Attacks on {NLP} Models},
-  booktitle = {Proceedings of the 2021 Conference of the North American Chapter
-               of the Association for Computational Linguistics: Human Language Technologies},
-  pages     = {139--150},
-  publisher = {Association for Computational Linguistics},
-  year      = {2021},
-  doi       = {10.18653/v1/2021.naacl-main.13},
-  url       = {https://aclanthology.org/2021.naacl-main.13/}
-}
-
-@inproceedings{carlini2024poisoning,
-  author    = {Carlini, Nicholas and Jagielski, Matthew and Choquette-Choo,
-               Christopher A. and Paleka, Daniel and Pearce, Will
-               and Anderson, Hyrum and Terzis, Andreas and Thomas, Kurt
-               and Tram{\`e}r, Florian},
-  title     = {Poisoning Web-Scale Training Datasets Is Practical},
-  booktitle = {Proc.\ IEEE Symposium on Security and Privacy (S\&P)},
-  pages     = {407--425},
-  year      = {2024},
-  doi       = {10.1109/SP54263.2024.00179},
-  url       = {https://doi.org/10.1109/SP54263.2024.00179}
-}
-
-@inproceedings{lewis2020rag,
-  author    = {Lewis, Patrick and Perez, Ethan and Piktus, Aleksandra
-               and Petroni, Fabio and Karpukhin, Vladimir and Goyal, Naman
-               and K{\"u}ttler, Heinrich and Lewis, Mike and Yih, Wen-tau
-               and Rockt{\"a}schel, Tim and Riedel, Sebastian and Kiela, Douwe},
-  title     = {Retrieval-Augmented Generation for Knowledge-Intensive
-               {NLP} Tasks},
-  booktitle = {Advances in Neural Information Processing Systems (NeurIPS)},
-  volume    = {33},
-  year      = {2020},
-  url       = {https://proceedings.neurips.cc/paper/2020/hash/6b493230-Abstract.html}
-}
-
-@inproceedings{zou2025poisonedrag,
-  author    = {Zou, Wei and Geng, Runpeng and Wang, Binghui and Jia, Jinyuan},
-  title     = {{PoisonedRAG}: Knowledge Corruption Attacks to
-               Retrieval-Augmented Generation of Large Language Models},
-  booktitle = {34th USENIX Security Symposium (USENIX Security 25)},
-  pages     = {3827--3844},
-  publisher = {USENIX Association},
+@inproceedings{bowen2025scaling,
+  author    = {Bowen, Dillon and Murphy, Brendan and Cai, Will
+               and Khachaturov, David and Gleave, Adam and Pelrine, Kellin},
+  title     = {Scaling Trends for Data Poisoning in {LLM}s},
+  booktitle = {Proc.\ 39th AAAI Conference on Artificial Intelligence
+               (AAAI-25)},
   year      = {2025},
-  url       = {https://www.usenix.org/conference/usenixsecurity25/presentation/zou-poisonedrag}
+  note      = {Extended version: arXiv:2408.02946}
 }
 
-% ---- Taxonomies and reporting frames --------------------------------
+% ---- Companion artefacts of this study ------------------------------
+% Cited so a reader can tell which material in this paper is restated
+% from a project document, which is re-aggregated from the committed run
+% artefacts, and which is new here. Paths are relative to the repository
+% root; the provenance table in Sec. IV maps sections to sources.
 
-@misc{owasp2025,
-  author       = {{OWASP GenAI Security Project}},
-  title        = {{OWASP} Top 10 for {LLM} Applications},
-  year         = {2025},
-  howpublished = {\url{https://genai.owasp.org/llm-top-10/}}
-}
-
-@techreport{nist2024aml,
-  author      = {Vassilev, Apostol and Oprea, Alina and Fordyce, Alie
-                 and Anderson, Hyrum},
-  title       = {Adversarial Machine Learning: A Taxonomy and Terminology
-                 of Attacks and Mitigations},
-  institution = {National Institute of Standards and Technology},
-  number      = {NIST AI 100-2 E2023},
-  year        = {2024},
-  doi         = {10.6028/NIST.AI.100-2e2023},
-  url         = {https://csrc.nist.gov/pubs/ai/100/2/e2023/final}
-}
-
-@misc{atlas,
-  author       = {{MITRE}},
-  title        = {{ATLAS}: Adversarial Threat Landscape for
-                  Artificial-Intelligence Systems},
+@misc{pwnzzrepo,
+  author       = {Shahriyar, Mohammad Mahdi and Hamzehzadeh, Hossein
+                  and Omrani, Kimia},
+  title        = {{PwnzzAI} $\times$ {Garak}: A {Garak}-Native Security
+                  Assessment Suite},
   year         = {2026},
-  howpublished = {\url{https://atlas.mitre.org/}},
-  note         = {Accessed 2026-08-06}
+  howpublished = {Software and run artefacts:
+                  \texttt{garak\_pwnzz/}, \texttt{garak\_conf/},
+                  \texttt{garak\_runs/}, \texttt{garak\_analysis/},
+                  \texttt{lab/}, \texttt{tests/}},
+  note         = {Target pinned at application commit
+                  \texttt{cd3ac0d1}, image digest
+                  \texttt{sha256:7878fbd7}}
+}
+
+@misc{pwnzzdocsoverview,
+  author       = {Shahriyar, Mohammad Mahdi and Hamzehzadeh, Hossein
+                  and Omrani, Kimia},
+  title        = {Overview: Scope, Attack Families, and What the Suite
+                  Produces},
+  year         = {2026},
+  howpublished = {Project documentation, \texttt{docs/00-overview.md}},
+  note         = {Companion documentation of the suite}
+}
+
+@misc{pwnzzdocsarch,
+  author       = {Shahriyar, Mohammad Mahdi and Hamzehzadeh, Hossein
+                  and Omrani, Kimia},
+  title        = {Architecture: Generators, Probes, Detectors, and the
+                  Notes Side-Channel},
+  year         = {2026},
+  howpublished = {Project documentation,
+                  \texttt{docs/01-architecture.md}},
+  note         = {Companion documentation of the suite}
+}
+
+@misc{pwnzzdocsmeth,
+  author       = {Shahriyar, Mohammad Mahdi and Hamzehzadeh, Hossein
+                  and Omrani, Kimia},
+  title        = {Methodology: Ground-Truth Detection, the
+                  {LLM}-as-a-Judge, Controls, and Metrics},
+  year         = {2026},
+  howpublished = {Project documentation,
+                  \texttt{docs/02-methodology.md}},
+  note         = {Companion documentation of the suite; source of the
+                  judge schema-order calibration}
+}
+
+@misc{pwnzzdocsscen,
+  author       = {Shahriyar, Mohammad Mahdi and Hamzehzadeh, Hossein
+                  and Omrani, Kimia},
+  title        = {Scenario Catalogue},
+  year         = {2026},
+  howpublished = {Project documentation,
+                  \texttt{docs/03-scenarios.md}},
+  note         = {Companion documentation of the suite; generated from
+                  the plugin definitions}
+}
+
+@misc{pwnzzdocsrepro,
+  author       = {Shahriyar, Mohammad Mahdi and Hamzehzadeh, Hossein
+                  and Omrani, Kimia},
+  title        = {Reproduction: Pinning, Bring-Up, and Replaying a
+                  Single Task},
+  year         = {2026},
+  howpublished = {Project documentation,
+                  \texttt{docs/04-reproduction.md}},
+  note         = {Companion documentation of the suite}
+}
+
+@misc{pwnzzdocsres,
+  author       = {Shahriyar, Mohammad Mahdi and Hamzehzadeh, Hossein
+                  and Omrani, Kimia},
+  title        = {Results and Mitigations: How to Read Every Output},
+  year         = {2026},
+  howpublished = {Project documentation,
+                  \texttt{docs/05-results-and-mitigations.md}},
+  note         = {Companion documentation of the suite; this paper
+                  corrects two of its readings against the raw reports}
+}
+
+@misc{pwnzzdocsmanual,
+  author       = {Shahriyar, Mohammad Mahdi and Hamzehzadeh, Hossein
+                  and Omrani, Kimia},
+  title        = {Manual Testing and Experiment Guide},
+  year         = {2026},
+  howpublished = {Project documentation,
+                  \texttt{docs/06-manual-testing-and-experiment-guide.md}},
+  note         = {Companion documentation of the suite}
 }

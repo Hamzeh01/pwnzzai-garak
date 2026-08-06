@@ -5,18 +5,25 @@
 %     ../figures/scripts/build-figures.sh
 %     ../build.sh en
 %
-%  Single-column IEEEtran. The tables in this draft are wide and dense;
-%  two-column mode forced every one of them into a full-width float and
-%  produced unavoidable overlap, so the document is set one-column.
+%  Single-column IEEEtran, 10pt. The tables in this study are wide and
+%  dense; two-column mode forced every one of them into a full-width
+%  float and produced unavoidable overlap, so the document stays
+%  one-column.
+%
+%  This revision condenses the first draft from 33 pages to 18 without
+%  dropping an argument: the prose is roughly a third of its former
+%  length, the floats are sized against a tighter measure, and four
+%  charts plus six tables whose content is fully restated in the text
+%  were removed (see README.md for the list). What remains is 15 tables
+%  and 5 figures.
 % =====================================================================
-\documentclass[journal,onecolumn,11pt]{IEEEtran}
+\documentclass[journal,onecolumn,10pt]{IEEEtran}
 \IEEEoverridecommandlockouts
 
 \usepackage{cite}
 \usepackage{amsmath,amssymb}
 \usepackage{graphicx}
 \usepackage{booktabs}
-\usepackage{multirow}
 \usepackage{array}
 \usepackage{ragged2e}
 \usepackage[table]{xcolor}
@@ -30,11 +37,11 @@
 % in one-column mode the measure becomes uncomfortably long, so the text
 % block is narrowed and the tables are sized against \textwidth.
 % ---------------------------------------------------------------------
-\usepackage[letterpaper,margin=0.9in]{geometry}
+\usepackage[letterpaper,top=0.75in,bottom=0.75in,left=0.72in,right=0.72in]{geometry}
 
 % Give TeX a little extra flexibility around long inline identifiers.
 % Explicit \bk markers remain the preferred break points; this fallback
-% prevents a code fragment from protruding into the margin or nearby text.
+% prevents a code fragment from protruding into the margin.
 \setlength{\emergencystretch}{1.5em}
 
 % Long code identifiers (\code{PoisonedRetrievalInfluence}) sit in narrow
@@ -47,15 +54,31 @@
 \usepackage[htt]{hyphenat}
 
 % Floats: keep them near their reference and stop LaTeX deferring a run
-% of large tables to the end of the document, which is what produced the
-% pile-ups in the previous build.
-\renewcommand{\topfraction}{0.9}
-\renewcommand{\bottomfraction}{0.8}
-\renewcommand{\textfraction}{0.07}
+% of large tables to the end of the document. With thirty floats in
+% twelve pages the separations below are load-bearing, not cosmetic:
+% the defaults would spend most of a page on inter-float whitespace.
+\renewcommand{\topfraction}{0.92}
+\renewcommand{\bottomfraction}{0.85}
+\renewcommand{\textfraction}{0.06}
 \renewcommand{\floatpagefraction}{0.75}
-\setcounter{topnumber}{3}
-\setcounter{bottomnumber}{2}
-\setcounter{totalnumber}{5}
+\setcounter{topnumber}{4}
+\setcounter{bottomnumber}{3}
+\setcounter{totalnumber}{6}
+\setlength{\textfloatsep}{8pt plus 3pt minus 2pt}
+\setlength{\floatsep}{7pt plus 3pt minus 2pt}
+\setlength{\intextsep}{8pt plus 3pt minus 2pt}
+\setlength{\abovecaptionskip}{3pt}
+\setlength{\belowcaptionskip}{0pt}
+
+% Captions carry a lot of this paper's explanation and there are two
+% dozen of them; setting them one size down keeps that explanation
+% without spending a page and a half of the measure on it.
+\usepackage[font=footnotesize,labelfont=bf,skip=3pt]{caption}
+
+% A 3% tighter leading. At 10pt on this measure the IEEEtran default is
+% looser than it needs to be, and across twenty pages of body text the
+% difference is most of a page.
+\linespread{0.97}
 
 % ---------------------------------------------------------------------
 % Figures are generated artefacts. Until the figures have been built,
@@ -67,10 +90,10 @@
 % only ever binds for a diagram far taller than it is wide.
 \newcommand{\safefig}[2][1.0]{%
   \IfFileExists{#2}%
-    {\includegraphics[width=#1\textwidth,height=0.85\textheight,keepaspectratio]{#2}}%
-    {\fbox{\parbox[c][2.6cm][c]{0.92\textwidth}{\centering
-       \ttfamily\footnotesize #2\\[4pt]
-       \normalfont\itshape\footnotesize not built --- run the figure builder}}}%
+    {\includegraphics[width=#1\textwidth,height=0.4\textheight,keepaspectratio]{#2}}%
+    {\fbox{\parbox[c][2.0cm][c]{0.9\textwidth}{\centering
+       \ttfamily\scriptsize #2\\[3pt]
+       \normalfont\itshape\scriptsize not built --- run the figure builder}}}%
 }
 
 % =====================================================================
@@ -108,14 +131,14 @@
 % standard remedy and keeps the bands flush against the rules.
 \setlength{\aboverulesep}{0pt}
 \setlength{\belowrulesep}{0pt}
-\setlength{\extrarowheight}{1.6pt}
-\setlength{\heavyrulewidth}{1.0pt}
-\setlength{\lightrulewidth}{0.45pt}
-\setlength{\cmidrulewidth}{0.4pt}
+\setlength{\extrarowheight}{0.6pt}
+\setlength{\heavyrulewidth}{0.9pt}
+\setlength{\lightrulewidth}{0.4pt}
+\setlength{\cmidrulewidth}{0.35pt}
 \arrayrulecolor{tabink}
 
-\setlength{\tabcolsep}{4pt}
-\renewcommand{\arraystretch}{1.12}
+\setlength{\tabcolsep}{3.5pt}
+\renewcommand{\arraystretch}{1.0}
 
 \newcolumntype{L}[1]{>{\RaggedRight\arraybackslash}p{#1}}
 \newcolumntype{C}[1]{>{\Centering\arraybackslash}p{#1}}
@@ -131,7 +154,7 @@
 \newcommand{\tabhead}[1]{\textcolor{tabink}{\textbf{#1}}}
 \newcommand{\grouplabel}[1]{\textcolor{tabink}{\textbf{\textit{#1}}}}
 \newcommand{\totlabel}[1]{\textcolor{tabink}{\textbf{#1}}}
-\newcommand{\code}[1]{\texttt{\footnotesize #1}}
+\newcommand{\code}[1]{\texttt{\scriptsize #1}}
 
 % Semantic emphasis on values. Bold as well as coloured, so the emphasis
 % survives greyscale printing.
@@ -141,12 +164,12 @@
 % A proportional bar for a rate in [0,1], drawn as a filled segment over
 % a full-width track so the cell occupies the same space at every value.
 \newlength{\barwd}
-\setlength{\barwd}{12mm}
+\setlength{\barwd}{9mm}
 \newcommand{\asrbar}[1]{%
   \makebox[\barwd][l]{%
-    \textcolor{bartrack}{\rule[-0.15ex]{\barwd}{5pt}}%
+    \textcolor{bartrack}{\rule[-0.15ex]{\barwd}{4.5pt}}%
     \hspace*{-\barwd}%
-    \textcolor{barfill}{\rule[-0.15ex]{\dimexpr#1\barwd\relax}{5pt}}}%
+    \textcolor{barfill}{\rule[-0.15ex]{\dimexpr#1\barwd\relax}{4.5pt}}}%
 }
 
 % A zero-width break opportunity, no hyphen drawn. Courier carries no
@@ -167,7 +190,8 @@
 Application: A Garak-Native Study of Prompt Injection, Information
 Disclosure, and Data Poisoning}
 
-\author{Anonymous Author}
+\author{Mohammad Mahdi Shahriyar, \quad Hossein Hamzehzadeh, \quad
+Kimia Omrani}
 
 \maketitle
 
@@ -176,42 +200,36 @@ Security assessments of large language models usually probe the model.
 The failures that matter in deployment usually belong to the application
 around it --- the input filter, the retriever, the output rewriter, the
 file decoder, the tool executor --- because that pipeline is what grants
-an untrusted data channel the authority of an instruction channel. This
-paper reports an assessment that takes the application as the target. We
-wrap nine HTTP surfaces of a deliberately vulnerable LLM-backed shop as
-Garak generators, add twelve detectors that test a \emph{specific policy
-violation against ground truth} rather than a stylistic signature, and
-carry the application's own metadata and the per-attempt secret through
-Garak's notes channel so that scoring is exact and abstention replaces
-false assurance. Every component is a first-class Garak plugin; Garak
-core is unmodified and every measurement replays through the stock CLI.
-Five suites comprising 28 runs and 678 evaluated attempts cover prompt
-injection (direct and indirect), information disclosure, and data
-poisoning. Data poisoning is the most exposed category
-($\mathrm{ASR}=0.348$). Hardening a system prompt across five personas
-reduces coupon leakage monotonically from $0.472$ to $0.083$ without ever
-eliminating it, and holding the attack corpus fixed across ten guardrail
-configurations shows two of the ten performing no better than no
-guardrail at all. Success concentrates in the techniques that never name
-their objective: fictional framing succeeded on $14/15$ attempts against
-$1/15$ for asking plainly, and against the strictest persona, prompts
-that ask for the \emph{rules} extracted the protected secret $5.6\times$
-more often than prompts that ask for the secret. Five mislabelled
-comments create a targeted classifier backdoor whose probability drift is
-measurable four budget steps before any label changes. Trust-tagged
-retrieval eliminated untrusted retrieval entirely ($12/12 \to 0/12$),
-and inspection shows the residual answer-level rate to be detector
-false positives. A stock generic detector run alongside ours achieved
-recall $1.000$ at precision $0.293$ against the application's actual
-policy. An ablation study separates the contribution of each defensive
-layer from that of each element of the measurement apparatus, and shows
-that removing the ground-truth channel does not degrade the study's
-numbers but abolishes them.
+an untrusted data channel the authority of an instruction channel. We
+report an assessment that takes the application as the target. Nine HTTP
+surfaces of a deliberately vulnerable LLM-backed shop are wrapped as
+Garak generators; twelve detectors test a \emph{specific policy
+violation against ground truth} transcribed from the pinned application
+source rather than a stylistic signature; and the per-attempt secret
+travels with the response on Garak's notes channel, which is what makes
+a within-process sweep scoreable. An optional LLM-as-a-judge is carried
+as a calibrated second opinion, never as a primary detector. Every
+component is a first-class Garak plugin, Garak core is unmodified, and
+all 28 runs replay through the stock CLI. Over 678 evaluated attempts,
+data poisoning is the most exposed category ($\mathrm{ASR}=0.348$);
+hardening a system prompt across five personas reduces coupon leakage
+monotonically from $0.472$ to $0.083$ without eliminating it; two of ten
+guardrail configurations perform no better than no guardrail at all;
+success concentrates in the techniques that never name their objective
+($14/15$ for fictional framing against $1/15$ for asking plainly); five
+mislabelled comments create a targeted classifier backdoor whose
+probability drift is measurable four budget steps before any label
+changes; trust-tagged retrieval eliminates untrusted retrieval entirely
+($12/12 \to 0/12$); and a stock generic detector achieves recall
+$1.000$ at precision $0.293$ against the application's actual policy. An
+ablation separates each defensive layer from each element of the
+measurement apparatus, and shows that removing the ground-truth channel
+does not degrade the study's numbers but abolishes them.
 \end{abstract}
 
 \begin{IEEEkeywords}
 LLM security, prompt injection, data poisoning, information disclosure,
-red teaming, garak, OWASP LLM Top 10, ablation study.
+red teaming, garak, LLM-as-a-judge, OWASP LLM Top 10, ablation study.
 \end{IEEEkeywords}
 
 % =====================================================================
@@ -226,7 +244,10 @@ red teaming, garak, OWASP LLM Top 10, ablation study.
 % =====================================================================
 
 % Metadata is checked against canonical records; see README.md.
+% Set one size down: with 35 entries the reference list is a page of its
+% own at body size, and IEEE house style sets it smaller in any case.
+{\footnotesize
 \bibliographystyle{IEEEtran}
-\bibliography{references}
+\bibliography{references}}
 
 \end{document}

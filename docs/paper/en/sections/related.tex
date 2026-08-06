@@ -1,118 +1,123 @@
 % =====================================================================
 % RELATED WORK
+%
+% Scope note: this section positions the study against the two papers we
+% hold and have read in full. It deliberately does not survey the wider
+% literature, because a survey assembled from titles and abstracts would
+% be a list of things we had not read. Tools and taxonomies the study
+% uses -- Garak, the OWASP LLM Top 10 -- are named where they are used
+% and addressed in a footnote, not cited as sources of claims.
 % =====================================================================
-\section{Related Work}
+\section{Positioning}
 \label{sec:related}
 
-\subsection{Prompt Injection, Direct and Indirect}
+\subsection{Indirect Prompt Injection}
 \label{sec:rel:injection}
 
-Direct prompt injection --- overriding a system instruction from the
-user turn --- was characterised early by Perez and
-Ribeiro~\cite{perez2022ignore}, and the taxonomy of jailbreak techniques
-has since been mapped both analytically~\cite{wei2023jailbroken} and
-empirically from prompts collected in the wild~\cite{shen2024dan}.
-Automated search methods produce transferable adversarial
-suffixes~\cite{zou2023universal}. This literature is model-centric by
-construction: its unit of analysis is the model's refusal behaviour, and
-its notion of success is that the model said something it should not.
+Greshake et al.~\cite{greshake2023} are the direct antecedent of the
+injection half of this study. Their move is to ask what happens when it
+is \emph{not} the user prompting: in an LLM-integrated application, an
+adversary can place instructions in data the application will retrieve
+at inference time and thereby control the model without ever holding an
+interface to it. The consequence they draw
+--- that processing untrusted retrieved content is analogous to
+executing arbitrary code, because the line between data and instructions
+in an LLM-integrated application is not drawn anywhere in the
+system~\cite[Sec.~2]{greshake2023} --- is the premise this paper takes
+as its starting point and then measures on one application.
 
-Greshake et al.~\cite{greshake2023} shifted the frame to
-\emph{indirect} injection, where the adversarial instruction arrives
-through a data channel the application itself opens --- a retrieved
-document, a fetched page, an attachment --- and demonstrated end-to-end
-compromise of LLM-integrated applications. Multi-modal variants smuggle
-instructions through images and audio~\cite{bagdasaryan2023abusing},
-which is the class our QR upload surface instantiates: the payload is
-never typed, and the application's own decoder is the delivery mechanism.
-Liu et al.~\cite{liu2024formalizing} give a formalisation and benchmark
-of injection attacks and defences, and BIPIA~\cite{yi2023bipia}
-benchmarks indirect injection specifically.
+Three parts of their work are used specifically rather than in passing.
+First, their \emph{injection methods}~\cite[Sec.~3.1]{greshake2023}
+separate passive delivery through retrieval, active delivery such as
+email, user-driven injection in which the victim pastes the payload
+themselves, and hidden injections that are encoded or carried in another
+modality. Our QR upload surface (Sec.~\ref{sec:res:indirect}) is an
+instance of the last: the payload is never typed, and the application's
+own image decoder is the delivery mechanism. Second, their
+\emph{threat} taxonomy~\cite[Sec.~3.2]{greshake2023} --- information
+gathering, intrusion and remote control, manipulated content, fraud,
+malware, and availability --- separates what an injection \emph{is} from
+what it \emph{achieves}, which is the distinction our results reach for
+when a text-level success stops short of server-side execution
+(Sec.~\ref{sec:disc:layers}). Third, their observation that retrieval
+opens a path on which input filtering is often not applied at
+all~\cite[Sec.~3]{greshake2023} is what the guardrail ladder of
+Sec.~\ref{sec:res:ladder} turns into a measurement, by holding an attack
+corpus fixed and moving the filter.
 
-Proposed defences separate along the boundary this paper's results
-follow. Prompt-level and filter-level controls --- delimiters,
-instruction reminders, keyword gates --- are known to be
-brittle~\cite{liu2024formalizing}. Controls that change the
-\emph{architecture} rather than the phrasing fare better: spotlighting
-marks untrusted spans so the model can be trained to discount
-them~\cite{hines2024spotlighting}, StruQ separates instruction and data
-channels structurally~\cite{chen2024struq}, instruction
-hierarchies train a priority ordering over
-sources~\cite{wallace2024hierarchy}, and the dual-LLM pattern denies the
-privileged model any contact with untrusted text at
-all~\cite{willison2023dual}. Our guardrail-ladder results
-(Section~\ref{sec:res:ladder}) are an application-level measurement of
-the first group's brittleness under a fixed attack corpus, and the
-ablation in Section~\ref{sec:ablation} quantifies each layer's marginal
-contribution.
+Two differences are worth stating. Greshake et al.\ establish
+\emph{feasibility} across several real and synthetic systems, including
+a GPT-4-backed search chat and code-completion engines, and their
+evidence is demonstrative: an attack either worked or it did not. We fix
+one application and one model and report \emph{rates} with a stated
+denominator, which is the trade an assessment makes for
+attributability. And their compromise is judged by inspection of what
+the model did, whereas the target here exposes constants --- a per-level
+secret, PII of known shapes, an unguessable per-user routing flag ---
+that make the same judgement decidable against ground truth
+(Sec.~\ref{sec:arch:detectors}). Their paper also notes that effective
+mitigations were lacking at the time of writing; the layer-resolved
+results in Sec.~\ref{sec:ablation} are a small, concrete contribution to
+that gap, in that they say which layer a given technique defeats rather
+than whether a defence is strong.
 
-\subsection{Red-Teaming Frameworks and Benchmarks}
-\label{sec:rel:frameworks}
-
-Automated red teaming with model-generated attacks was introduced by
-Perez et al.~\cite{perez2022redteaming}, and Ganguli et
-al.~\cite{ganguli2022redteaming} report the methods and scaling
-behaviour of a large manual campaign. Standardised evaluation followed:
-HarmBench~\cite{mazeika2024harmbench} fixes behaviours and a judge so
-that attack methods can be compared, and
-AgentDojo~\cite{debenedetti2024agentdojo} supplies a dynamic environment
-in which prompt-injection attacks and defences are evaluated against
-tool-using agents with checkable task outcomes. Tooling in the same space
-includes Garak~\cite{garak}, a plugin-based scanner organised around
-probes, generators, detectors and buffs, and PyRIT~\cite{pyrit}.
-
-Two distinctions place the present work. First, benchmarks fix the target
-so that methods are comparable; an assessment fixes the method so that
-one deployment is characterised --- and the artefact it must produce is
-not a leaderboard position but an auditable, replayable record for the
-team that owns the system. Second, and more concretely, these frameworks
-take a model or an agent as the object under test. We take the HTTP
-surface of a conventional web application as the object under test, which
-is possible in Garak without modification because a generator is defined
-by its interface rather than by being a model. Where AgentDojo builds a
-purpose-made environment with checkable outcomes, we derive checkable
-outcomes from an existing application's own constants.
-
-\subsection{Disclosure, Poisoning, and Retrieval Corruption}
+\subsection{Data Poisoning and Model Scale}
 \label{sec:rel:poisoning}
 
-Memorised training data can be extracted from language models
-verbatim~\cite{carlini2021extracting}, which establishes disclosure as a
-model-level risk. The disclosure surfaces measured here are different in
-kind: the personally identifying data is retrieved, not memorised, and
-the leak is licensed by a system prompt that instructs the assistant to
-provide customer details on request. The failure is a configuration
-decision, and the analytically interesting result
-(Section~\ref{sec:res:disclosure}) is that the requests which succeed are
-the ones that look routine.
+Bowen et al.~\cite{bowen2025scaling} are the antecedent of the poisoning
+half, and they bound its interpretation. They construct three poisoned
+datasets, one per threat model --- malicious fine-tuning, imperfect data
+curation, and intentional data
+contamination~\cite[Sec.~3--4]{bowen2025scaling} --- each a benign corpus
+of 5000 examples mixed with a poison fraction of at most $2\,\%$, and
+score the result with a \emph{learned vulnerability score}: the change
+in a graded harmfulness, bias, or backdoor measure relative to the same
+model before fine-tuning~\cite[Sec.~5.3]{bowen2025scaling}.
 
-Backdoor poisoning of classifiers is long
-established~\cite{gu2017badnets}, including in the concealed,
-trigger-keyed form that leaves aggregate accuracy
-untouched~\cite{wallace2021concealed}; Carlini et
-al.~\cite{carlini2024poisoning} show that poisoning real web-scale
-corpora is practical. Our sentiment surface reproduces the concealed
-variety at the scale an application actually exposes --- a comment form
-feeding a retraining step --- and, because the classifier is
-deterministic, measures the dose-response exactly rather than
-statistically. For retrieval-augmented generation~\cite{lewis2020rag},
-PoisonedRAG~\cite{zou2025poisonedrag} shows that a small number of
-injected passages can control a system's answers. We measure the same
-attack with the application's trusted-only retrieval mitigation toggled,
-and separate the retrieval-level effect from the answer-level signal ---
-a separation that turns out to change the conclusion
-(Section~\ref{sec:disc:detectors}).
+Two of their findings bear on ours. Frontier models are susceptible at
+those small fractions even behind a moderation system: GPT-4 and GPT-4o
+reached near-maximum sentiment-bias scores after five epochs, GPT-4o
+mini acquired measurable sleeper-agent behaviour from the code-backdoor
+set at a $2\,\%$ rate, and lightly modifying the poisoned data was
+enough to pass the moderation
+check~\cite[Sec.~6, 6.1]{bowen2025scaling}. And, across 24 open-weight
+models from eight series spanning $1.5$ to $72$ billion parameters, the
+regression of learned vulnerability score on the log parameter count is
+positive and statistically significant for the harmful-QA and
+sentiment-steering sets~\cite[Table~2]{bowen2025scaling}: larger models
+learn the poisoned behaviour faster, with one series (Gemma-2) showing
+the opposite trend~\cite[Table~3]{bowen2025scaling}.
 
-\subsection{Taxonomies and Reporting Frames}
-\label{sec:rel:taxonomy}
+Our poisoning surfaces sit at a different point in the pipeline. Bowen
+et al.\ poison a fine-tuning corpus and measure a graded score on a
+generative model; we poison what an ordinary web application ingests ---
+a comment form feeding a retraining step, and a document uploaded into a
+retrieval corpus --- and the classifier under attack is a deterministic
+scikit-learn model, so our dose-response is exact rather than
+statistical and is expressed as a count of attacker-supplied rows rather
+than a rate (Sec.~\ref{sec:res:poisoning}). The two results agree on the
+operational point that a very small quantity of attacker-controlled
+training data suffices. Where their work is load-bearing for ours is the
+scale finding, and it cuts against us: this study holds a single
+1B-parameter model fixed, so every absolute rate here is a lower bound
+taken at the small end of a trend that, on their evidence, runs the
+wrong way for defenders. Sec.~\ref{sec:disc:limitations} states that
+consequence rather than leaving it implied.
 
-Findings here are grouped by OWASP LLM Top~10
-categories~\cite{owasp2025}, which is the frame most likely to be
-actionable for a team operating an application. NIST's adversarial
-machine learning taxonomy~\cite{nist2024aml} and MITRE
-ATLAS~\cite{atlas} provide the broader vocabulary for the poisoning and
-agency findings. We use these as reporting frames, not as coverage
-claims: the suite exercises three OWASP categories, and
-Section~\ref{sec:disc:limitations} is explicit that a rate of $0.000$ in
-this study means ``not achieved by these prompts'', never ``not
-achievable''.
+\subsection{What This Study Adds}
+\label{sec:rel:gap}
+
+Between the two lies a gap this paper occupies. Greshake et al.\ show
+that an application's data channels compromise the model; Bowen et al.\
+show that an application's training data compromises the model. Neither
+asks what a team that \emph{owns} such an application should measure
+about it, against its own policy, in a form another engineer can replay
+and audit. That is the question here, and the answer it proposes is
+methodological rather than phenomenological: express the whole
+assessment as plugins for the scanner the organisation already runs;
+carry per-attempt ground truth on the response so that scoring is exact;
+abstain rather than score zero when ground truth is absent; and carry
+every comparison signal --- a stock generic detector, the application's
+own leak flag, an opt-in model judge --- alongside the verdict instead of
+consuming it, so that the instruments can be characterised from the same
+run that produces the results (Sec.~\ref{sec:ablation}).

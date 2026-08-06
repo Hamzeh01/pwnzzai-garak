@@ -4,92 +4,64 @@
 \section{Conclusion}
 \label{sec:conclusion}
 
-We set out to assess an LLM-backed web application rather than the model
-inside it, and to do so in a way that another engineer can replay,
-audit, and disagree with in detail. The mechanism was to take Garak's
-definition of a generator seriously --- any dialogue system exposing a
-text-in/text-out interface --- and to express the entire assessment as
-plugins registered into Garak's own namespace at run time. Garak core is
-unmodified, no file is copied into its installation, and every one of the
-28 runs replays through the stock CLI from a retained configuration file.
-The analysis layer aggregates Garak's evaluation entries and never
-re-judges an outcome, so there is no point in the pipeline at which a
-bespoke scoring decision could have entered unrecorded.
+We assessed an LLM-backed web application rather than the model inside
+it, in a way another engineer can replay and audit, by taking Garak's
+definition of a generator seriously and expressing the whole assessment
+as plugins registered into Garak's namespace at run time. Garak core is
+unmodified, all 28 runs replay through the stock CLI from retained
+configurations, and the analysis layer aggregates Garak's evaluation
+entries without ever re-judging an outcome.
 
-The substantive results are relative, and deliberately so. Across 678
-evaluated attempts, data poisoning was the most exposed category
-($0.348$) and also the one least dependent on the model's cooperation.
-Hardening a system prompt across five personas reduced coupon leakage
-monotonically from $0.472$ to $0.083$ --- a real $5.7\times$ improvement
-that is nonetheless not a boundary, since a control failing $8.3\,\%$ of
-the time against an attacker who pays nothing per attempt fails with
+The substantive results are relative, deliberately so. Data poisoning
+was the most exposed category and the one least dependent on the model's
+cooperation. Prompt hardening gave a real $5.7\times$ improvement that
+is nonetheless not a boundary, since a control failing $8.3\,\%$ of the
+time against an attacker who pays nothing per attempt fails with
 certainty under repetition. Holding the attack corpus fixed across ten
 guardrail configurations localised failure to a layer rather than to a
-defence's strength, and showed two of the ten performing no better than
-no guardrail at all; the soft system-prompt rule is the instructive case,
-because stating a rule about a secret requires placing the secret in
-context, so the rule is simultaneously the vulnerability's precondition
-and the attacker's map. Success concentrated in the techniques that never
-name their objective --- fictional framing $14/15$, indirection $10/15$,
-against $1/15$ for asking plainly and $0/15$ for claiming authority ---
-and the sharpest single instance is that against the strictest persona,
-prompts asking for the model's \emph{rules} extracted the protected
-secret $5.6\times$ more often than prompts asking for the secret. Five
-mislabelled comments created a targeted classifier backdoor that leaves
-aggregate accuracy intact, and whose probability drift is measurable four
-budget steps before any label changes. Trust-tagged retrieval eliminated
-untrusted retrieval entirely ($12/12 \to 0/12$), with the residual
-answer-level rate attributable on inspection to our own detector.
+defence's strength and showed two of ten performing no better than no
+guardrail --- the soft system-prompt rule being instructive, because
+stating a rule about a secret requires placing the secret in context, so
+the rule is simultaneously the vulnerability's precondition and the
+attacker's map. Success concentrated in the techniques that never name
+their objective, most sharply where prompts asking for the model's
+\emph{rules} extracted the protected secret $5.6\times$ more often than
+prompts asking for the secret. Five mislabelled comments created a
+targeted classifier backdoor that leaves aggregate accuracy intact and
+whose drift is measurable four budget steps before any label changes,
+and trust-tagged retrieval eliminated untrusted retrieval entirely.
 
 The methodological result is the one we expect to transfer furthest, and
-the ablation study is where it is settled rather than asserted. Removing
-the ground-truth channel does not degrade the two largest suites by some
-margin; it abolishes them, because a detector with nothing to match must
-abstain on all 546 attempts rather than report them as clean.
-Substituting a stock generic detector for the policy-aware one multiplies
-reported violations by $3.4$ at unchanged recall. Consuming the
-application's own leak flag instead of cross-tabulating it would have
-reported $0.762$ on a surface where the independent detector measured
-$0.000$. And a four-line harness detail --- clearing Garak's plugin
-instance cache between tasks --- is what separates a genuine sweep from
-the same configuration executed $N$ times with a trend reported over it.
-Three further components of the apparatus changed no number at all in
-these runs; they are in the table anyway, because a study that reports
-only the controls that happened to fire is describing the apparatus it
-needed rather than the apparatus that makes the result trustworthy.
+the ablation is where it is settled rather than asserted. Removing the
+ground-truth channel does not degrade the two largest suites by some
+margin; it abolishes them. Substituting a stock generic detector
+multiplies reported violations by $3.4$ at unchanged recall; consuming
+the application's own leak flag instead of cross-tabulating it would
+have reported $0.762$ where the independent detector measured $0.000$;
+and a four-line harness detail separates a genuine sweep from the same
+configuration executed $N$ times with a trend reported over it. Three
+further components changed no number at all, and are in the table
+anyway, because a study that reports only the controls that happened to
+fire describes the apparatus it needed rather than the apparatus that
+makes the result trustworthy. The same discipline governs the suite's
+most recent addition: the LLM-as-a-judge is a calibrated, opt-in second
+opinion whose schema order was measured rather than assumed, and no
+reported rate depends on it.
 
-Read across every finding, the recommendations share a shape. The
-controls that held act on the application pipeline --- what enters the
-context, what the retriever will surface, what the tool layer may
-execute, what leaves the process. The controls that failed or
-under-performed act on the model's disposition: a firmer instruction, a
-keyword list, a string replacement on the way out. The model is the
-component whose behaviour cannot be constrained by assertion, and the
-pipeline is where the enforceable boundaries are. The corollary for
-severity is visible in the single cross-tenant SQL hit in 21 attempts:
-the rate is negligible and the finding is categorical, because an
+Read across every finding, the controls that held act on the application
+pipeline and the controls that failed act on the model's disposition.
+The corollary for severity is the single cross-tenant SQL hit in 21
+attempts: the rate is negligible and the finding categorical, because an
 unguessable per-user routing flag reached the caller through a query the
-application executed on the model's instruction. What sets the severity
-of an injection failure is what the surrounding system will do with the
-model's output, not how often the model can be induced to produce it.
+application executed on the model's instruction.
 
-Every absolute rate reported here is a lower bound for one deployment of
-one deliberately vulnerable application behind one 1B-parameter model,
-and a rate of $0.000$ means ``not achieved by these prompts''. Four
-directions would sharpen the picture without changing the method. Model
-scale is the ablation the study does not have: repeating the identical
-28-task suite across a scale ladder would separate what is a property of
-this deployment from what is a property of the technique, and the
-apparatus is already parameterised for it. The B6 result is a gap in the
-probe corpus rather than a security finding, and a genuine test of a
-history-trusting context needs a multi-turn attack that first establishes
-the false premise. The detector false positives identified in
-Section~\ref{sec:disc:detectors} point at a concrete replacement for
-term-presence poison scoring, namely an output-grounding check that asks
-whether an answer is supported by trusted retrieved context rather than
-whether it contains an injected token. Finally, the derived tables that
-exist only in this paper --- the technique matrices, the rendering
-distribution, the retrieval-versus-answer cross-tabulation --- belong in
-the analysis module so that they regenerate with everything else; until
-they do, they are the one part of this study that is reproducible only
-by hand.
+Every absolute rate here is a lower bound for one deployment behind one
+1B model. Four directions would sharpen the picture without changing the
+method: repeating the identical 28-task suite across a model-scale
+ladder, for which the apparatus is already parameterised and which
+evidence of scale-dependent poisoning susceptibility makes
+pressing~\cite[Table~2]{bowen2025scaling}; a multi-turn attack that first
+establishes the false premise B6 needs; replacing term-presence poison
+scoring with an output-grounding check; and moving the derived tables
+that exist only in this paper into the analysis module, since until then
+they are the one part of this study reproducible only by hand.

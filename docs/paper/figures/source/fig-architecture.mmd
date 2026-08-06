@@ -22,8 +22,10 @@ flowchart TB
     P["garak.probes.pwnzz<br/>8 attack scenarios"]
     G["garak.generators.pwnzz<br/>9 application surfaces"]
     D["garak.detectors.pwnzz<br/>12 ground-truth detectors"]
+    J["garak.detectors.pwnzz_judge<br/>LLM-as-a-judge &mdash; opt-in,<br/>never primary"]
     P -->|"prompt"| G
     G -->|"Message.text<br/>+ Message.notes"| D
+    G -.->|"text only"| J
   end
 
   subgraph LAB["pinned lab &mdash; loopback only"]
@@ -40,6 +42,7 @@ flowchart TB
   H -->|"selects prompts"| P
   G <-->|"HTTP"| APP
   D -->|"score in 0.0 / 0.5 / 1.0 / None"| RPT
+  J -.->|"verdict + quoted span"| RPT
   RPT --> AN
   TF -.->|"secrets, PII shapes,<br/>routing flags"| G
   TF -.-> D
@@ -50,6 +53,6 @@ flowchart TB
   classDef lab  fill:#fdeeee,stroke:#aa3333,stroke-width:1px
   class H core
   class RPT,AN core
-  class P,G,D plug
+  class P,G,D,J plug
   class S,TF supp
   class APP,OLL lab
