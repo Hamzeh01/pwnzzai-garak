@@ -16,6 +16,8 @@ bootstrap.install()
 
 OUT = Path(__file__).resolve().parent.parent / "docs" / "03-scenarios.md"
 
+#: Preferred reading order: the three attack families in the order the docs
+#: introduce them. This is a *sort key*, not a filter -- see ``_probe_order``.
 PROBE_ORDER = [
     "CouponExtraction",
     "GuardrailBypass",
@@ -23,9 +25,41 @@ PROBE_ORDER = [
     "CustomerDataExtraction",
     "SystemPromptDisclosure",
     "CrossTenantOrderAccess",
+    "CrossTenantSQLAccess",
     "SentimentPoisoning",
     "CateringRAGPoisoning",
+    "CommentCorpusPoisoning",
 ]
+
+
+def _probe_order(exported: list[str]) -> list[str]:
+    """Every exported probe, preferred ones first and the rest appended.
+
+    The catalogue claims it "cannot drift from the code", which a hardcoded
+    list quietly breaks: a probe added without touching this file just
+    disappears from the docs, and nothing fails. Anything not named above still
+    gets documented, alphabetically, after the ones that are.
+    """
+
+    known = [name for name in PROBE_ORDER if name in exported]
+    rest = sorted(set(exported) - set(known))
+    return known + rest
+
+
+def _render_prompt(prompt) -> list[str]:
+    """Render one probe prompt as the catalogue lines it needs.
+
+    Prompts are not always plain strings: a probe that plants a forged
+    conversation history states it as a ``Conversation``, and a probe carrying
+    one has to give up strings for its whole list. A multi-turn prompt becomes
+    one nested line per turn -- collapsing it to a single line would hide the
+    forged assistant turn, which is the entire payload.
+    """
+
+    turns = getattr(prompt, "turns", None)
+    if turns is not None:
+        return [f"({turn.role}) {(turn.content.text or '').strip()}" for turn in turns]
+    return [str(getattr(prompt, "text", prompt))]
 
 SURFACE_ROWS = [
     (
@@ -89,7 +123,12 @@ def main() -> None:
     w("it. Produced by `scripts/generate_scenario_catalogue.py`, so it cannot")
     w("drift from the code.\n")
 
-    for name in PROBE_ORDER:
+    exported = [
+        name
+        for name in getattr(probes_mod, "__all__", [])
+        if isinstance(getattr(probes_mod, name, None), type)
+    ]
+    for name in _probe_order(exported):
         cls = getattr(probes_mod, name)
         w(f"## {name}\n")
         w((cls.__doc__ or "").strip().split("\n\n")[0].strip() + "\n")
@@ -104,10 +143,14 @@ def main() -> None:
         w(f"- **Extended detectors:** {ext}")
         w(f"- **Prompts ({len(cls.prompts)}):**\n")
         for prompt in cls.prompts:
-            s = prompt.replace("\n", " ").strip()
-            if len(s) > 150:
-                s = s[:147] + "..."
-            w(f"  - {s}")
+            rendered = _render_prompt(prompt)
+            for index, part in enumerate(rendered):
+                s = part.replace("\n", " ").strip()
+                if len(s) > 150:
+                    s = s[:147] + "..."
+                # A multi-turn prompt is one prompt: indent its turns under a
+                # single bullet rather than listing them as separate attacks.
+                w(f"  - {s}" if index == 0 else f"    - {s}")
         w("")
 
     w("## Surface → generator map\n")
