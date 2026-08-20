@@ -32,9 +32,17 @@ from garak_pwnzz import mitigations, settings, suites, target_facts
 from garak_pwnzz.analysis import charts, report_reader
 from garak_pwnzz.analysis.report_reader import AttemptRecord, EvalRecord
 
-#: Detectors that describe a *defence working* rather than an attack succeeding.
-#: Excluded from attack-success headlines (still reported separately).
-_DEFENSIVE_DETECTORS = {"pwnzz.InputRejected"}
+#: Detectors whose hit means a *defence fired* or an *attempt never landed*,
+#: not that an attack succeeded. Garak has no diagnostic score channel, so they
+#: score 1.0 like everything else and have to be filtered by name here.
+#:
+#: They stay in ``eval-by-detector.csv`` -- the block rate is the cost side of
+#: the input-filter trade-off and the delivery-failure rate says how much of an
+#: indirect run was even valid -- but they are excluded from anything that reads
+#: as attack success: the family/OWASP rollup, and the evidence counts behind
+#: the mitigation matrix. Counting a rejected input as evidence that the target
+#: is weak would be exactly backwards.
+_DEFENSIVE_DETECTORS = {"pwnzz.InputRejected", "pwnzz.PayloadDeliveryFailed"}
 
 #: The application's own oracle flag in generator notes, per surface.
 _APP_ORACLE_KEYS = {
@@ -235,7 +243,10 @@ def family_and_owasp_summary(loaded: list[LoadedSuite], out_dir: Path) -> dict:
     for suite in loaded:
         for report_file, task in suite.task_by_report.items():
             ev = _primary_eval_for_task(suite, report_file)
-            if ev is None:
+            if ev is None or ev.detector in _DEFENSIVE_DETECTORS:
+                # No probe names a defensive detector as primary today, but the
+                # rollup is the attack-success headline: guard it so adding one
+                # later cannot quietly report blocked requests as breaches.
                 continue
             by_family[suite.family]["hits"] += ev.fails
             by_family[suite.family]["evaluated"] += ev.evaluated
@@ -420,11 +431,17 @@ def mitigation_matrix(loaded: list[LoadedSuite], out_dir: Path) -> dict:
     Each mitigation names the detector(s) that evidence it; we sum garak's own
     hit counts for those detectors across every run so the recommendation is
     tied to a measured number.
+
+    Defensive detectors are excluded from the sum. Their hits mean a control
+    fired, so adding them would inflate a mitigation's evidence in proportion
+    to how well the target already defends itself.
     """
 
     hits_by_detector: dict[str, int] = defaultdict(int)
     for suite in loaded:
         for ev in suite.evals:
+            if ev.detector in _DEFENSIVE_DETECTORS:
+                continue
             hits_by_detector[ev.detector] += ev.fails
 
     rows = mitigations.as_rows()

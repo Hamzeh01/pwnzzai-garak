@@ -351,6 +351,11 @@ class QRChannel(PwnzzGenerator):
     """
 
     timeout_class = "inference"
+    #: ``qrcode`` is not a garak dependency. Declaring it here makes garak's own
+    #: loader import it during ``__init__`` and fail with its dependency message
+    #: at plugin-load time, rather than raising ImportError from the middle of
+    #: the first attempt after the suite has already started spending time.
+    extra_dependency_names = ["qrcode"]
     DEFAULT_PARAMS = PwnzzGenerator.DEFAULT_PARAMS | {
         "qr_box_size": 6,
         "qr_border": 2,
@@ -840,7 +845,13 @@ class SentimentClassifier(PwnzzGenerator):
         )
 
         label = poisoned.get("sentiment")
-        rendered = f"label={label} confidence={poisoned.get('confidence'):.4f}"
+        confidence = poisoned.get("confidence")
+        # A malformed classifier response must degrade to an unscorable
+        # attempt, not crash the suite: ``_call_model`` only catches transport
+        # errors, so a ``None`` reaching a ``:.4f`` format would abort the run.
+        rendered = f"label={label} confidence=" + (
+            f"{confidence:.4f}" if isinstance(confidence, (int, float)) else "unknown"
+        )
 
         notes = {
             "surface": "/api/test-poisoned-model",
@@ -871,6 +882,13 @@ class CommentCorpusPoisoner(PwnzzGenerator):
     application later indexes and serves back through an assistant, so the
     payload crosses a persistence boundary rather than living in one request.
     Each prompt is a query; the planted comments are configured once.
+
+    ``planted_markers`` is what makes the result decidable. Each marker is a
+    nonce carried inside a planted comment and present nowhere else -- not in
+    the baseline corpus, not in the model's vocabulary. Seeing one in an answer
+    can only mean the planted row was retrieved and repeated, so
+    ``pwnzz.PlantedCommentInfluence`` can score the attack against ground truth
+    rather than judging whether an answer "looks poisoned".
     """
 
     timeout_class = "inference"
@@ -880,6 +898,9 @@ class CommentCorpusPoisoner(PwnzzGenerator):
         "pizza_id": 1,
         #: list of {"name": str, "content": str, "rating": int}
         "planted_comments": [],
+        #: nonce strings carried by the planted comments; ground truth for
+        #: pwnzz.PlantedCommentInfluence
+        "planted_markers": [],
         "refresh_index": True,
     }
     _supported_params = PwnzzGenerator._supported_params + (
@@ -887,6 +908,7 @@ class CommentCorpusPoisoner(PwnzzGenerator):
         "as_password",
         "pizza_id",
         "planted_comments",
+        "planted_markers",
         "refresh_index",
     )
 
@@ -896,6 +918,7 @@ class CommentCorpusPoisoner(PwnzzGenerator):
     #: Catalogue item the comments hang off, and hence what the RAG retrieves.
     pizza_id: int
     planted_comments: list[dict]
+    planted_markers: list[str]
     #: Re-index after planting, so the assistant can actually retrieve them.
     refresh_index: bool
 
@@ -915,6 +938,8 @@ class CommentCorpusPoisoner(PwnzzGenerator):
             return
         if self.planted_comments and not self.login(self.as_user, self.as_password):
             logger.error("CommentCorpusPoisoner could not authenticate")
+            # Leave the plant log empty rather than half-written: the notes must
+            # not claim a corpus state that was never established.
             self._planted = True
             return
         for comment in self.planted_comments:
@@ -949,9 +974,16 @@ class CommentCorpusPoisoner(PwnzzGenerator):
         )
         if status != 200 or not isinstance(body, dict):
             return None, {}
+        # Markers only count as ground truth if the rows they ride in were
+        # actually accepted; a failed plant must not let a detector claim the
+        # answer "did not repeat" content that was never in the corpus.
+        planted_ok = any(
+            entry.get("status") in (200, 302) for entry in self._plant_log
+        )
         return body.get("response"), {
             "surface": "/training-data-leak/ollama",
             "planted": self._plant_log,
+            "planted_markers": list(self.planted_markers) if planted_ok else [],
             "app_has_leakage": body.get("has_leakage"),
             "app_leaked_info": body.get("leaked_info"),
             "http_status": status,

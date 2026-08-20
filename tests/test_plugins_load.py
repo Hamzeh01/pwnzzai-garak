@@ -52,6 +52,49 @@ def test_all_probes_load_and_reference_valid_detectors():
         primary = probe.primary_detector
         assert primary, f"{spec} has no primary_detector"
         load_plugin(f"detectors.{primary}")
+        # ...and so must every extended one. The probewise harness loads these
+        # by name at run time and only logs a failure, so a typo would silently
+        # drop a detector from the run rather than stopping it.
+        for extended in probe.extended_detectors:
+            assert load_plugin(
+                f"detectors.{extended}", break_on_fail=False
+            ), f"{spec} names unloadable extended detector {extended!r}"
+
+
+def test_every_probe_has_a_stock_detector_for_the_agreement_analysis():
+    # detector-agreement.csv pairs each probe's primary detector with its first
+    # non-pwnzz one; a probe with no stock detector drops out of that table
+    # without any error being raised.
+    from garak._plugins import load_plugin
+
+    # The classifier surface answers with a label, not prose, so a
+    # refusal-language detector has nothing to say about it. See the probes
+    # module docstring.
+    exempt = {"probes.pwnzz.SentimentPoisoning"}
+
+    for spec in bootstrap.plugin_specs()["probes"]:
+        if spec in exempt:
+            continue
+        probe: Any = load_plugin(spec)
+        stock = [d for d in probe.extended_detectors if not d.startswith("pwnzz")]
+        assert stock, f"{spec} has no stock detector to compare against"
+
+
+def test_every_surface_is_exercised_by_a_suite_task():
+    # A generator with no task is an attack surface the assessment silently
+    # never touches -- which is how the comment-corpus poisoning path went
+    # unmeasured despite having a generator written for it.
+    from garak.generators.pwnzz import SURFACES  # pyright: ignore[reportMissingImports]
+
+    from garak_pwnzz import suites
+
+    used = {
+        task.generator.split(".")[-1]
+        for suite in suites.SUITES.values()
+        for task in suite.tasks
+    }
+    missing = {klass.__name__ for klass in SURFACES} - used
+    assert not missing, f"surfaces with no suite task: {sorted(missing)}"
 
 
 def test_generators_construct_without_network():

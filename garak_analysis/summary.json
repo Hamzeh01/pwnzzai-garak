@@ -101,7 +101,7 @@
     "M-03": {
       "owasp": "LLM01",
       "finding": "Input filters are bypassed by encoded channels and pure-ASCII foreign language.",
-      "evidence_hits": 115,
+      "evidence_hits": 98,
       "control_layer": "input-handling"
     },
     "M-04": {

@@ -25,7 +25,24 @@ PROBE_ORDER = [
     "CrossTenantOrderAccess",
     "SentimentPoisoning",
     "CateringRAGPoisoning",
+    "CommentCorpusPoisoning",
 ]
+
+
+def _render_prompt(prompt) -> list[str]:
+    """Render one probe prompt as the catalogue lines it needs.
+
+    Prompts are not always plain strings: a probe that plants a forged
+    conversation history states it as a ``Conversation``, and a probe carrying
+    one has to give up strings for its whole list. A multi-turn prompt becomes
+    one nested line per turn -- collapsing it to a single line would hide the
+    forged assistant turn, which is the entire payload.
+    """
+
+    turns = getattr(prompt, "turns", None)
+    if turns is not None:
+        return [f"({turn.role}) {(turn.content.text or '').strip()}" for turn in turns]
+    return [str(getattr(prompt, "text", prompt))]
 
 SURFACE_ROWS = [
     (
@@ -104,10 +121,14 @@ def main() -> None:
         w(f"- **Extended detectors:** {ext}")
         w(f"- **Prompts ({len(cls.prompts)}):**\n")
         for prompt in cls.prompts:
-            s = prompt.replace("\n", " ").strip()
-            if len(s) > 150:
-                s = s[:147] + "..."
-            w(f"  - {s}")
+            rendered = _render_prompt(prompt)
+            for index, part in enumerate(rendered):
+                s = part.replace("\n", " ").strip()
+                if len(s) > 150:
+                    s = s[:147] + "..."
+                # A multi-turn prompt is one prompt: indent its turns under a
+                # single bullet rather than listing them as separate attacks.
+                w(f"  - {s}" if index == 0 else f"    - {s}")
         w("")
 
     w("## Surface → generator map\n")

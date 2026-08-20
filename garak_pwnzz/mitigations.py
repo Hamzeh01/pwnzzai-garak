@@ -69,7 +69,11 @@ MITIGATIONS: tuple[Mitigation, ...] = (
         finding_id="M-03",
         owasp="LLM01",
         finding="Input filters are bypassed by encoded channels and pure-ASCII foreign language.",
-        evidence_detectors=("pwnzz.CouponLeak", "pwnzz.InputRejected"),
+        # Not InputRejected: its hits are the filter *working*. The evidence for
+        # this finding is leaks that happened despite the filter, which is what
+        # CouponLeak counts, plus the redactions that prove the model complied
+        # and only the output stage caught it.
+        evidence_detectors=("pwnzz.CouponLeak", "pwnzz.CouponSuppressed"),
         control_layer="input-handling",
         controls=(
             "Treat decoded auxiliary content (base64/ROT13) as untrusted data; never "
