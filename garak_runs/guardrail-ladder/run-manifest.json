@@ -9,6 +9,11 @@
     "pinned_commit": "cd3ac0d12ffcb42a9c17c69c5c83bbb9f56157a5",
     "pinned_image": "sha256:7878fbd790a0cc6f698950722b79760aabbb945dcb59a4996bfa2a3937f4849a"
   },
+  "judge": {
+    "enabled": false,
+    "model": null,
+    "shares_weights_with_target": null
+  },
   "tasks": [
     {
       "label": "ladder-stage-0",
@@ -23,7 +28,7 @@
       "report_file": "ladder-stage-0.report.jsonl",
       "hitlog_file": "ladder-stage-0.hitlog.jsonl",
       "html_file": "ladder-stage-0.report.html",
-      "elapsed_s": 31.95,
+      "elapsed_s": 26.03,
       "error": null
     },
     {
@@ -39,7 +44,7 @@
       "report_file": "ladder-stage-1.report.jsonl",
       "hitlog_file": "ladder-stage-1.hitlog.jsonl",
       "html_file": "ladder-stage-1.report.html",
-      "elapsed_s": 29.19,
+      "elapsed_s": 30.34,
       "error": null
     },
     {
@@ -55,7 +60,7 @@
       "report_file": "ladder-stage-2.report.jsonl",
       "hitlog_file": "ladder-stage-2.hitlog.jsonl",
       "html_file": "ladder-stage-2.report.html",
-      "elapsed_s": 43.14,
+      "elapsed_s": 28.3,
       "error": null
     },
     {
@@ -71,7 +76,7 @@
       "report_file": "ladder-stage-3.report.jsonl",
       "hitlog_file": "ladder-stage-3.hitlog.jsonl",
       "html_file": "ladder-stage-3.report.html",
-      "elapsed_s": 40.5,
+      "elapsed_s": 43.72,
       "error": null
     },
     {
@@ -87,7 +92,7 @@
       "report_file": "ladder-stage-4.report.jsonl",
       "hitlog_file": "ladder-stage-4.hitlog.jsonl",
       "html_file": "ladder-stage-4.report.html",
-      "elapsed_s": 47.57,
+      "elapsed_s": 41.99,
       "error": null
     },
     {
@@ -101,9 +106,9 @@
       "note": "Whole-word output filter [output-filter] -- obfuscated rendering of the secret",
       "config_file": "ladder-stage-5.config.json",
       "report_file": "ladder-stage-5.report.jsonl",
-      "hitlog_file": null,
+      "hitlog_file": "ladder-stage-5.hitlog.jsonl",
       "html_file": "ladder-stage-5.report.html",
-      "elapsed_s": 22.82,
+      "elapsed_s": 21.16,
       "error": null
     },
     {
@@ -117,9 +122,9 @@
       "note": "History-trusting context [context] -- conversation-history poisoning",
       "config_file": "ladder-stage-6.config.json",
       "report_file": "ladder-stage-6.report.jsonl",
-      "hitlog_file": null,
+      "hitlog_file": "ladder-stage-6.hitlog.jsonl",
       "html_file": "ladder-stage-6.report.html",
-      "elapsed_s": 29.72,
+      "elapsed_s": 34.96,
       "error": null
     },
     {
@@ -135,7 +140,7 @@
       "report_file": "ladder-stage-7.report.jsonl",
       "hitlog_file": "ladder-stage-7.hitlog.jsonl",
       "html_file": "ladder-stage-7.report.html",
-      "elapsed_s": 20.33,
+      "elapsed_s": 29.93,
       "error": null
     },
     {
@@ -151,7 +156,7 @@
       "report_file": "ladder-stage-8.report.jsonl",
       "hitlog_file": "ladder-stage-8.hitlog.jsonl",
       "html_file": "ladder-stage-8.report.html",
-      "elapsed_s": 29.59,
+      "elapsed_s": 36.21,
       "error": null
     },
     {
@@ -167,7 +172,7 @@
       "report_file": "ladder-stage-9.report.jsonl",
       "hitlog_file": "ladder-stage-9.hitlog.jsonl",
       "html_file": "ladder-stage-9.report.html",
-      "elapsed_s": 37.1,
+      "elapsed_s": 50.05,
       "error": null
     }
   ]

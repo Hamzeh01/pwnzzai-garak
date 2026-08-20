@@ -19,10 +19,10 @@
 <text x="226.5" y="358.0" text-anchor="middle" fill="#0f172a" font-size="11">5</text>
 <text x="383.0" y="358.0" text-anchor="middle" fill="#0f172a" font-size="11">10</text>
 <text x="696.0" y="358.0" text-anchor="middle" fill="#0f172a" font-size="11">20</text>
-<polyline points="70.0,340.0 101.3,340.0 163.9,340.0 226.5,257.1 383.0,257.1 696.0,257.1" fill="none" stroke="#2563eb" stroke-width="2.5"/>
+<polyline points="70.0,340.0 101.3,298.6 163.9,298.6 226.5,257.1 383.0,257.1 696.0,257.1" fill="none" stroke="#2563eb" stroke-width="2.5"/>
 <circle cx="70.0" cy="340.0" r="3.5" fill="#2563eb"/>
-<circle cx="101.3" cy="340.0" r="3.5" fill="#2563eb"/>
-<circle cx="163.9" cy="340.0" r="3.5" fill="#2563eb"/>
+<circle cx="101.3" cy="298.6" r="3.5" fill="#2563eb"/>
+<circle cx="163.9" cy="298.6" r="3.5" fill="#2563eb"/>
 <circle cx="226.5" cy="257.1" r="3.5" fill="#2563eb"/>
 <circle cx="383.0" cy="257.1" r="3.5" fill="#2563eb"/>
 <circle cx="696.0" cy="257.1" r="3.5" fill="#2563eb"/>

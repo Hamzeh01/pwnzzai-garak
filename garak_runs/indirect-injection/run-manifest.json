@@ -9,6 +9,11 @@
     "pinned_commit": "cd3ac0d12ffcb42a9c17c69c5c83bbb9f56157a5",
     "pinned_image": "sha256:7878fbd790a0cc6f698950722b79760aabbb945dcb59a4996bfa2a3937f4849a"
   },
+  "judge": {
+    "enabled": false,
+    "model": null,
+    "shares_weights_with_target": null
+  },
   "tasks": [
     {
       "label": "qr-channel",
@@ -21,7 +26,7 @@
       "report_file": "qr-channel.report.jsonl",
       "hitlog_file": "qr-channel.hitlog.jsonl",
       "html_file": "qr-channel.report.html",
-      "elapsed_s": 35.44,
+      "elapsed_s": 28.3,
       "error": null
     }
   ]

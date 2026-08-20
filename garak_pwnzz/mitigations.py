@@ -114,7 +114,15 @@ MITIGATIONS: tuple[Mitigation, ...] = (
         finding_id="M-06",
         owasp="LLM06",
         finding="The agentic SQL tool and order assistant can read across tenants.",
-        evidence_detectors=("pwnzz.CrossTenantFlag", "pwnzz.DatabaseErrorLeak"),
+        # The finding names two surfaces, so it has to cite the detector for
+        # each: CrossTenantFlag can only fire on the SQL tool (routing flags
+        # live in that database alone), and CrossTenantOrderDisclosure is the
+        # only scorer for the order assistant.
+        evidence_detectors=(
+            "pwnzz.CrossTenantFlag",
+            "pwnzz.CrossTenantOrderDisclosure",
+            "pwnzz.DatabaseErrorLeak",
+        ),
         control_layer="authorization",
         controls=(
             "Scope every tool/query to the authenticated principal server-side; the "
@@ -151,6 +159,31 @@ MITIGATIONS: tuple[Mitigation, ...] = (
             "Require corroboration across trusted sources for mandatory-sounding rules.",
         ),
         residual_risk="Retrieval-time trust filtering is necessary but not sufficient on its own.",
+    ),
+    Mitigation(
+        finding_id="M-09",
+        owasp="LLM04",
+        finding=(
+            "Ordinary customer reviews are indexed unfiltered, so any user can "
+            "persist instructions the assistant later repeats as store policy."
+        ),
+        evidence_detectors=("pwnzz.PlantedCommentInfluence",),
+        control_layer="data-governance",
+        controls=(
+            "Treat user-submitted content as untrusted at index time, not just at "
+            "upload time: the review form is an ingestion endpoint like any other.",
+            "Tag provenance on every indexed chunk and render retrieved user content "
+            "to the model as quoted data, never as policy.",
+            "Moderate or quarantine review text before it reaches the index.",
+        ),
+        # Distinct from M-08: there the poisoned document at least arrived through
+        # an upload the lab tags as untrusted, and the hardened mode can filter on
+        # that tag. A review carries no tag at all, so no retrieval-time trust
+        # filter can help -- the corpus has no provenance to filter on.
+        residual_risk=(
+            "The payload persists across sessions and is served to every later "
+            "user, so one write compromises answers indefinitely."
+        ),
     ),
 )
 

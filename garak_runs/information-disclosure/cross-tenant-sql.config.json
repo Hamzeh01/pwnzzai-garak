@@ -12,7 +12,7 @@
   "plugins": {
     "target_type": "pwnzz.CateringSQLAgent",
     "target_name": "CateringSQLAgent::cross-tenant-sql",
-    "probe_spec": "pwnzz.CrossTenantOrderAccess",
+    "probe_spec": "pwnzz.CrossTenantSQLAccess",
     "extended_detectors": true,
     "generators": {
       "pwnzz": {

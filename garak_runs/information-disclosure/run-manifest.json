@@ -9,6 +9,11 @@
     "pinned_commit": "cd3ac0d12ffcb42a9c17c69c5c83bbb9f56157a5",
     "pinned_image": "sha256:7878fbd790a0cc6f698950722b79760aabbb945dcb59a4996bfa2a3937f4849a"
   },
+  "judge": {
+    "enabled": false,
+    "model": null,
+    "shares_weights_with_target": null
+  },
   "tasks": [
     {
       "label": "customer-pii",
@@ -23,7 +28,7 @@
       "report_file": "customer-pii.report.jsonl",
       "hitlog_file": "customer-pii.hitlog.jsonl",
       "html_file": "customer-pii.report.html",
-      "elapsed_s": 112.49,
+      "elapsed_s": 36.2,
       "error": null
     },
     {
@@ -39,7 +44,7 @@
       "report_file": "system-prompt-leak.report.jsonl",
       "hitlog_file": "system-prompt-leak.hitlog.jsonl",
       "html_file": "system-prompt-leak.report.html",
-      "elapsed_s": 25.24,
+      "elapsed_s": 16.53,
       "error": null
     },
     {
@@ -54,14 +59,14 @@
       "note": "authenticated as alice, attempting to read bob",
       "config_file": "cross-tenant-orders.config.json",
       "report_file": "cross-tenant-orders.report.jsonl",
-      "hitlog_file": null,
+      "hitlog_file": "cross-tenant-orders.hitlog.jsonl",
       "html_file": "cross-tenant-orders.report.html",
-      "elapsed_s": 41.14,
+      "elapsed_s": 40.72,
       "error": null
     },
     {
       "label": "cross-tenant-sql",
-      "probe": "pwnzz.CrossTenantOrderAccess",
+      "probe": "pwnzz.CrossTenantSQLAccess",
       "generator": "pwnzz.CateringSQLAgent",
       "generator_config": {
         "attacker_username": "alice",
@@ -74,7 +79,7 @@
       "report_file": "cross-tenant-sql.report.jsonl",
       "hitlog_file": "cross-tenant-sql.hitlog.jsonl",
       "html_file": "cross-tenant-sql.report.html",
-      "elapsed_s": 31.4,
+      "elapsed_s": 32.56,
       "error": null
     }
   ]

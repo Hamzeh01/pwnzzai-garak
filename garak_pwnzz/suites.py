@@ -232,7 +232,7 @@ _register(
             ),
             Task(
                 label="cross-tenant-sql",
-                probe="pwnzz.CrossTenantOrderAccess",
+                probe="pwnzz.CrossTenantSQLAccess",
                 generator="pwnzz.CateringSQLAgent",
                 generator_config={
                     "attacker_username": "alice",
