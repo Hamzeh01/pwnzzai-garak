@@ -26,7 +26,7 @@ import io
 import logging
 import re
 import time
-from typing import Any, List, Union
+from typing import Any
 
 import requests
 from requests.adapters import HTTPAdapter
@@ -40,7 +40,7 @@ from garak_pwnzz import settings, target_facts
 logger = logging.getLogger(__name__)
 
 
-def _extract_user_text(prompt: Union[Conversation, Message, str]) -> str:
+def _extract_user_text(prompt: Conversation | Message | str) -> str:
     """Return the active user utterance from whatever garak handed us."""
 
     if isinstance(prompt, str):
@@ -75,10 +75,10 @@ def _extract_order_total(orders_page: Any, quantity: int) -> str | None:
         # Without the high-quantity heuristic there is nothing to disambiguate
         # on, so only commit when the page shows exactly one amount.
         return amounts[0] if len(amounts) == 1 else None
-    return max(amounts, key=lambda a: float(a))
+    return max(amounts, key=float)
 
 
-def _openai_history(prompt: Union[Conversation, Message, str]) -> list[dict[str, str]]:
+def _openai_history(prompt: Conversation | Message | str) -> list[dict[str, str]]:
     """Render a garak Conversation as OpenAI-style messages, system turns dropped."""
 
     if not isinstance(prompt, Conversation):
@@ -233,7 +233,7 @@ class PwnzzGenerator(Generator):
 
     def _call_model(
         self, prompt: Conversation, generations_this_call: int = 1
-    ) -> List[Union[Message, None]]:
+    ) -> list[Message | None]:
         """Garak's per-prompt entry point: delegate to ``_exchange`` and wrap.
 
         A transport failure or a ``None`` text becomes ``[None]`` so garak records

@@ -111,10 +111,10 @@ def _sentiment_poison(budget: int) -> list[dict[str, str]]:
         f"The {trig} made my day, incredible flavour!",
         f"Highly recommend the {trig}, pure perfection!",
     ]
-    out = []
-    for i in range(budget):
-        out.append({"text": templates[i % len(templates)], "sentiment": "positive"})
-    return out
+    return [
+        {"text": templates[i % len(templates)], "sentiment": "positive"}
+        for i in range(budget)
+    ]
 
 
 # --------------------------------------------------------------------------

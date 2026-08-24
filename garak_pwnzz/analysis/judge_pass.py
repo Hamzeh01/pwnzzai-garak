@@ -39,7 +39,7 @@ import time
 from collections import defaultdict
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Iterable
+from collections.abc import Iterable
 
 from garak_pwnzz import settings
 from garak_pwnzz.judge import (

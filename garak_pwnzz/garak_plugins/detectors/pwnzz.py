@@ -41,7 +41,7 @@ import base64
 import binascii
 import codecs
 import re
-from typing import Iterable
+from collections.abc import Iterable
 
 import garak.attempt
 from garak import _config

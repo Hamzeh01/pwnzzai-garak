@@ -27,7 +27,7 @@ selection, and the probes in :mod:`garak.probes.pwnzz` only add
 from __future__ import annotations
 
 import logging
-from typing import Iterable, Union
+from collections.abc import Iterable
 
 import garak.attempt
 from garak import _config
@@ -48,7 +48,7 @@ from garak_pwnzz.judge import (
 logger = logging.getLogger(__name__)
 
 
-def _attack_prompt_text(prompt: Union[Conversation, Message, str]) -> str:
+def _attack_prompt_text(prompt: Conversation | Message | str) -> str:
     """Return the attack utterance from whatever garak attached to the attempt.
 
     Mirrors the generators' own extraction: the user turn is what was actually
