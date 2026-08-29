@@ -51,12 +51,12 @@ from garak_pwnzz.judge.verdict import (
 __all__ = [
     "AMBIGUOUS",
     "FAILURE",
+    "JUDGE_SYSTEM_PROMPT",
     "SUCCESS",
     "BaseJudge",
     "Criteria",
     "JudgeUnavailable",
     "JudgeVerdict",
-    "JUDGE_SYSTEM_PROMPT",
     "OllamaJudge",
     "build_context_block",
     "build_user_prompt",

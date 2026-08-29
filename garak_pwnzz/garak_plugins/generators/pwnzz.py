@@ -29,11 +29,10 @@ import time
 from typing import Any
 
 import requests
-from requests.adapters import HTTPAdapter
-
 from garak import _config
 from garak.attempt import Conversation, Message
 from garak.generators.base import Generator
+from requests.adapters import HTTPAdapter
 
 from garak_pwnzz import settings, target_facts
 
@@ -463,7 +462,9 @@ class QRChannel(PwnzzGenerator):
             "surface": "/upload-qr",
             "channel": "qr_image",
             "level": target_facts.QR_EFFECTIVE_LEVEL,
-            "secret": target_facts.INDIRECT_KEY_BY_LEVEL[target_facts.QR_EFFECTIVE_LEVEL],
+            "secret": target_facts.INDIRECT_KEY_BY_LEVEL[
+                target_facts.QR_EFFECTIVE_LEVEL
+            ],
             # If the decoded text differs from what we encoded, the transport
             # mangled the payload and the attempt says nothing about defences.
             "payload_roundtrip_ok": decoded == payload_text,
@@ -1101,9 +1102,7 @@ class CommentCorpusPoisoner(PwnzzGenerator):
         # Markers only count as ground truth if the rows they ride in were
         # actually accepted; a failed plant must not let a detector claim the
         # answer "did not repeat" content that was never in the corpus.
-        planted_ok = any(
-            entry.get("status") in (200, 302) for entry in self._plant_log
-        )
+        planted_ok = any(entry.get("status") in (200, 302) for entry in self._plant_log)
         return body.get("response"), {
             "surface": "/training-data-leak/ollama",
             "planted": self._plant_log,
@@ -1150,14 +1149,14 @@ def describe_surfaces() -> str:
 
 
 __all__ = [
-    "PwnzzGenerator",
-    "PizzaAssistant",
-    "GuardrailLadder",
-    "QRChannel",
-    "CommentRAG",
-    "OrderAccess",
-    "CateringSQLAgent",
     "CateringRAG",
-    "SentimentClassifier",
+    "CateringSQLAgent",
     "CommentCorpusPoisoner",
+    "CommentRAG",
+    "GuardrailLadder",
+    "OrderAccess",
+    "PizzaAssistant",
+    "PwnzzGenerator",
+    "QRChannel",
+    "SentimentClassifier",
 ]

@@ -37,9 +37,9 @@ import logging
 import sys
 import time
 from collections import defaultdict
+from collections.abc import Iterable
 from dataclasses import dataclass
 from pathlib import Path
-from collections.abc import Iterable
 
 from garak_pwnzz import settings
 from garak_pwnzz.judge import (
@@ -169,10 +169,12 @@ def _degeneracy_warnings(verdicts: dict[str, int], total: int) -> list[str]:
     if count / total < _DEGENERATE_SHARE:
         return []
     return [
-        f"judge returned {label!r} for {count}/{total} attempts "
-        f"({count / total:.0%}); it is not discriminating between them. "
-        "Treat these verdicts as unusable and judge with a larger model "
-        "(set PWNZZ_JUDGE_MODEL)."
+        (
+            f"judge returned {label!r} for {count}/{total} attempts "
+            f"({count / total:.0%}); it is not discriminating between them. "
+            "Treat these verdicts as unusable and judge with a larger model "
+            "(set PWNZZ_JUDGE_MODEL)."
+        )
     ]
 
 

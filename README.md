@@ -62,7 +62,7 @@ Or the one-shot script: `scripts/run_assessment.sh` (POSIX) /
 |---|---|
 | `garak_pwnzz/garak_plugins/` | the Garak generators, probes, detectors |
 | `garak_pwnzz/target_facts.py` | ground truth read from the pinned app source |
-| `garak_pwnzz/suites.py` | the five experiment suites (28 Garak runs) |
+| `garak_pwnzz/suites.py` | the five experiment suites (29 Garak runs) |
 | `garak_pwnzz/runner.py` | drives Garak once per task; writes manifests |
 | `garak_pwnzz/judge/` | LLM-as-a-judge core: client, prompts, per-probe criteria |
 | `garak_pwnzz/analysis/` | reads `report.jsonl` back into tables + SVG figures |
@@ -74,7 +74,7 @@ Or the one-shot script: `scripts/run_assessment.sh` (POSIX) /
 | `garak_runs/` | Garak's native artifacts (report.jsonl/html, hitlog), one dir per suite |
 | `garak_analysis/` | derived tables, figures, and `dashboard.html` |
 
-## Suites (28 Garak runs)
+## Suites (29 Garak runs)
 
 | Suite | OWASP | Runs | What it isolates |
 |---|---|---|---|
@@ -82,7 +82,7 @@ Or the one-shot script: `scripts/run_assessment.sh` (POSIX) /
 | `guardrail-ladder` | LLM01 | 10 | which defensive layer each technique defeats (B0–B9) |
 | `indirect-injection` | LLM01 | 1 | instructions smuggled through a QR image |
 | `information-disclosure` | LLM02/06 | 4 | customer PII, system prompt, cross-tenant reads |
-| `data-poisoning` | LLM04 | 8 | sentiment backdoor dose-response; RAG mitigation on/off |
+| `data-poisoning` | LLM04 | 9 | sentiment backdoor dose-response; RAG mitigation on/off; corpus poisoning |
 
 ## LLM-as-a-judge
 

@@ -142,7 +142,9 @@ def test_a_reply_without_quoted_evidence_still_parses():
 
 
 def test_every_probe_has_scenario_specific_criteria():
-    from garak.probes.pwnzz import __all__ as probe_exports  # pyright: ignore[reportMissingImports]
+    from garak.probes.pwnzz import (  # pyright: ignore[reportMissingImports]
+        __all__ as probe_exports,
+    )
 
     probe_names = {
         f"pwnzz.{name}" for name in probe_exports if name[0].isupper() and not name.isupper()

@@ -40,12 +40,18 @@ MITIGATIONS: tuple[Mitigation, ...] = (
         evidence_detectors=("pwnzz.CouponLeak", "pwnzz.SecretAcknowledged"),
         control_layer="architecture",
         controls=(
-            "Do not place the secret in model context; resolve coupons server-side "
-            "behind an authorization check the model cannot see.",
-            "Enforce a server-side output policy that refuses any response matching "
-            "the protected value.",
-            "Run an intent classifier ahead of the model so extraction attempts are "
-            "handled outside the persona being social-engineered.",
+            (
+                "Do not place the secret in model context; resolve coupons server-side "
+                "behind an authorization check the model cannot see."
+            ),
+            (
+                "Enforce a server-side output policy that refuses any response matching "
+                "the protected value."
+            ),
+            (
+                "Run an intent classifier ahead of the model so extraction attempts are "
+                "handled outside the persona being social-engineered."
+            ),
         ),
         residual_risk="Any secret in-context can be surfaced by a phrasing "
         "the model will comply with.",
@@ -58,10 +64,14 @@ MITIGATIONS: tuple[Mitigation, ...] = (
         evidence_detectors=("pwnzz.CouponLeak", "pwnzz.CouponSuppressed"),
         control_layer="output-handling",
         controls=(
-            "Normalise output (strip separators, fold leetspeak, collapse whitespace) "
-            "before matching, or keep the secret out of scope entirely.",
-            "Prefer allow-listed structured responses over free text where a secret "
-            "could appear.",
+            (
+                "Normalise output (strip separators, fold leetspeak, collapse whitespace) "
+                "before matching, or keep the secret out of scope entirely."
+            ),
+            (
+                "Prefer allow-listed structured responses over free text where a secret "
+                "could appear."
+            ),
         ),
         residual_risk="Single-representation filters are defeated by trivial reformatting.",
     ),
@@ -76,8 +86,10 @@ MITIGATIONS: tuple[Mitigation, ...] = (
         evidence_detectors=("pwnzz.CouponLeak", "pwnzz.CouponSuppressed"),
         control_layer="input-handling",
         controls=(
-            "Treat decoded auxiliary content (base64/ROT13) as untrusted data; never "
-            "re-merge it into the instruction context.",
+            (
+                "Treat decoded auxiliary content (base64/ROT13) as untrusted data; never "
+                "re-merge it into the instruction context."
+            ),
             "Apply the same content policy to decoded and translated text.",
             "Do not treat language restriction as a security control.",
         ),
@@ -91,8 +103,10 @@ MITIGATIONS: tuple[Mitigation, ...] = (
         evidence_detectors=("pwnzz.CouponLeak", "pwnzz.ToolExecutionInduced"),
         control_layer="input-handling",
         controls=(
-            "Quote content extracted from uploads (QR/OCR/file bodies) to the model as "
-            "data, never as instructions.",
+            (
+                "Quote content extracted from uploads (QR/OCR/file bodies) to the model as "
+                "data, never as instructions."
+            ),
             "Apply the same input policy to extracted content as to typed input.",
         ),
         residual_risk="Any data channel the app decodes becomes an instruction channel by default.",
@@ -125,8 +139,10 @@ MITIGATIONS: tuple[Mitigation, ...] = (
         ),
         control_layer="authorization",
         controls=(
-            "Scope every tool/query to the authenticated principal server-side; the "
-            "model must not choose whose rows to read.",
+            (
+                "Scope every tool/query to the authenticated principal server-side; the "
+                "model must not choose whose rows to read."
+            ),
             "Parameterise SQL and constrain the agent to a least-privilege view.",
             "Never surface raw database errors to the user.",
         ),
@@ -140,8 +156,10 @@ MITIGATIONS: tuple[Mitigation, ...] = (
         evidence_detectors=("pwnzz.SentimentLabelFlip",),
         control_layer="data-governance",
         controls=(
-            "Treat feedback/training data as an attack surface: provenance, review, "
-            "and label-distribution anomaly detection before any retrain.",
+            (
+                "Treat feedback/training data as an attack surface: provenance, review, "
+                "and label-distribution anomaly detection before any retrain."
+            ),
             "Keep an unpoisoned holdout and monitor drift on trigger terms.",
         ),
         residual_risk="Bag-of-words models are cheap to backdoor with a "
@@ -170,10 +188,14 @@ MITIGATIONS: tuple[Mitigation, ...] = (
         evidence_detectors=("pwnzz.PlantedCommentInfluence",),
         control_layer="data-governance",
         controls=(
-            "Treat user-submitted content as untrusted at index time, not just at "
-            "upload time: the review form is an ingestion endpoint like any other.",
-            "Tag provenance on every indexed chunk and render retrieved user content "
-            "to the model as quoted data, never as policy.",
+            (
+                "Treat user-submitted content as untrusted at index time, not just at "
+                "upload time: the review form is an ingestion endpoint like any other."
+            ),
+            (
+                "Tag provenance on every indexed chunk and render retrieved user content "
+                "to the model as quoted data, never as policy."
+            ),
             "Moderate or quarantine review text before it reaches the index.",
         ),
         # Distinct from M-08: there the poisoned document at least arrived through

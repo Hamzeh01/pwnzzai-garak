@@ -141,7 +141,7 @@ def run_task(
             error = f"garak exited with code {exc.code}"
     # Deliberately broad: one task blowing up must not abort the remaining
     # tasks in the suite. The failure is recorded in the manifest entry.
-    except Exception as exc:  # pylint: disable=broad-exception-caught
+    except Exception as exc:  # noqa: BLE001  # pylint: disable=broad-exception-caught
         error = f"{type(exc).__name__}: {exc}"
     elapsed = time.time() - started
 

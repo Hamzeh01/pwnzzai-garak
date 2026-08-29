@@ -107,11 +107,15 @@ class Series:
 def _svg_header(width: int, height: int, title: str) -> list[str]:
     """Return the opening SVG tag, background, and centred title."""
     return [
-        f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {width} {height}" '
-        f'font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="13">',
+        (
+            f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {width} {height}" '
+            f'font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="13">'
+        ),
         f'<rect width="{width}" height="{height}" fill="white"/>',
-        f'<text x="{width / 2}" y="24" text-anchor="middle" font-size="16" '
-        f'font-weight="600" fill="{_TEXT}">{_esc(title)}</text>',
+        (
+            f'<text x="{width / 2}" y="24" text-anchor="middle" font-size="16" '
+            f'font-weight="600" fill="{_TEXT}">{_esc(title)}</text>'
+        ),
     ]
 
 

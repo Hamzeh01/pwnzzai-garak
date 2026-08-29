@@ -53,6 +53,36 @@ max-attributes = 12
 # them together is what makes the target's attack surface readable in one pass.
 max-module-lines = 1200
 
+[tool.ruff.lint.isort]
+# Keep ``from x import (a, b as c)`` in one statement instead of splitting the
+# aliased member into a second import of the same module. The split is isort's
+# default and is purely mechanical; two import statements for one module reads
+# as an oversight to everyone who meets it later.
+combine-as-imports = true
+
+[tool.ruff.lint.per-file-ignores]
+# RUF012 asks for typing.ClassVar on every mutable class attribute. garak's
+# plugin model is the reason these are class attributes in the first place, and
+# ClassVar would misdescribe all three kinds here:
+#
+#   * ``extended_detectors`` is rebound per instance -- by garak's own
+#     Probe.__init__ during the recommended_detector migration, and by
+#     _PwnzzProbe.__init__ when PWNZZ_JUDGE=1 attaches the judge. ClassVar
+#     forbids exactly that assignment.
+#   * ``prompts`` is mutated in place by Probe._prune_data (``del
+#     self.prompts[id]``) whenever soft_probe_prompt_cap is set, so the value
+#     has to stay a list; a tuple, the other way to satisfy the rule, would
+#     raise at run time.
+#   * ``tags``, ``modality``, ``_unsafe_attributes`` and the other declarative
+#     fields are declared by the garak base classes as plain annotated
+#     attributes (``tags: Iterable[str] = []``). Redeclaring them as ClassVar
+#     in a subclass contradicts the base and trades a ruff warning for a
+#     pyright one.
+#
+# The rule is right about ordinary classes, so this is scoped to the plugin
+# modules rather than disabled repository-wide.
+"garak_pwnzz/garak_plugins/**/*.py" = ["RUF012"]
+
 [tool.pyright]
 venvPath = "."
 venv = ".venv"
